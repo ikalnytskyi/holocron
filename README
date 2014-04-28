@@ -1,0 +1,30 @@
+                             //  holocron  //
+
+                         may the blog be with you
+
+
+~ What is Holocron?
+
+  Holocron is an easy and lightweight static blog generator, based on
+  markup text and Jinja2 templates.
+
+
+~ Why the name Holocron?
+
+  Holocron (short for holographic chronicle) is a device in which Jedi
+  stored different data.
+
+
+~ How to install?
+
+      $ [sudo] pip install holocron
+
+
+~ How to start?
+
+  Here will be a link to the documentation.
+
+
+~ Is it ready?
+
+  NO!

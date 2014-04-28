@@ -1,0 +1,30 @@
+{#-
+    holocron/theme/templates/document.html
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    Default template for rendering Holocron documents.
+
+    :copyright: (c) 2014, Igor Kalnitsky
+    :license: BSD, see LICENSE for details
+-#}
+{% extends "base.html" %}
+
+{% block title %}{{ document.title }} | {{ sitename }}{% endblock %}
+
+
+{% block content %}
+<article>
+  <header>
+    <h1>{{ document.title }}</h1>
+    <time datetime="{{ document.created.isoformat() }}">
+      {{ document.created.strftime('%b %d, %Y') }}
+    </time>
+  </header>
+
+  {{ document.content }}
+
+  <footer>
+    <!-- TODO: print tags -->
+  </footer>
+</article>
+{% endblock %}

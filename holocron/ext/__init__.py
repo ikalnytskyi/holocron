@@ -1,0 +1,99 @@
+# coding: utf-8
+"""
+    holocron.ext
+    ~~~~~~~~~~~~
+
+    The package contains base classes for all supported extension types.
+
+    :copyright: (c) 2014, Igor Kalnitsky
+    :license: BSD, see LICENSE for details
+"""
+import abc
+
+
+class Converter(object, metaclass=abc.ABCMeta):
+    """
+    Base converter class.
+
+    Holocron's converters hierarchy originates here. In the best traditions
+    of the classical OOP, the class declares the converter interface, which
+    has to be respected by all converters.
+
+    So in case you want to write your own converter, you probably write
+    something like that::
+
+        from holocron.ext import Converter
+
+        class MarkdownConverter(Converter):
+            extensions = ['.md', '.mkd']
+
+            def to_html(self, text):
+                # do convertion
+                return meta, html
+
+    It's important to note, that a converter in terms of extension is not
+    a converter in terms of application:
+
+    * in terms of extension, the converter is an extension class, which
+      registers a convert function in a given application instance;
+
+    * in terms of application, the converter is a convert function, that
+      can convert a given markuped text into HTML and extract some meta
+      information.
+
+    :param conf: a dict with converters settings; it's a good practice to
+                 use a separate setting-node for each converter
+    """
+    def __init__(self, conf):
+        self.conf = conf
+
+    @property
+    @abc.abstractmethod
+    def extensions(self):
+        """
+        A converter's property, which have to returns a list of supported
+        file extensions.
+        """
+
+    @abc.abstractmethod
+    def to_html(self, text):
+        """
+        Converts a given `text` to HTML and returns the result together
+        with the extracted meta information.
+
+        :param text: a text to be converted, should be markuped with Markdown
+        :returns: a tuple of the following format `(meta, html)`
+        """
+
+
+class Generator(object, metaclass=abc.ABCMeta):
+    """
+    Base generator class.
+
+    Generators are a special kind of Holocron extensions. They're designed to
+    generate helpful stuff based on input document collection (e.g. sitemap).
+
+    Usage example::
+
+        from holocron.ext import Generator
+
+        class SitemapGenerator(Generator):
+            def generate(self, documents):
+                # create sitemap.xml for a given documents collection
+                # should use only convertible documents
+
+    :param conf: a dict with generators settings
+    :param output_path: a path to output folder
+    """
+    def __init__(self, conf, output_path):
+        self.conf = conf
+        self.output_path = output_path
+
+    @abc.abstractmethod
+    def generate(self, documents):
+        """
+        Generate some stuff based on input document collection.
+
+        :param documents: a document collection
+        :returns: nothing
+        """

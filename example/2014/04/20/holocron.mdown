@@ -1,0 +1,40 @@
+---
+tags: [holocron, software]
+---
+
+What is Holocron?
+=================
+
+Holocron is an easy and lightweight static blog generator, based on markup
+text and [Jinja2] templates.
+
+First of all, I want to notice that Holocron isn't a yet another script.
+A long time I've searched across Web the script which would be useful for
+me. My search was failed. So I've decided to write a new one...
+
+[Jinja2]: http://jinja.pocoo.org/docs/
+
+
+Why the name Holocron?
+----------------------
+
+Holocron (*short for holographic chronicle*) is a device in which Jedi
+stored different data. For more information please visit [the page].
+
+[the page]: http://starwars.wikia.com/wiki/Holocron
+
+
+How to install?
+---------------
+
+Holocron is written on Python and destributed as a Python package on PyPI.
+So you can easily install it via `pip` tool:
+
+    $ [sudo] pip install holocron
+
+
+Features?
+---------
+
+This blog software was written for developers, who likes to blog with
+`git`, `vim` and statics.

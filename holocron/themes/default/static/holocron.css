@@ -1,0 +1,191 @@
+/*!
+ * Stylesheet for default Holocron theme.
+ * Distributed under same license as parent project.
+ */
+
+/*
+ *  red:  #F37257
+ *  blue: #517281
+ */
+
+
+/* --------------------------------------------------------------------
+    reset and fixes
+   -------------------------------------------------------------------- */
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+
+/* --------------------------------------------------------------------
+    general
+   -------------------------------------------------------------------- */
+
+body {
+  border-top: 3px solid #F37257;
+  background-color: #FCFCFC;
+  color: #3B3B3B;
+
+  font-family: Georgia, "Times New Roman", Times, serif;
+  font-size: 18px;
+  line-height: 1.5em;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: normal;
+}
+
+a {
+  color: #F37257;
+  text-decoration: none;
+  transition: all 0.25s ease-in-out;
+}
+
+a:hover {
+  color: #F4BA70;
+  transition: all 0.25s ease-in-out;
+}
+
+header.header,
+footer.footer {
+  margin: 0 auto;
+  max-width: 780px;
+}
+
+#content {
+  margin: 0 auto;
+  max-width: 720px;
+}
+
+/* --------------------------------------------------------------------
+    header
+   -------------------------------------------------------------------- */
+
+header.header {
+  padding: 1em 0em;
+  text-align: center;
+}
+
+header.header h1 {
+  font-weight: normal;
+  font-family: 'Times New Roman';
+  padding: 0.5em;
+}
+
+header.header nav {
+  border-top: 1px solid #E0E0E0;
+  border-bottom: 1px solid #E0E0E0;
+
+  padding: 0.4em 0em;
+  font-size: 0.8em;
+}
+
+header.header nav a {
+  margin: 0em 1em;
+}
+
+header.header a {
+  color: #3b3b3b;
+  text-transform: uppercase;
+}
+
+header.header a:hover {
+  color: #F37257;
+  transition: all 0.25s ease-in-out;
+}
+
+
+/* --------------------------------------------------------------------
+    footer
+   -------------------------------------------------------------------- */
+
+.footer-wrapper {
+}
+
+footer.footer {
+  border-top: 1px solid #E0E0E0;
+  font-size: 0.9em;
+  text-align: center;
+  color: #666;
+}
+
+footer.footer p {
+  margin: 0.8em 0;
+}
+
+
+/* --------------------------------------------------------------------
+    posts / pages
+   -------------------------------------------------------------------- */
+
+#content {
+  padding: 1em 0em;
+}
+
+#content header {
+  text-align: center;
+}
+
+#content header time {
+  color: #c0c0c0;
+  font-family: 'Trebuchet MS', sans-serif;
+  font-size: 0.7em;
+}
+
+#content header h1 {
+  text-align: center;
+}
+
+#content p {
+  padding: 0.5em 0;
+}
+
+#content ul {
+  list-style: square;
+}
+
+#content ul,
+#content ol {
+  margin-left: 2em;
+}
+
+#content h2,
+#content h3,
+#content h4,
+#content h5,
+#content h6 {
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+  text-align: center;
+}
+
+#content h1 { font-size: 1.6em; }
+#content h2 { font-size: 1.4em; }
+#content h3 { font-size: 1.25em; }
+#content h4 { font-size: 1.17em; }
+#content h5 { font-size: 1.1em; }
+#content h6 { font-size: 1em; }
+
+#content table {
+  margin: 0.5em 0em;
+  font-size: 0.9em;
+  line-height: 1.5em;
+  border-collapse: collapse;
+}
+
+#content table td,
+#content table th {
+  padding: 0.3em 0.5em;
+  border: 1px solid #c0c0c0;
+}
+
+#content pre.code,
+#content .codehilite {
+  border-top: 1px solid #eaeaea;
+  border-bottom: 1px solid #eaeaea;
+  padding: 0.7em 1em;
+  font-size: 0.8em;
+  line-height: 1.2em;
+}

@@ -1,0 +1,52 @@
+{#-
+    holocron/theme/templates/base.html
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    Base template for Holocron's default theme.
+
+    :copyright: (c) 2014, Igor Kalnitsky
+    :license: BSD, see LICENSE for details
+-#}
+
+<!doctype html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" href="/static/holocron.css">
+  <link rel="stylesheet" href="/static/pygments.css">
+
+  <title>{% block title %}{{ sitename }}{% endblock title %}</title>
+
+<body>
+
+  <div class="header-wrapper">
+  <header class="header">
+    <h1><a href="{{ siteurl }}">{{ sitename }}</a></h1>
+
+    {% if theme.navigation -%}
+    <nav>
+      {% for name, url in theme.navigation -%}
+      <a href="{{ url }}">{{ name }}</a>
+      {%- endfor %}
+    </nav>
+    {%- endif %}
+  </header>
+  </div> <!-- /.header-wrapper -->
+
+
+  <div id="content">
+    {% block content %}
+    {% endblock %}
+  </div>
+
+
+  <div class="footer-wrapper">
+  <footer class="footer">
+    <p>
+      Content is licensed under the <br>
+      Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License
+    </p>
+    <p>&copy; 2014, {{ sitename }}</p>
+  </footer>
+  </div> <!-- /.footer-wrapper -->

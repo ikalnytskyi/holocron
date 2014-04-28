@@ -1,0 +1,15 @@
+# temp python files
+*.pyc
+
+# virtualenv
+*venv/
+
+# setuptools temp files
+build/
+dist/
+*.egg*
+
+# tox
+.tox/
+
+example/_build
