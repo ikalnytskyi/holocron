@@ -69,7 +69,12 @@ class Holocron(object):
         },
 
         'generators': {
-            'enabled': ['sitemap'],
+            'enabled': ['sitemap', 'feed'],
+
+            'feed': {
+                'save_as': 'feed.xml',
+                'posts_number': 5,
+            },
         },
     }
 
@@ -136,9 +141,7 @@ class Holocron(object):
             )
             return
 
-        self._generators[generator_class] = generator_class(
-            self.conf['generators'], self.conf['paths']['output']
-        )
+        self._generators[generator_class] = generator_class(self.conf)
 
     @cached_property
     def jinja_env(self):

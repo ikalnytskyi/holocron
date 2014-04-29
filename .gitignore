@@ -12,4 +12,7 @@ dist/
 # tox
 .tox/
 
-example/_build
+
+!example/_config.yml
+!exampe/*/holocron.mdown
+example/*

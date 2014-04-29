@@ -68,6 +68,7 @@ setup(
 
         'holocron.ext.generators': [
             'sitemap = holocron.ext.generators.sitemap:Sitemap',
+            'feed = holocron.ext.generators.feed:Feed',
         ],
     },
 

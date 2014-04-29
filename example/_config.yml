@@ -42,4 +42,8 @@ converters:
       extensions: [codehilite, extra]
 
 generators:
-   enabled: [sitemap]
+   enabled: [sitemap, feed]
+
+   feed:
+      save_as: feed.xml
+      posts_number: 5
