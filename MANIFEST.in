@@ -1,0 +1,9 @@
+include AUTHORS
+include LICENSE
+include README
+
+recursive-include example *
+recursive-exclude example/_build *
+
+recursive-include tests *
+recursive-exclude tests *.pyc *.pyo
