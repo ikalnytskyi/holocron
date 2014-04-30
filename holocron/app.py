@@ -26,11 +26,17 @@ class Holocron(object):
     Once it's created it will act as a central registry for the extensions,
     converters, template configuration and much more.
 
-    :param conf: a user configuration, that overrides a default one
+    Here the interaction workflow for an end-user:
+
+    - create instance with default/custom configuration
+    - register extensions: converters and/or generators
+    - call :meth:`run` method in order to build weblog
+
+    :param conf: (dict) a user configuration, that overrides a default one
     """
 
     #: The class that is used for document objects. See
-    #: :class:`Document` for more information.
+    #: :class:`~holocron.content.Document` for more information.
     document_class = Document
 
     #: Default configuration parameters.
@@ -56,6 +62,10 @@ class Holocron(object):
 
         'converters': {
             'enabled': ['markdown'],
+
+            'markdown': {
+                'extensions': ['codehilite', 'extra'],
+            },
         },
 
         'generators': {
@@ -78,22 +88,20 @@ class Holocron(object):
         self._generators = {}
 
         # Register enabled converters in the application instance.
-        stevedore.NamedExtensionManager(
+        for ext in stevedore.NamedExtensionManager(
             namespace='holocron.ext.converters',
             names=self.conf['converters']['enabled'],
             invoke_on_load=False,
-        ).map(
-            lambda ext: self.register_converter(ext.plugin)
-        )
+        ):
+            self.register_converter(ext.plugin)
 
         # Register enabled generators in the application instance.
-        stevedore.NamedExtensionManager(
+        for ext in stevedore.NamedExtensionManager(
             namespace='holocron.ext.generators',
             names=self.conf['generators']['enabled'],
             invoke_on_load=False,
-        ).map(
-            lambda ext: self.register_generator(ext.plugin)
-        )
+        ):
+            self.register_generator(ext.plugin)
 
     def register_converter(self, converter_class, _force=False):
         """
@@ -153,6 +161,7 @@ class Holocron(object):
 
         env = jinja2.Environment(loader=jinja2.ChoiceLoader(loaders))
         env.globals.update(
+            # TODO: add author, sitename, etc
             theme=self.conf['theme']
         )
         return env

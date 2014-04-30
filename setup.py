@@ -8,7 +8,7 @@ Holocron is an easy and lightweight static blog generator, based on markup
 text and Jinja2 templates.
 
 
-How to install?
+How To Install?
 ```````````````
 
 .. code:: bash
@@ -16,39 +16,36 @@ How to install?
     $ [sudo] pip install holocron
 
 
-Is it ready?
+Useful Links
 ````````````
-
-NO!
-
-
-Links
-`````
 
 * `documentation <http://holocron.readthedocs.org/>`_
 * `source code <https://github.com/ikalnitsky/holocron>`_
 
 """
-from setuptools import setup
+from setuptools import setup, find_packages
 from holocron import __version__ as holocron_version
 
 
 setup(
     name='holocron',
     version=holocron_version,
-    url='http://github.com/ikalnitsky/holocron/',
+    description=(
+        'Holocron is an easy and lightweight static blog generator, based '
+        'on markup text and Jinja2 templates.'
+    ),
+    long_description=__doc__,
     license='BSD',
+    url='http://github.com/ikalnitsky/holocron/',
+    platforms=['Linux'],
+
     author='Igor Kalnitsky',
     author_email='igor@kalnitsky.org',
-    description='A simple static blog software based on markup text',
-    long_description=__doc__,
+
+    packages=find_packages(exclude=['tests']),
     include_package_data=True,
-    packages=[
-        'holocron',
-        'holocron.ext',
-        'holocron.ext.converters',
-        'holocron.ext.generators',
-    ],
+    test_suite='tests',
+
     install_requires=[
         # core parts
         'Jinja2 >= 2.7',
@@ -59,6 +56,7 @@ setup(
         # markdown converter
         'Markdown >= 2.4',
     ],
+
     entry_points={
         'console_scripts': [
             'holocron = holocron.main:main',
@@ -72,6 +70,7 @@ setup(
             'sitemap = holocron.ext.generators.sitemap:Sitemap',
         ],
     },
+
     classifiers=[
         'Environment :: Console',
         'Operating System :: OS Independent',
@@ -83,5 +82,4 @@ setup(
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
     ],
-    platforms=['Linux'],
 )
