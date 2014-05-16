@@ -1,7 +1,7 @@
 # coding: utf-8
 """
-    tests.utils
-    ~~~~~~~~~~~
+    tests.test_utils
+    ~~~~~~~~~~~~~~~~
 
     Tests Holocron's utils.
 
@@ -14,7 +14,7 @@ from holocron.utils import merge_dict
 from tests import HolocronTestCase
 
 
-class MergeDictCase(HolocronTestCase):
+class TestMergeDict(HolocronTestCase):
     def test_merge(self):
         a = {
             'root': {
