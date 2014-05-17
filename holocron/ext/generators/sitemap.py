@@ -36,6 +36,8 @@ class Sitemap(Generator):
         )
 
         # write sitemap to the file
-        sitemap_path = os.path.join(self.output_path, 'sitemap.xml')
+        sitemap_path = os.path.join(
+            self.conf['paths']['output'], 'sitemap.xml')
+
         with open(sitemap_path, 'w', encoding='utf-8') as f:
             f.write(self.template.render(documents=documents))

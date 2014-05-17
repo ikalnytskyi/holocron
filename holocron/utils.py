@@ -108,4 +108,8 @@ def fix_siteurl(siteurl):
     """
     if not siteurl.startswith(('http://', 'https://',)):
         siteurl = 'http://' + siteurl
+
+    if not siteurl.endswith('/'):
+        siteurl = siteurl + '/'
+
     return siteurl

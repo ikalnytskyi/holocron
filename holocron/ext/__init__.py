@@ -85,9 +85,8 @@ class Generator(object, metaclass=abc.ABCMeta):
     :param conf: a dict with generators settings
     :param output_path: a path to output folder
     """
-    def __init__(self, conf, output_path):
+    def __init__(self, conf):
         self.conf = conf
-        self.output_path = output_path
 
     @abc.abstractmethod
     def generate(self, documents):

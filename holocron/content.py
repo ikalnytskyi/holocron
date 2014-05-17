@@ -60,7 +60,7 @@ class Document(metaclass=abc.ABCMeta):
         document's created date.
         """
         created = os.path.getctime(self.source)
-        return datetime.datetime.fromtimestamp(created)
+        return datetime.datetime.utcfromtimestamp(created)
 
     @cached_property
     def modified(self):
@@ -69,7 +69,7 @@ class Document(metaclass=abc.ABCMeta):
         document's modified date.
         """
         lastmod = os.path.getmtime(self.source)
-        return datetime.datetime.fromtimestamp(lastmod)
+        return datetime.datetime.utcfromtimestamp(lastmod)
 
     @property
     def source(self):
@@ -100,6 +100,13 @@ class Document(metaclass=abc.ABCMeta):
     def url(self):
         """
         Returns an URL to the resource this object represent.
+        """
+
+    @property
+    @abc.abstractmethod
+    def abs_url(self):
+        """
+        Returns an absolute URL to the resource this object represents.
         """
 
     @abc.abstractmethod
@@ -213,6 +220,10 @@ class Convertible(Document):
     def url(self):
         filename, _ = os.path.splitext(self.short_source)
         return '/' + filename + '/'
+
+    @property
+    def abs_url(self):
+        return self.app.conf['siteurl'] + self.url
 
 
 class Static(Document):
