@@ -41,6 +41,9 @@ class Converter(object, metaclass=abc.ABCMeta):
       can convert a given markuped text into HTML and extract some meta
       information.
 
+    Converters receive a conf dictionary as a constructor argument that
+    is extracted from `converters` node of your YAML settings file.
+
     :param conf: a dict with converters settings; it's a good practice to
                  use a separate setting-node for each converter
     """
@@ -82,8 +85,7 @@ class Generator(object, metaclass=abc.ABCMeta):
                 # create sitemap.xml for a given documents collection
                 # should use only convertible documents
 
-    :param conf: a dict with generators settings
-    :param output_path: a path to output folder
+    :param conf: a dict with Holocron settings
     """
     def __init__(self, conf):
         self.conf = conf

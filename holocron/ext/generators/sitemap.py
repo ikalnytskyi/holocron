@@ -16,6 +16,21 @@ from holocron.ext import Generator
 
 
 class Sitemap(Generator):
+    """
+    A sitemap extension.
+
+    The class is a generator extension for Holocron that is designed to
+    generate a site map -- a list of pages of a web site accessible to
+    crawlers or users.
+
+    Sitemaps can be represented in various formats, but this implementation
+    uses the most popular one -- XML-based representation -- sitemap.xml.
+
+    See the :class:`~holocron.ext.Generator` class for interface details.
+    """
+    #: an output filename
+    save_as = 'sitemap.xml'
+
     #: a sitemap template
     template = jinja2.Template('\n'.join([
         '<?xml version="1.0" encoding="utf-8"?>',
@@ -37,7 +52,7 @@ class Sitemap(Generator):
 
         # write sitemap to the file
         sitemap_path = os.path.join(
-            self.conf['paths']['output'], 'sitemap.xml')
+            self.conf['paths']['output'], self.save_as)
 
         with open(sitemap_path, 'w', encoding='utf-8') as f:
             f.write(self.template.render(documents=documents))
