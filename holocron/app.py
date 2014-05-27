@@ -28,9 +28,9 @@ class Holocron(object):
 
     Here the interaction workflow for an end-user:
 
-    - create instance with default/custom configuration
-    - register extensions: converters and/or generators
-    - call :meth:`run` method in order to build weblog
+    * create instance with default/custom configuration
+    * register extensions: converters and/or generators
+    * call :meth:`run` method in order to build weblog
 
     :param conf: (dict) a user configuration, that overrides a default one
     """
@@ -41,16 +41,16 @@ class Holocron(object):
 
     #: Default configuration parameters.
     default_conf = {
-        'sitename':     'Obi-Wan Kenobi',
-        'siteurl':      'http://obi-wan.jedi',
-        'author':       'Obi-Wan Kenobi',
+        'sitename': 'Obi-Wan Kenobi',
+        'siteurl': 'http://obi-wan.jedi',
+        'author': 'Obi-Wan Kenobi',
 
-        'encoding':     'utf-8',
+        'encoding': 'utf-8',
 
         'paths': {
-            'content':  './',
-            'output':   '_build/',
-            'theme':    '_theme/',
+            'content': './',
+            'output': '_build/',
+            'theme': '_theme/',
         },
 
         'theme': {

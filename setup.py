@@ -1,27 +1,19 @@
 #!/usr/bin/env python
 # coding: utf-8
 """
-Holocron
---------
+$ holocron_
 
-Holocron is an easy and lightweight static blog generator, based on markup
-text and Jinja2 templates.
+Holocron is an easy and lightweight static blog generator, based on
+markup text and Jinja2 templates. It's written in Python trying to
+keep things simple and extensible.
 
+Holocron in two points:
 
-How To Install?
-```````````````
+- simple and extensible
+- clear theme and markdown out of the box
 
-.. code:: bash
-
-    $ [sudo] pip install holocron
-
-
-Useful Links
-````````````
-
-* `documentation <http://holocron.readthedocs.org/>`_
-* `source code <https://github.com/ikalnitsky/holocron>`_
-
+Read the docs for more information: http://holocron.readthedocs.org/
+Fork and contribute: https://github.com/ikalnitsky/holocron
 """
 from setuptools import setup, find_packages
 from holocron import __version__ as holocron_version
@@ -31,8 +23,7 @@ setup(
     name='holocron',
     version=holocron_version,
     description=(
-        'Holocron is an easy and lightweight static blog generator, based '
-        'on markup text and Jinja2 templates.'
+        'Simple and extensible static blog generator'
     ),
     long_description=__doc__,
     license='BSD',

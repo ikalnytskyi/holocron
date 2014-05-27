@@ -15,6 +15,23 @@ from holocron.ext import Converter
 
 
 class Markdown(Converter):
+    """
+    A markdown converters.
+
+    This class is a converter extension that is designed to convert some
+    input markdown text into HTML, extracting some useful meta information.
+    See the :class:`~holocron.ext.Converter` class for interface details.
+
+    The converter uses `this markdown implementation`_, so it supports some
+    extension that extends markdown language. For activating markdown
+    extension, please specify its name in the following option:
+
+        converters.markdown.extensions
+
+    .. _this markdown implementation: http://pythonhosted.org//Markdown/
+    """
+
+    #: a list of supported extensions
     extensions = ['.md', '.mkd', '.mdown', '.markdown']
 
     def __init__(self, *args, **kwargs):
