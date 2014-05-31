@@ -9,8 +9,6 @@
     :license: BSD, see LICENSE for details
 """
 import os
-import copy
-import itertools
 from fnmatch import fnmatch
 
 
@@ -50,23 +48,6 @@ class cached_property(object):
         if self.__name__ not in obj.__dict__:
             obj.__dict__[self.__name__] = self.func(obj)
         return obj.__dict__[self.__name__]
-
-
-def merge_dict(a, b, *args):
-    """
-    Takes at lest two dictionaries and recursively merge it.
-
-    An internal helper function is needed to prevent calling ``copy.deepcopy``
-    each recursive call. I haven't tested, but it should reduce memory usage.
-    """
-    def _merge(a, *args):
-        for key, value in itertools.chain(*[x.items() for x in args]):
-            if key in a and isinstance(value, dict):
-                value = _merge(a[key], value)
-            a[key] = value
-        return a
-
-    return _merge(copy.deepcopy(a), b, *args)
 
 
 def iterfiles(path, pattern=None, exclude_folders=False):

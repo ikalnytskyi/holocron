@@ -26,6 +26,8 @@ class Sitemap(Generator):
     Sitemaps can be represented in various formats, but this implementation
     uses the most popular one -- XML-based representation -- sitemap.xml.
 
+    The protocol details: http://www.sitemaps.org/protocol.html
+
     See the :class:`~holocron.ext.Generator` class for interface details.
     """
     #: an output filename
@@ -51,8 +53,7 @@ class Sitemap(Generator):
         )
 
         # write sitemap to the file
-        sitemap_path = os.path.join(
-            self.conf['paths']['output'], self.save_as)
+        sitemap_path = os.path.join(self.conf['paths.output'], self.save_as)
 
         with open(sitemap_path, 'w', encoding='utf-8') as f:
             f.write(self.template.render(documents=documents))

@@ -3,17 +3,17 @@
 """
 $ holocron_
 
-Holocron is an easy and lightweight static blog generator, based on
-markup text and Jinja2 templates. It's written in Python trying to
-keep things simple and extensible.
+  Holocron is an easy and lightweight static blog generator, based on
+  markup text and Jinja2 templates. It's written in Python trying to
+  keep things simple and extensible.
 
-Holocron in two points:
+  Holocron in two points:
 
-- simple and extensible
-- clear theme and markdown out of the box
+  * simple and extensible
+  * clear theme and markdown out of the box
 
-Read the docs for more information: http://holocron.readthedocs.org/
-Fork and contribute: https://github.com/ikalnitsky/holocron
+  Read the docs for more information: http://holocron.readthedocs.org/
+  Fork and contribute: https://github.com/ikalnitsky/holocron
 """
 from setuptools import setup, find_packages
 from holocron import __version__ as holocron_version
@@ -43,9 +43,13 @@ setup(
         'PyYAML >= 3.11',
         'stevedore >= 0.15',
         'Pygments >= 1.6',
+        'dooku',
 
         # markdown converter
         'Markdown >= 2.4',
+    ],
+    dependency_links=[
+        'git+https://github.com/ikalnitsky/dooku.git#egg=dooku',
     ],
 
     entry_points={

@@ -84,7 +84,7 @@ class Document(metaclass=abc.ABCMeta):
         Returns a short path to the source document. What is a short path?
         It's a path relative to the content directory.
         """
-        cut_length = len(self.app.conf['paths']['content'])
+        cut_length = len(self.app.conf['paths.content'])
         return self.filename[cut_length:]
 
     @property
@@ -212,7 +212,7 @@ class Convertible(Document):
     def destination(self):
         filename, _ = os.path.splitext(self.short_source)
         return os.path.join(
-            self.app.conf['paths']['output'],
+            self.app.conf['paths.output'],
             filename, 'index.html'
         )
 
@@ -256,7 +256,7 @@ class Static(Document):
     @property
     def destination(self):
         return os.path.join(
-            self.app.conf['paths']['output'], self.short_source
+            self.app.conf['paths.output'], self.short_source
         )
 
     @property

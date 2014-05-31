@@ -48,15 +48,11 @@ class Feed(Generator):
 
     def generate(self, documents):
 
-        save_as = self.conf['generators']['feed']['save_as']
-        posts_number = self.conf['generators']['feed']['posts_number']
+        save_as = self.conf['generators.feed.save_as']
+        posts_number = self.conf['generators.feed.posts_number']
+        output_path = self.conf['paths.output']
 
-        output_path = self.conf['paths']['output']
-
-        documents = (
-            doc for doc in documents if isinstance(doc, Convertible)
-        )
-
+        documents = (doc for doc in documents if isinstance(doc, Convertible))
         documents = sorted(documents, key=lambda d: d.created, reverse=True)
         documents = documents[:posts_number]
 

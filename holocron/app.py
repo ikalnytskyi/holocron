@@ -15,8 +15,10 @@ import logging
 import jinja2
 import stevedore
 
+from dooku.conf import Conf
+
 from .content import Document
-from .utils import cached_property, merge_dict, iterfiles
+from .utils import cached_property, iterfiles
 
 
 class Holocron(object):
@@ -80,7 +82,7 @@ class Holocron(object):
 
     def __init__(self, conf=None):
         #: The configuration dictionary.
-        self.conf = merge_dict(self.default_conf, conf or {})
+        self.conf = Conf(self.default_conf, conf or {})
 
         #: A `file extension` -> `converter` map
         #:
@@ -157,7 +159,7 @@ class Holocron(object):
         loaders = [loader, jinja2.PrefixLoader({'!default': loader})]
 
         # makes a user template loader
-        path = self.conf['paths']['theme']
+        path = self.conf.get('paths.theme')
         if path is not None:
             path = os.path.join(path, 'templates')
             loaders.insert(0, jinja2.FileSystemLoader(path))
@@ -195,7 +197,7 @@ class Holocron(object):
         """
         # iterate over files in the content directory
         # except files/dirs starting with underscore or dot
-        documents = iterfiles(self.conf['paths']['content'], '[!_.]*', True)
+        documents = iterfiles(self.conf['paths.content'], '[!_.]*', True)
         documents = [self.document_class(doc, self) for doc in documents]
 
         # consequently builds all found documents
@@ -222,11 +224,11 @@ class Holocron(object):
         root = os.path.dirname(__file__)
 
         base_static = os.path.join(root, 'themes', 'default', 'static')
-        user_static = os.path.join(self.conf['paths']['theme'], 'static')
+        user_static = os.path.join(self.conf['paths.theme'], 'static')
 
         if not os.path.exists(user_static):
             user_static = base_static
-        out_static = os.path.join(self.conf['paths']['output'], 'static')
+        out_static = os.path.join(self.conf['paths.output'], 'static')
 
         shutil.rmtree(out_static, ignore_errors=True)
         shutil.copytree(user_static, out_static)
