@@ -20,11 +20,11 @@ class Sitemap(Generator):
     A sitemap extension.
 
     The class is a generator extension for Holocron that is designed to
-    generate a site map -- a list of pages of a web site accessible to
+    generate a site map - a list of pages of a web site accessible to
     crawlers or users.
 
     Sitemaps can be represented in various formats, but this implementation
-    uses the most popular one -- XML-based representation -- sitemap.xml.
+    uses the most popular one - XML-based representation - 'sitemap.xml'.
 
     The protocol details: http://www.sitemaps.org/protocol.html
 
@@ -39,8 +39,10 @@ class Sitemap(Generator):
         '  <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
         '  {%- for doc in documents %}',
         '    <url>',
-        '      <loc>{{ doc.url }}</loc>',
-        '      <lastmod>{{ doc.modified.isoformat() }}</lastmod>',
+        '      <loc>{{ doc.abs_url }}</loc>',
+        '      <lastmod>{{',
+        '        doc.get_modified_datetime(localtime=True).isoformat()',
+        '      }}</lastmod>',
         '    </url>',
         '  {% endfor -%}',
         '  </urlset>',
@@ -49,11 +51,9 @@ class Sitemap(Generator):
     def generate(self, documents):
         # it make sense to keep only convertible documents in the sitemap
         documents = (
-            doc for doc in documents if isinstance(doc, Convertible)
-        )
+            doc for doc in documents if isinstance(doc, Convertible))
 
         # write sitemap to the file
         sitemap_path = os.path.join(self.conf['paths.output'], self.save_as)
-
         with open(sitemap_path, 'w', encoding='utf-8') as f:
             f.write(self.template.render(documents=documents))
