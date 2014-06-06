@@ -65,6 +65,10 @@ setup(
             'sitemap = holocron.ext.generators.sitemap:Sitemap',
             'feed = holocron.ext.generators.feed:Feed',
         ],
+
+        'holocron.ext.commands': [
+            'build = holocron.ext.commands.build:Build',
+        ],
     },
 
     classifiers=[

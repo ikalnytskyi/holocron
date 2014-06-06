@@ -98,3 +98,32 @@ class Generator(object, metaclass=abc.ABCMeta):
         :param documents: a document collection
         :returns: nothing
         """
+
+
+class Command(object, metaclass=abc.ABCMeta):
+    """
+    Base commands class.
+
+    Commands are used to interact with Holocron application instance.
+    They could be used to build application (generate html blog entries),
+    serve the application at a local webserver or online, etc.
+
+    Usage example::
+
+        from holocron.ext import Command
+
+        class MyCoolCommand(Command):
+            def execute(self, app):
+                # perform some actions and interact with application instance
+                # the command class should provide execute() method as an entry
+                point of a command
+    """
+
+    @abc.abstractmethod
+    def execute(self, app):
+        """
+        Run is a uniform method used to execute commands.
+
+        :param app: an application instance
+        :returns: nothing
+        """
