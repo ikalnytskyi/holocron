@@ -39,7 +39,7 @@ class Markdown(Converter):
 
         #: create markdown instance with enabled extensions
         self._markdown = markdown.Markdown(
-            self.conf['markdown']['extensions']
+            self.conf['markdown.extensions']
         )
 
         #: compile regex for extracting post title

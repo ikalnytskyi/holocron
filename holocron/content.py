@@ -19,6 +19,7 @@ import shutil
 import datetime
 
 import yaml
+from dooku.datetime import UTC, Local
 
 from .utils import cached_property, mkdir
 
@@ -53,23 +54,23 @@ class Document(metaclass=abc.ABCMeta):
         self.filename = filename
         self.app = app
 
-    @cached_property
-    def created(self):
+    def get_created_datetime(self, localtime=False):
         """
         Returns a :class:`datetime.datetime` object which represents the
         document's created date.
         """
+        tz = Local if localtime else UTC
         created = os.path.getctime(self.source)
-        return datetime.datetime.utcfromtimestamp(created)
+        return datetime.datetime.fromtimestamp(created, tz)
 
-    @cached_property
-    def modified(self):
+    def get_modified_datetime(self, localtime=False):
         """
         Returns a :class:`datetime.datetime` object which represents the
         document's modified date.
         """
+        tz = Local if localtime else UTC
         lastmod = os.path.getmtime(self.source)
-        return datetime.datetime.utcfromtimestamp(lastmod)
+        return datetime.datetime.fromtimestamp(lastmod, tz)
 
     @property
     def source(self):
@@ -84,7 +85,7 @@ class Document(metaclass=abc.ABCMeta):
         Returns a short path to the source document. What is a short path?
         It's a path relative to the content directory.
         """
-        cut_length = len(self.app.conf['paths']['content'])
+        cut_length = len(self.app.conf['paths.content'])
         return self.filename[cut_length:]
 
     @property
@@ -175,16 +176,18 @@ class Convertible(Document):
             # override extracted metainformation with document's one
             metadata.update(header)
 
-        return header, html
+            if 'author' not in metadata:
+                metadata['author'] = self.app.conf['author']
 
-    @cached_property
-    def created(self):
+        return metadata, html
+
+    def get_created_datetime(self, localtime=False):
         """
         Returns a :class:`datetime.datetime` object which represents the
         document's created date.
         """
         # TODO: get created time from the folder structure
-        return super(Convertible, self).created
+        return super(Convertible, self).get_created_datetime(localtime)
 
     def build(self):
         # create folder for the output file
@@ -192,8 +195,8 @@ class Convertible(Document):
 
         metadata = dict(self.meta)
         metadata['content'] = self.html
-        metadata['created'] = self.created
-        metadata['modified'] = self.modified
+        metadata['created'] = self.get_created_datetime()
+        metadata['modified'] = self.get_modified_datetime()
 
         # render result file
         template = metadata.get('template', self.template)
@@ -212,7 +215,7 @@ class Convertible(Document):
     def destination(self):
         filename, _ = os.path.splitext(self.short_source)
         return os.path.join(
-            self.app.conf['paths']['output'],
+            self.app.conf['paths.output'],
             filename, 'index.html'
         )
 
@@ -256,7 +259,7 @@ class Static(Document):
     @property
     def destination(self):
         return os.path.join(
-            self.app.conf['paths']['output'], self.short_source
+            self.app.conf['paths.output'], self.short_source
         )
 
     @property
