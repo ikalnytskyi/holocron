@@ -91,7 +91,6 @@ def main():
     if arguments.verbose:
         logging.getLogger().setLevel(logging.INFO)
 
-
     # TODO: implements command system in the future
     holocron = create_app(conf)
     holocron.run()
