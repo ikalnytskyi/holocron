@@ -29,8 +29,15 @@ class CommandManager(object):
         for command in stevedore.ExtensionManager(
             namespace='holocron.ext.commands',
             invoke_on_load=False,
+            on_load_failure_callback=self._load_failure,
         ):
             self._commands.append(command.name)
+
+    def _load_failure(self, manager, entrypoint, error):
+        print(
+            "'{0}' error occured while loading '{1}' entrypoint by {2}"
+            .format(error, entrypoint, manager.__class__.__name__)
+        )
 
     def get_commands(self):
         """
@@ -50,6 +57,7 @@ class CommandManager(object):
                 namespace='holocron.ext.commands',
                 name=command_name,
                 invoke_on_load=True,
+                on_load_failure_callback=self._load_failure,
             ).driver.execute(app)
 
         except KeyError:

@@ -1,3 +1,14 @@
+# coding: utf-8
+"""
+    holocron.ext.commands.build
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    The module implements a build command.
+
+    :copyright: (c) 2014, Andrii Gamaiunov
+    :license: BSD, see LICENSE for details
+"""
+
 from holocron.ext import Command
 
 
