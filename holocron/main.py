@@ -16,6 +16,7 @@ import argparse
 import yaml
 
 from holocron.app import Holocron
+from .command import CommandManager
 
 
 def show_error_and_exit(message, exit_code=0):
@@ -29,11 +30,12 @@ def show_error_and_exit(message, exit_code=0):
     sys.exit(exit_code)
 
 
-def parse_command_line():
+def parse_command_line(commands):
     """
     Builds a command line interface, and parses it arguments.
     Returns an object with attributes, that are represent CLI arguments.
     """
+
     parser = argparse.ArgumentParser(
         description=(
             'Holocron is an easy and lightweight static blog generator, '
@@ -43,7 +45,8 @@ def parse_command_line():
             'If no CONFIG found, the default settings will be used.')
     )
 
-    parser.add_argument('command', choices=['build'])
+    parser.add_argument('command', choices=commands,
+                        help='a command to execute')
     parser.add_argument('-c', '--conf', dest='conf', default='_config.yml',
                         help='a path to settings file')
     parser.add_argument('-v', '--verbose', dest='verbose', action='store_true',
@@ -84,13 +87,15 @@ def create_app(conf):
 
 
 def main():
-    arguments = parse_command_line()
+    command_manager = CommandManager()
+    commands = command_manager.get_commands()
+
+    arguments = parse_command_line(commands)
     conf = get_config(arguments.conf)
 
     # print info level messages if verbose is true
     if arguments.verbose:
         logging.getLogger().setLevel(logging.INFO)
 
-    # TODO: implements command system in the future
     holocron = create_app(conf)
-    holocron.run()
+    command_manager.call(arguments.command, holocron)
