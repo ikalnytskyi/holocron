@@ -47,3 +47,8 @@ generators:
    feed:
       save_as: feed.xml
       posts_number: 5
+
+commands:
+   serve:
+      host: '0.0.0.0'
+      port: '5000'

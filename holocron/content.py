@@ -51,7 +51,7 @@ class Document(metaclass=abc.ABCMeta):
         return super(Document, cls).__new__(Static)
 
     def __init__(self, filename, app):
-        self.filename = filename
+        self.filename = os.path.abspath(filename)
         self.app = app
 
     def get_created_datetime(self, localtime=False):
@@ -85,8 +85,11 @@ class Document(metaclass=abc.ABCMeta):
         Returns a short path to the source document. What is a short path?
         It's a path relative to the content directory.
         """
-        cut_length = len(self.app.conf['paths.content'])
-        return self.filename[cut_length:]
+        path_to_content = os.path.abspath(self.app.conf['paths.content'])
+        cut_length = len(path_to_content)
+
+        # cut the path to content dir and the first slash of the following dir
+        return self.filename[cut_length + 1:]
 
     @property
     @abc.abstractmethod
@@ -265,3 +268,7 @@ class Static(Document):
     @property
     def url(self):
         return '/' + self.short_source
+
+    @property
+    def abs_url(self):
+        return self.app.conf['siteurl'] + self.url

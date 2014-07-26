@@ -43,6 +43,7 @@ setup(
         'PyYAML >= 3.11',
         'stevedore >= 0.15',
         'Pygments >= 1.6',
+        'watchdog >= 0.8.0',
         'dooku',
 
         # markdown converter
