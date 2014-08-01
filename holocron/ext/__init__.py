@@ -122,7 +122,7 @@ class Command(object, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def execute(self, app):
         """
-        Run is a uniform method used to execute commands.
+        Execute is a uniform method used to execute commands.
 
         :param app: an application instance
         :returns: nothing

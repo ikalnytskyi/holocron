@@ -12,6 +12,9 @@ dist/
 # tox
 .tox/
 
+# sublime rope
+.ropeproject/
+
 
 !example/_config.yml
 !exampe/*/holocron.mdown
