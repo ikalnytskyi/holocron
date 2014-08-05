@@ -261,9 +261,7 @@ class Static(Document):
 
     @property
     def destination(self):
-        return os.path.join(
-            self.app.conf['paths.output'], self.short_source
-        )
+        return os.path.join(self.app.conf['paths.output'], self.short_source)
 
     @property
     def url(self):

@@ -24,14 +24,17 @@ class Markdown(Converter):
 
     The converter uses `this markdown implementation`_, so it supports some
     extension that extends markdown language. For activating markdown
-    extension, please specify its name in the following option:
+    extension, please specify its name in the following option::
 
         converters.markdown.extensions
 
-    .. _this markdown implementation: http://pythonhosted.org//Markdown/
+    The converter has a contract-based design, so we should always pass
+    the settings even if they are default.
+
+    .. _this markdown implementation: http://pythonhosted.org/Markdown/
     """
 
-    #: a list of supported extensions
+    #: a list of supported files
     extensions = ['.md', '.mkd', '.mdown', '.markdown']
 
     def __init__(self, *args, **kwargs):
@@ -39,8 +42,7 @@ class Markdown(Converter):
 
         #: create markdown instance with enabled extensions
         self._markdown = markdown.Markdown(
-            self.conf['markdown.extensions']
-        )
+            extensions=self.conf['markdown.extensions'])
 
         #: compile regex for extracting post title
         self._re_title = re.compile('<h1>(.*)</h1>(.*)', re.M | re.S)
@@ -62,5 +64,11 @@ class Markdown(Converter):
         :param html: extracts information from this HTML
         :returns: a tuple of `(meta, html)`
         """
-        title, html = self._re_title.match(html).groups()
-        return {'title': title, }, html
+        meta = {}
+
+        # extract title
+        match = self._re_title.match(html)
+        if match:
+            meta['title'], html = match.groups()
+
+        return meta, html.lstrip()

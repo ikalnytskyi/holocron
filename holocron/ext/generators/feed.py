@@ -15,7 +15,7 @@ import datetime
 
 from holocron.ext import Generator
 from holocron.content import Convertible
-from holocron.utils import fix_siteurl, mkdir
+from holocron.utils import mkdir, normalize_url
 
 
 class Feed(Generator):
@@ -84,8 +84,8 @@ class Feed(Generator):
             mkdir(path)
 
         credentials = {
-            'siteurl_self': fix_siteurl(self.conf['siteurl']) + save_as,
-            'siteurl_alt': fix_siteurl(self.conf['siteurl']),
+            'siteurl_self': normalize_url(self.conf['siteurl']) + save_as,
+            'siteurl_alt': normalize_url(self.conf['siteurl']),
             'sitename': self.conf['sitename'],
             'date': datetime.datetime.utcnow().replace(microsecond=0)
         }
