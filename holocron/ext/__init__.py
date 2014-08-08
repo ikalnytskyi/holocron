@@ -88,10 +88,10 @@ class Generator(object, metaclass=abc.ABCMeta):
                 # create sitemap.xml for a given documents collection
                 # should use only convertible documents
 
-    :param conf: a :class:`~dooku.conf.Conf` with Holocron settings
+    :param app: an application instance
     """
-    def __init__(self, conf):
-        self.conf = conf
+    def __init__(self, app):
+        self.app = app
 
     @abc.abstractmethod
     def generate(self, documents):

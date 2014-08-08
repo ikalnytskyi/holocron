@@ -54,6 +54,7 @@ class Sitemap(Generator):
             doc for doc in documents if isinstance(doc, Convertible))
 
         # write sitemap to the file
-        sitemap_path = os.path.join(self.conf['paths.output'], self.save_as)
-        with open(sitemap_path, 'w', encoding='utf-8') as f:
+        save_as = os.path.join(self.app.conf['paths.output'], self.save_as)
+
+        with open(save_as, 'w', encoding='utf-8') as f:
             f.write(self.template.render(documents=documents))
