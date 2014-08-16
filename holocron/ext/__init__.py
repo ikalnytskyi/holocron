@@ -44,8 +44,9 @@ class Converter(object, metaclass=abc.ABCMeta):
     Converters receive a conf dictionary as a constructor argument that
     is extracted from `converters` node of your YAML settings file.
 
-    :param conf: a dict with converters settings; it's a good practice to
-                 use a separate setting-node for each converter
+    :param conf: a :class:`~dooku.conf.Conf` with converters settings;
+                 it's a good practice to use a separate setting-node for
+                 each converter
     """
     def __init__(self, conf):
         self.conf = conf
@@ -56,6 +57,8 @@ class Converter(object, metaclass=abc.ABCMeta):
         """
         A converter's property, which have to returns a list of supported
         file extensions.
+
+        :returns: a list of file extensions
         """
 
     @abc.abstractmethod

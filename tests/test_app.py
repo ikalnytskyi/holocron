@@ -19,6 +19,7 @@ from tests import HolocronTestCase
 
 
 class TestHolocron(HolocronTestCase):
+
     def setUp(self):
         """
         Creates a pure holocron instance withot any extension stuff for
@@ -156,6 +157,7 @@ class TestHolocron(HolocronTestCase):
 
 
 class TestHolocronDefaults(HolocronTestCase):
+
     def setUp(self):
         """
         Creates a default Holocron instance for each testcase.
@@ -166,13 +168,13 @@ class TestHolocronDefaults(HolocronTestCase):
         """
         Tests that default converters are registered.
         """
-        enabled_convertors = set(self.app.conf['converters']['enabled'])
+        enabled_converters = set(self.app.conf['converters']['enabled'])
 
         registered_converters = set()
         for _, converter in self.app._converters.items():
             registered_converters.add(converter)
 
-        self.assertEqual(len(registered_converters), len(enabled_convertors))
+        self.assertEqual(len(registered_converters), len(enabled_converters))
 
     def test_registered_generators(self):
         """

@@ -166,7 +166,7 @@ class Holocron(object):
 
         env = jinja2.Environment(loader=jinja2.ChoiceLoader(loaders))
         env.globals.update(
-            # TODO: add author, sitename, etc
+            # TODO(ikalnitsky): add author, sitename, etc
             theme=self.conf['theme']
         )
         return env
