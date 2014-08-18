@@ -42,11 +42,23 @@ converters:
       extensions: [codehilite, extra]
 
 generators:
-   enabled: [sitemap, feed]
+   enabled: [sitemap, blog]
 
-   feed:
-      save_as: feed.xml
-      posts_number: 5
+   blog:
+      # regex to pick out blog posts from the array of doucments
+      is_post_dir: '^\d{2,4}/\d{1,2}/\d{1,2}'
+
+      feed:
+         save_as: feed.xml
+         posts_number: 5
+
+      index:
+         save_as: index.html
+
+      tags:
+         output: tags/
+         save_as: index.html
+
 
 commands:
    serve:

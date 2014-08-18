@@ -71,11 +71,31 @@ class Holocron(object):
         },
 
         'generators': {
-            'enabled': ['sitemap', 'feed'],
+            'enabled': ['sitemap', 'blog'],
 
-            'feed': {
-                'save_as': 'feed.xml',
-                'posts_number': 5,
+            'blog': {
+                'is_post_dir': '^\d{2,4}/\d{1,2}/\d{1,2}',
+
+                'feed': {
+                    'save_as': 'feed.xml',
+                    'posts_number': 5,
+                },
+
+                'index': {
+                    'save_as': 'index.html',
+                },
+
+                'tags': {
+                    'output': 'tags/',
+                    'save_as': 'index.html',
+                },
+            },
+        },
+
+        'commands': {
+            'serve': {
+                'host': '0.0.0.0',
+                'port': '5000',
             },
         },
     }
@@ -143,7 +163,7 @@ class Holocron(object):
             )
             return
 
-        self._generators[generator_class] = generator_class(self.conf)
+        self._generators[generator_class] = generator_class(self)
 
     @cached_property
     def jinja_env(self):
