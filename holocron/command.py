@@ -11,7 +11,7 @@
     :license: BSD, see LICENSE for details
 """
 
-import stevedore
+from dooku.ext import ExtensionManager
 
 
 class CommandManager(object):
@@ -19,25 +19,15 @@ class CommandManager(object):
     This class manages available commands.
     """
 
+    #: an entry-point for loading commands
+    namespace = 'holocron.ext.commands'
+
     def __init__(self):
         """
         Initialize the command list in order to have
         all available commands.
         """
-        self._commands = []
-
-        for command in stevedore.ExtensionManager(
-            namespace='holocron.ext.commands',
-            invoke_on_load=False,
-            on_load_failure_callback=self._load_failure,
-        ):
-            self._commands.append(command.name)
-
-    def _load_failure(self, manager, entrypoint, error):
-        print(
-            "'{0}' error occured while loading '{1}' entrypoint by {2}"
-            .format(error, entrypoint, manager.__class__.__name__)
-        )
+        self._commands = ExtensionManager(namespace=self.namespace)
 
     def get_commands(self):
         """
@@ -46,22 +36,15 @@ class CommandManager(object):
 
         :returns: a list of available commands
         """
-        return self._commands
+        # TODO(ikalnitsky): we need to provide useful interface on Dooku side
+        return self._commands._extensions.keys()
 
     def call(self, command_name, app):
         """
         Calls the execute method of a given command if such exists.
         """
         try:
-            stevedore.DriverManager(
-                namespace='holocron.ext.commands',
-                name=command_name,
-                invoke_on_load=True,
-                on_load_failure_callback=self._load_failure,
-            ).driver.execute(app)
-
+            self._commands[command_name]().execute(app)
         except KeyError:
             app.logger.error(
-                'execute() method not found in %s module',
-                command_name
-            )
+                'execute() method not found in %s module', command_name)

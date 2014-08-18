@@ -9,13 +9,14 @@
     :license: BSD, see LICENSE for details
 """
 import os
+import copy
 import shutil
 import logging
 
 import jinja2
-import stevedore
 
 from dooku.conf import Conf
+from dooku.ext import get_extensions
 
 from .content import Document
 from .utils import cached_property, iterfiles
@@ -102,7 +103,8 @@ class Holocron(object):
 
     def __init__(self, conf=None):
         #: The configuration dictionary.
-        self.conf = Conf(self.default_conf, conf or {})
+        #: TODO(ikalnitsky): resolve a copy problem on Dooku side
+        self.conf = Conf(copy.deepcopy(self.default_conf), conf or {})
 
         #: A `file extension` -> `converter` map
         #:
@@ -115,20 +117,18 @@ class Holocron(object):
         self._generators = {}
 
         # Register enabled converters in the application instance.
-        for ext in stevedore.NamedExtensionManager(
+        for ext in get_extensions(
             namespace='holocron.ext.converters',
             names=self.conf['converters']['enabled'],
-            invoke_on_load=False,
         ):
-            self.register_converter(ext.plugin)
+            self.register_converter(ext)
 
         # Register enabled generators in the application instance.
-        for ext in stevedore.NamedExtensionManager(
+        for ext in get_extensions(
             namespace='holocron.ext.generators',
             names=self.conf['generators']['enabled'],
-            invoke_on_load=False,
         ):
-            self.register_generator(ext.plugin)
+            self.register_generator(ext)
 
     def register_converter(self, converter_class, _force=False):
         """
