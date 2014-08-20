@@ -22,15 +22,16 @@
 
   <div class="header-wrapper">
   <header class="header">
-    <h1><a href="{{ siteurl }}">{{ sitename }}</a></h1>
+    <img class="logo" src="/static/logo.png">
+    <h1><a href="/">{{ sitename }}</a></h1>
 
-    {% if theme.navigation -%}
     <nav>
+    {% if theme.navigation -%}
       {% for name, url in theme.navigation -%}
       <a href="{{ url }}">{{ name }}</a>
       {%- endfor %}
-    </nav>
     {%- endif %}
+    </nav>
   </header>
   </div> <!-- /.header-wrapper -->
 
@@ -47,6 +48,6 @@
       Content is licensed under the <br>
       Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License
     </p>
-    <p>&copy; 2014, {{ sitename }}</p>
+    <p>&copy; 2014, {{ author }}</p>
   </footer>
   </div> <!-- /.footer-wrapper -->

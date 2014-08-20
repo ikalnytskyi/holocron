@@ -3,11 +3,6 @@
  * Distributed under same license as parent project.
  */
 
-/*
- *  red:  #F37257
- *  blue: #517281
- */
-
 
 /* --------------------------------------------------------------------
     reset and fixes
@@ -24,34 +19,34 @@
    -------------------------------------------------------------------- */
 
 body {
-  border-top: 3px solid #F37257;
-  background-color: #FCFCFC;
+  border-top: 4px solid #0B739C;
+  background-color: #FEFEFE;
   color: #3B3B3B;
-
-  font-family: Georgia, "Times New Roman", Times, serif;
+  font-family: 'Georgia', serif;
   font-size: 18px;
   line-height: 1.5em;
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-weight: normal;
+  font-family: 'Times New Roman', 'Georgia', serif;
+  color: #005685;
 }
 
 a {
-  color: #F37257;
+  color: #0B739C;
   text-decoration: none;
-  transition: all 0.25s ease-in-out;
 }
 
 a:hover {
-  color: #F4BA70;
-  transition: all 0.25s ease-in-out;
+  color: #0B739C;
+  text-decoration: underline;
 }
 
 header.header,
 footer.footer {
   margin: 0 auto;
-  max-width: 780px;
+  max-width: 790px;
 }
 
 #content {
@@ -60,10 +55,14 @@ footer.footer {
 }
 
 .align-center {
-  width:  250px;
   margin: 0 auto;
   display: block;
 }
+
+/* pre-defined classes for using inside markuped test */
+.width200 { width: 200px; }
+.width400 { width: 400px; }
+.width600 { width: 600px; }
 
 /* --------------------------------------------------------------------
     header
@@ -74,6 +73,10 @@ header.header {
   text-align: center;
 }
 
+header.header .logo {
+  width: 4em;
+}
+
 header.header h1 {
   font-weight: normal;
   font-family: 'Times New Roman';
@@ -81,6 +84,7 @@ header.header h1 {
 }
 
 header.header nav {
+  font-family: 'Georgia', 'Times New Roman', serif;
   border-top: 1px solid #E0E0E0;
   border-bottom: 1px solid #E0E0E0;
 
@@ -88,27 +92,25 @@ header.header nav {
   font-size: 0.8em;
 }
 
+header.header a {
+  color: #3b3b3b;
+  border-bottom: none;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+header.header a:hover {
+  color: #0B739C;
+  transition: all 0.25s ease-in-out;
+}
+
 header.header nav a {
   margin: 0em 1em;
 }
 
-header.header a {
-  color: #3b3b3b;
-  text-transform: uppercase;
-}
-
-header.header a:hover {
-  color: #F37257;
-  transition: all 0.25s ease-in-out;
-}
-
-
 /* --------------------------------------------------------------------
     footer
    -------------------------------------------------------------------- */
-
-.footer-wrapper {
-}
 
 footer.footer {
   border-top: 1px solid #E0E0E0;
@@ -131,17 +133,15 @@ footer.footer p {
 }
 
 #content header {
-  text-align: center;
+  margin-bottom: 1em;
 }
 
-#content header time {
-  color: #c0c0c0;
-  font-family: 'Trebuchet MS', sans-serif;
-  font-size: 0.7em;
-}
-
-#content header h1 {
-  text-align: center;
+#content header .meta {
+  font-style: italic;
+  margin-left: 1em;
+  font-family: 'Georgia', serif;
+  font-size: 0.85em;
+  opacity: 0.7;
 }
 
 #content p {
@@ -164,20 +164,20 @@ footer.footer p {
 #content h6 {
   margin-top: 1em;
   margin-bottom: 0.5em;
-  text-align: center;
 }
 
-#content h1 { font-size: 1.6em; }
-#content h2 { font-size: 1.4em; }
+#content h1 { font-size: 1.7em; }
+#content h2 { font-size: 1.35em; }
 #content h3 { font-size: 1.25em; }
 #content h4 { font-size: 1.17em; }
 #content h5 { font-size: 1.1em; }
 #content h6 { font-size: 1em; }
 
 #content table {
-  margin: 0.5em 0em;
+  margin: 0.5em auto;
+  min-width: 500px;
   font-size: 0.9em;
-  line-height: 1.5em;
+  line-height: 1.6em;
   border-collapse: collapse;
 }
 
@@ -185,6 +185,32 @@ footer.footer p {
 #content table th {
   padding: 0.3em 0.5em;
   border: 1px solid #c0c0c0;
+}
+
+#content blockquote {
+  margin: 1em;
+  font-size: 0.9em;
+  opacity: .9;
+  font-style: italic;
+}
+
+#content blockquote p {
+  padding: 0.3em 0;
+  line-height: 1.4em;
+}
+
+#content blockquote p:first-child:before {
+  display: inline-block;
+  width: 30px;
+  vertical-align: top;
+  font-size: 3em;
+  opacity: .3;
+  content: '\201C';
+  margin-right: 5px
+}
+
+#content blockquote p:not(:first-child) {
+  margin-left: 35px;
 }
 
 #content pre.code,
@@ -196,6 +222,21 @@ footer.footer p {
   line-height: 1.2em;
 }
 
-.todo {
-  width: 20px;
+
+
+/* --------------------------------------------------------------------
+    index pages
+   -------------------------------------------------------------------- */
+
+#content .index h2 {
+  margin-left: 150px;
+}
+
+#content .index-entry time {
+  width: 150px;
+  float: left;
+  text-align: center;
+}
+
+#content .index-entry a {
 }

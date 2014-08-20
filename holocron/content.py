@@ -200,6 +200,7 @@ class Convertible(Document):
         metadata['content'] = self.html
         metadata['created'] = self.get_created_datetime()
         metadata['modified'] = self.get_modified_datetime()
+        metadata['author'] = self.app.conf['author']
 
         # render result file
         template = metadata.get('template', self.template)
