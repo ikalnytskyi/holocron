@@ -59,6 +59,12 @@ footer.footer {
   max-width: 720px;
 }
 
+.align-center {
+  width:  250px;
+  margin: 0 auto;
+  display: block;
+}
+
 /* --------------------------------------------------------------------
     header
    -------------------------------------------------------------------- */
@@ -188,4 +194,8 @@ footer.footer p {
   padding: 0.7em 1em;
   font-size: 0.8em;
   line-height: 1.2em;
+}
+
+.todo {
+  width: 20px;
 }
