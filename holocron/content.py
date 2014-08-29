@@ -162,7 +162,6 @@ class Convertible(Document):
         :param document: a path to document
         :returns: a tuple with header and content
         """
-
         with open(document, encoding='utf-8') as f:
             content = f.read()
 

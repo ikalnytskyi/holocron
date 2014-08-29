@@ -138,12 +138,11 @@ class TestHolocron(HolocronTestCase):
         self.app.document_class.assert_has_calls([
             # check that document class was used to generate class instances
             mock.call('doc_a', self.app),
+            # check that document instances were built
+            mock.call().build(),
             mock.call('doc_b', self.app),
+            mock.call().build(),
             mock.call('doc_c', self.app),
-
-            # check that document instances was built
-            mock.call().build(),
-            mock.call().build(),
             mock.call().build(),
         ])
         self.assertEqual(self.app.document_class.call_count, 3)
