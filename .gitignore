@@ -15,7 +15,5 @@ dist/
 # sublime rope
 .ropeproject/
 
-
-!example/_config.yml
-!exampe/*/holocron.mdown
+# content dir
 example/*
