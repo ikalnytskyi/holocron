@@ -52,10 +52,24 @@ class Serve(Command):
                 try:
                     Document(document, app).build()
                 except FileNotFoundError:
-                    app.logger.warning('File %s not found', document)
+                    app.logger.warning(
+                        'File %s not found. Building skipped', document
+                    )
+                    return
+                except Exception:
+                    app.logger.warning(
+                        'File %s is invalid. Building skipped', document
+                    )
                     return
 
             def on_modified(self, event):
+                if event.is_directory:
+                    return
+
+                document = event.src_path
+                self.process(document)
+
+            def on_created(self, event):
                 if event.is_directory:
                     return
 

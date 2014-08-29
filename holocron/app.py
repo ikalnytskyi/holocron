@@ -214,8 +214,17 @@ class Holocron(object):
         """
         # iterate over files in the content directory
         # except files/dirs starting with underscore or dot
-        documents = iterfiles(self.conf['paths.content'], '[!_.]*', True)
-        documents = [self.document_class(doc, self) for doc in documents]
+        documents_paths = iterfiles(self.conf['paths.content'], '[!_.]*', True)
+
+        documents = []
+        for document in documents_paths:
+            try:
+                documents.append(self.document_class(document, self))
+            except Exception:
+                self.logger.warning(
+                    'File %s is invalid. Building skipped', document
+                )
+                continue
 
         # consequently builds all found documents
         for index, doc in enumerate(documents):
