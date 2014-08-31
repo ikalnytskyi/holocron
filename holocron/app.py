@@ -9,14 +9,13 @@
     :license: BSD, see LICENSE for details
 """
 import os
-import copy
 import shutil
 import logging
 
 import jinja2
 
 from dooku.conf import Conf
-from dooku.ext import get_extensions
+from dooku.ext import ExtensionManager
 
 from .content import Document
 from .utils import cached_property, iterfiles
@@ -58,8 +57,7 @@ class Holocron(object):
 
         'theme': {
             'navigation': [
-                ('/about', '/about/'),
-                ('/feed', '/feed/'),
+                ('feed', '/feed.xml'),
             ],
         },
 
@@ -103,8 +101,7 @@ class Holocron(object):
 
     def __init__(self, conf=None):
         #: The configuration dictionary.
-        #: TODO(ikalnitsky): resolve a copy problem on Dooku side
-        self.conf = Conf(copy.deepcopy(self.default_conf), conf or {})
+        self.conf = Conf(self.default_conf, conf or {})
 
         #: A `file extension` -> `converter` map
         #:
@@ -117,14 +114,14 @@ class Holocron(object):
         self._generators = {}
 
         # Register enabled converters in the application instance.
-        for ext in get_extensions(
+        for _, ext in ExtensionManager(
             namespace='holocron.ext.converters',
             names=self.conf['converters']['enabled'],
         ):
             self.register_converter(ext)
 
         # Register enabled generators in the application instance.
-        for ext in get_extensions(
+        for _, ext in ExtensionManager(
             namespace='holocron.ext.generators',
             names=self.conf['generators']['enabled'],
         ):

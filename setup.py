@@ -22,9 +22,7 @@ from holocron import __version__ as holocron_version
 setup(
     name='holocron',
     version=holocron_version,
-    description=(
-        'Simple and extensible static blog generator'
-    ),
+    description='simple and extensible static blog generator',
     long_description=__doc__,
     license='BSD',
     url='http://github.com/ikalnitsky/holocron/',
@@ -43,13 +41,10 @@ setup(
         'PyYAML >= 3.11',
         'Pygments >= 1.6',
         'watchdog >= 0.8.0',
-        'dooku',
+        'dooku >= 0.1.0-beta',
 
         # markdown converter
         'Markdown >= 2.4',
-    ],
-    dependency_links=[
-        'git+https://github.com/ikalnitsky/dooku.git#egg=dooku',
     ],
 
     entry_points={
@@ -73,14 +68,17 @@ setup(
     },
 
     classifiers=[
+        'Intended Audience :: End Users/Desktop',
+        'License :: OSI Approved :: BSD License',
+
         'Environment :: Console',
         'Operating System :: OS Independent',
-        'Development Status :: 2 - Pre-Alpha',
-        'License :: OSI Approved :: BSD License',
-        'Intended Audience :: End Users/Desktop',
+
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
+
+        'Programming Language :: Python :: Implementation :: CPython',
     ],
 )

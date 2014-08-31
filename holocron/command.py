@@ -36,8 +36,7 @@ class CommandManager(object):
 
         :returns: a list of available commands
         """
-        # TODO(ikalnitsky): we need to provide useful interface on Dooku side
-        return self._commands._extensions.keys()
+        return self._commands.names()
 
     def call(self, command_name, app):
         """
