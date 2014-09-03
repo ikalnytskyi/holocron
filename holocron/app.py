@@ -214,18 +214,24 @@ class Holocron(object):
         """
         # iterate over files in the content directory
         # except files/dirs starting with underscore or dot
-        documents = iterfiles(self.conf['paths.content'], '[!_.]*', True)
-        documents = [self.document_class(doc, self) for doc in documents]
+        documents_paths = list(
+            iterfiles(self.conf['paths.content'], '[!_.]*', True))
 
         # consequently builds all found documents
-        for index, doc in enumerate(documents):
-            percent = int((index + 1) * 100.0 / len(documents))
-            print('[{percent:>3d}%] Building {doc}'.format(
-                percent=percent,
-                doc=doc.short_source
-            ))
+        documents = []
+        for index, document_path in enumerate(documents_paths):
+            try:
+                percent = int((index + 1) * 100.0 / len(documents_paths))
+                document = self.document_class(document_path, self)
+                print('[{percent:>3d}%] Building {doc}'.format(
+                    percent=percent, doc=document.short_source))
 
-            doc.build()
+                document.build()
+                documents.append(document)
+
+            except Exception:
+                self.logger.warning(
+                    'File %s is invalid. Building skipped.', document_path)
 
         # use generators to generate additional stuff
         for _, generator in self._generators.items():
