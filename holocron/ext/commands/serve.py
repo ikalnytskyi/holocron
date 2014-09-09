@@ -17,7 +17,6 @@ from watchdog.events import FileSystemEventHandler
 
 from holocron import app
 from holocron.ext import Command
-from holocron.content import Document
 
 
 class ChangeHandler(FileSystemEventHandler):
@@ -31,26 +30,20 @@ class ChangeHandler(FileSystemEventHandler):
 
     def process(self, document_path):
         """
-        Rebuilds document upon the path, if it is a blog post. Whole blog is
-        rebuilded if a file is a part of default/user theme.
+        Rebuilds the whole blog, if a blog post or theme file were changed.
+        If the file from the output directiry was changed than do nothing.
 
         :param document_path: path to changed/added file
         """
         document = os.path.abspath(document_path)
         output = os.path.abspath(self.app.conf['paths.output'])
-        theme_user = os.path.abspath(self.app.conf['paths.theme'])
 
         # do not track changes in the output directory
         if document.startswith(output):
             return
 
-        # if a file is a part of theme, copy it into output directory
-        if document.startswith((theme_user, Serve.theme_default)):
-            self.app.run()
-            return
-
         try:
-            Document(document, self.app).build()
+            self.app.run()
         except Exception:
             self.app.logger.warning(
                 'File %s is invalid. Building skipped.', document)
