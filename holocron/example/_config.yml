@@ -1,0 +1,14 @@
+#
+# HOLOCRON CONFIGURATION FILE.  PLEASE DO NOT FORGET
+# TO CHANGE THE SETTINGS BELOW FOR YOURSELF. ALL THE
+# SETTINGS ARE COMMENTED FOR EASY CHANGES.
+#
+# YOU CAN REMOVE UNNECESSARY SETTINGS FROM THIS FILE.
+# IN THIS CASE DEFAULT SETTINGS WILL BE USED.
+#
+
+# Here is a blog credentials. You should change it
+# on your own way.
+sitename:    Kenobi's Thoughts
+siteurl:     http://obi-wan.jedi
+author:      Obi-Wan Kenobi

@@ -19,17 +19,6 @@ from holocron.app import Holocron
 from .command import CommandManager
 
 
-def show_error_and_exit(message, exit_code=0):
-    """
-    Shows a given error message and terminates a current process.
-
-    :param message: a message to be printed onto STDERR
-    :param exit_code: an exit code
-    """
-    print(message, file=sys.stderr)
-    sys.exit(exit_code)
-
-
 def parse_command_line(commands):
     """
     Builds a command line interface, and parses it arguments.
@@ -64,14 +53,14 @@ def get_config(filename):
     try:
         with open(filename, 'r', encoding='utf-8') as f:
             return yaml.load(f.read())
+
     except IOError:
-        show_error_and_exit(
-            'holocron: {0}: No such file or directory'.format(filename)
-        )
+        print('holocron: {0}: No such file or directory'.format(filename),
+              file=sys.stderr)
+
     except yaml.YAMLError as e:
-        show_error_and_exit(
-            'Could not parse a given settings file: \n\n{0}'.format(e)
-        )
+        print('Could not parse a given settings file: \n\n{0}'.format(e),
+              file=sys.stderr)
 
 
 def create_app(conf):

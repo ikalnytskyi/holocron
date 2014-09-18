@@ -62,8 +62,9 @@ setup(
         ],
 
         'holocron.ext.commands': [
-            'serve = holocron.ext.commands.serve:Serve',
+            'init = holocron.ext.commands.init:Init',
             'build = holocron.ext.commands.build:Build',
+            'serve = holocron.ext.commands.serve:Serve',
         ],
     },
 
