@@ -6,8 +6,6 @@ tags: [holocron, software]
 What is Holocron?
 =================
 
-![holocron image](../logo.png){: .align-center}
-
 Holocron is an easy and lightweight static blog generator, based on markup
 text and [Jinja2] templates. Holocron is not just a yet another one blog
 generator. It is an opensource project built by developers for developers

@@ -181,10 +181,19 @@ class Holocron(object):
             path = os.path.join(path, 'templates')
             loaders.insert(0, jinja2.FileSystemLoader(path))
 
-        env = jinja2.Environment(loader=jinja2.ChoiceLoader(loaders))
+        env = jinja2.Environment(
+            loader=jinja2.ChoiceLoader(loaders), extensions=['jinja2.ext.do'])
         env.globals.update(
-            # TODO(ikalnitsky): add author, sitename, etc
-            theme=self.conf['theme']
+            # pass some useful conf options to the template engine
+            sitename=self.conf['sitename'],
+            siteurl=self.conf['siteurl'],
+            author=self.conf['author'],
+            theme=self.conf['theme'],
+
+            # TODO: I'm not a very fun of this hack, but it looks
+            # like it is only solution we have to make possible
+            # to change some attributes inside Template engine.
+            setattr=setattr,
         )
         return env
 

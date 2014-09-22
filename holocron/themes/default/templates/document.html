@@ -16,9 +16,14 @@
 <article>
   <header>
     <h1>{{ document.title }}</h1>
-    <time datetime="{{ document.created.isoformat() }}">
-      {{ document.created.strftime('%b %d, %Y') }}
-    </time>
+
+    <div class="meta">
+      written by {{ document.author }} on
+
+      <time datetime="{{ document.created.isoformat() }}">
+        {{ document.created.strftime('%B %d, %Y') }}
+      </time>
+    </div>
   </header>
 
   {{ document.content }}
