@@ -15,6 +15,10 @@ dist/
 # sublime rope
 .ropeproject/
 
+# sublime project
+.sublime-project
+.sublime-workspace
+
 # content dir
 holocron/example/**
 !holocron/example/2014/04/20/holocron.mdown
