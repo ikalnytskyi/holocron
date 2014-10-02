@@ -80,7 +80,11 @@ def main():
     commands = command_manager.get_commands()
 
     arguments = parse_command_line(commands)
-    conf = get_config(arguments.conf)
+
+    # this hack's used to bypass lack of user's config file when init invoked
+    conf = {}
+    if arguments.command not in ('init', ):
+        conf = get_config(arguments.conf)
 
     # print info level messages if verbose is true
     if arguments.verbose:
