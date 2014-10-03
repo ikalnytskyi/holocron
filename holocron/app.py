@@ -15,10 +15,11 @@ import logging
 import jinja2
 
 from dooku.conf import Conf
+from dooku.decorator import cached_property
 from dooku.ext import ExtensionManager
 
 from .content import Document
-from .utils import cached_property, iterfiles
+from .utils import iterfiles
 
 
 class Holocron(object):
