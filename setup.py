@@ -41,7 +41,7 @@ setup(
         'PyYAML >= 3.11',
         'Pygments >= 1.6',
         'watchdog >= 0.8.0',
-        'dooku >= 0.1.0-beta',
+        'dooku >= 0.1.0',
 
         # markdown converter
         'Markdown >= 2.4',

@@ -19,9 +19,11 @@ import shutil
 import datetime
 
 import yaml
-from dooku.datetime import UTC, Local
 
-from .utils import cached_property, mkdir
+from dooku.datetime import UTC, Local
+from dooku.decorator import cached_property
+
+from .utils import mkdir
 
 
 class Document(metaclass=abc.ABCMeta):
