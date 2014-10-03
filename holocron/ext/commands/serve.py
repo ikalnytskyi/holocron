@@ -75,7 +75,7 @@ def create_holocron_handler(path):
         def translate_path(self, path):
             """
             Changes default serving directory to the one specified in
-            configurations under paths.output section
+            configurations under paths.output section.
             """
 
             path = super(HolocronHandler, self).translate_path(path)
@@ -97,6 +97,12 @@ class Serve(Command):
     theme_default = os.path.join(app_path, 'themes', 'default')
 
     def execute(self, app):
+        # check if output directory is present, otherwise rebuild blog
+        # to create it and start serving immediately
+        output = os.path.join(os.curdir, app.conf['paths.output'])
+        if not os.path.exists(output):
+            app.run()
+
         self.host = app.conf['commands.serve.host']
         self.port = int(app.conf['commands.serve.port'])
 
@@ -115,7 +121,7 @@ class Serve(Command):
         holocron_handler = create_holocron_handler(app.conf['paths.output'])
         httpd = HTTPServer((self.host, self.port), holocron_handler)
 
-        print('HTTP server started at {host}\n'.format(host=self.full_host))
+        print('\nHTTP server started at {host}\n'.format(host=self.full_host))
         print('In order to stop serving, press Ctrl+C\n')
 
         try:

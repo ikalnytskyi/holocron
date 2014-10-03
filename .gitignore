@@ -16,8 +16,8 @@ dist/
 .ropeproject/
 
 # sublime project
-.sublime-project
-.sublime-workspace
+*.sublime-project
+*.sublime-workspace
 
 # content dir
 holocron/example/**
