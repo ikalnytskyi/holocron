@@ -8,19 +8,22 @@
     :copyright: (c) 2014, Igor Kalnitsky
     :license: BSD, see LICENSE for details
 """
-
+from holocron.app import Holocron
 from holocron.ext.converters import markdown
 
-from dooku.conf import Conf
 from tests import HolocronTestCase
 
 
 class TestMarkdownConverter(HolocronTestCase):
 
     def setUp(self):
-        self.conv = markdown.Markdown(Conf({
-            'markdown': {
-                'extensions': [],
+        self.conv = markdown.Markdown(Holocron({
+            'converters': {
+                'enabled': ['markdown'],
+
+                'markdown': {
+                    'extensions': [],
+                },
             }
         }))
 
@@ -37,14 +40,18 @@ class TestMarkdownConverter(HolocronTestCase):
         meta, html = self.conv.to_html(
             'some text with **bold** and *italic*\n')
 
-        self.assertEqual(meta, {})
+        self.assertEqual(meta, {'title': 'Untitled'})
         self.assertEqual(
             html, '<p>some text with <strong>bold</strong> and <em>italic</em></p>')
 
     def test_markdown_codehilite_extension(self):
-        self.conv = markdown.Markdown(Conf({
-            'markdown': {
-                'extensions': ['codehilite', 'extra'],
+        self.conv = markdown.Markdown(Holocron({
+            'converters': {
+                'enabled': ['markdown'],
+
+                'markdown': {
+                    'extensions': ['codehilite', 'extra'],
+                },
             }
         }))
 

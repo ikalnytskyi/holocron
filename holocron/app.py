@@ -135,7 +135,7 @@ class Holocron(object):
         :param converter_class: a converter class to register
         :param _force: allows to override already registered converters
         """
-        converter = converter_class(self.conf['converters'])
+        converter = converter_class(self)
 
         for ext in converter.extensions:
             if ext in self._converters and not _force:
