@@ -16,7 +16,7 @@ from holocron.ext import Converter
 
 class Markdown(Converter):
     """
-    A markdown converters.
+    A markdown converter.
 
     This class is a converter extension that is designed to convert some
     input markdown text into HTML, extracting some useful meta information.
@@ -27,9 +27,6 @@ class Markdown(Converter):
     extension, please specify its name in the following option::
 
         converters.markdown.extensions
-
-    The converter has a contract-based design, so we should always pass
-    the settings even if they are default.
 
     .. _this markdown implementation: http://pythonhosted.org/Markdown/
     """
@@ -42,10 +39,13 @@ class Markdown(Converter):
 
         #: create markdown instance with enabled extensions
         self._markdown = markdown.Markdown(
-            extensions=self.conf['markdown.extensions'])
+            extensions=self.app.conf['converters.markdown.extensions'])
 
         #: compile regex for extracting post title
         self._re_title = re.compile('<h1>(.*)</h1>(.*)', re.M | re.S)
+
+        # default post title in case user doesn't specify the latter
+        self.default_post_title = 'Untitled'
 
     def to_html(self, text):
         html = self._markdown.convert(text)
@@ -70,5 +70,11 @@ class Markdown(Converter):
         match = self._re_title.match(html)
         if match:
             meta['title'], html = match.groups()
+        else:
+            self.app.logger.warning(
+                'No title was found in the post, it will be named as %s',
+                self.default_post_title
+            )
+            meta['title'] = self.default_post_title
 
         return meta, html.lstrip()

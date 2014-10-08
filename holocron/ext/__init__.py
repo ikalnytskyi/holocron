@@ -48,8 +48,8 @@ class Converter(object, metaclass=abc.ABCMeta):
                  it's a good practice to use a separate setting-node for
                  each converter
     """
-    def __init__(self, conf):
-        self.conf = conf
+    def __init__(self, app):
+        self.app = app
 
     @property
     @abc.abstractmethod
