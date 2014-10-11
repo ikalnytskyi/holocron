@@ -14,15 +14,17 @@ import logging
 import argparse
 
 import yaml
+from dooku.ext import ExtensionManager
 
 from holocron.app import Holocron
-from .command import CommandManager
 
 
 def parse_command_line(commands):
     """
     Builds a command line interface, and parses it arguments.
     Returns an object with attributes, that are represent CLI arguments.
+
+    :param commands: a list of available commands
     """
 
     parser = argparse.ArgumentParser(
@@ -31,15 +33,20 @@ def parse_command_line(commands):
             'based on markup text and Jinja2 templates.'),
         epilog=(
             'With no CONFIG, read _config.yml in the current working dir.'
-            'If no CONFIG found, the default settings will be used.')
-    )
+            'If no CONFIG found, the default settings will be used.'))
 
-    parser.add_argument('command', choices=commands,
-                        help='a command to execute')
-    parser.add_argument('-c', '--conf', dest='conf', default='_config.yml',
-                        help='a path to settings file')
-    parser.add_argument('-v', '--verbose', dest='verbose', action='store_true',
-                        help='show more information')
+    parser.add_argument(
+        'command', choices=commands, help='a command to execute')
+
+    parser.add_argument(
+        '-c', '--conf', dest='conf', default='_config.yml',
+        help='a path to settings file')
+
+    parser.add_argument(
+        '-v', '--verbose', dest='verbose', action='store_const',
+        const=logging.INFO, default=logging.WARNING,
+        help='show more information')
+
     return parser.parse_args()
 
 
@@ -102,23 +109,18 @@ def configure_logger(logger_level=logging.WARNING):
 
 
 def main():
+    # initialize command manager and get a list of available commands
+    command_manager = ExtensionManager('holocron.ext.commands')
+    arguments = parse_command_line(command_manager.names())
+
     # initial logger configuration - use custom format for records
     # and print records with WARNING level and higher.
-    configure_logger(logging.WARNING)
-
-    command_manager = CommandManager()
-    commands = command_manager.get_commands()
-
-    arguments = parse_command_line(commands)
+    configure_logger(arguments.verbose)
 
     # this hack's used to bypass lack of user's config file when init invoked
     conf = {}
     if arguments.command not in ('init', ):
         conf = get_config(arguments.conf)
 
-    # print info level messages if verbose is true
-    if arguments.verbose:
-        logging.getLogger().setLevel(logging.INFO)
-
     holocron = create_app(conf)
-    command_manager.call(arguments.command, holocron)
+    command_manager[arguments.command]().execute(holocron)
