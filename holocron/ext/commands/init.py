@@ -8,13 +8,17 @@
     :copyright: (c) 2014, Andrii Gamaiunov
     :license: BSD, see LICENSE for details
 """
-
 import os
+import logging
+
 from distutils.dir_util import copy_tree
 from distutils.errors import DistutilsFileError
 
 from holocron import app
 from holocron.ext import Command
+
+
+logger = logging.getLogger(__name__)
 
 
 class Init(Command):
@@ -33,4 +37,4 @@ class Init(Command):
             for file_ in copied_files:
                 print('File {file} created.'.format(file=file_))
         except DistutilsFileError:
-            app.logger.warning('Holocron example content was not found.')
+            logger.error('Holocron example content was not found.')

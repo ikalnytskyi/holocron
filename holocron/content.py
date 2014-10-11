@@ -16,6 +16,7 @@ import os
 import re
 import abc
 import shutil
+import logging
 import datetime
 
 import yaml
@@ -24,6 +25,9 @@ from dooku.datetime import UTC, Local
 from dooku.decorator import cached_property
 
 from .utils import mkdir
+
+
+logger = logging.getLogger(__name__)
 
 
 class Document(metaclass=abc.ABCMeta):
@@ -152,7 +156,7 @@ class Convertible(Document):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.app.logger.info('Found a convertible document: "%s"', self.source)
+        logger.info('Found a convertible document: "%s"', self.source)
 
         # parse a given convertible document and save the result as attributes
         self.meta, self.html = self._parse_document(self.filename)
@@ -256,7 +260,7 @@ class Static(Document):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.app.logger.info("Found a static document: '%s'", self.filename)
+        logger.info("Found a static document: '%s'", self.filename)
 
     def build(self):
         mkdir(os.path.dirname(self.destination))

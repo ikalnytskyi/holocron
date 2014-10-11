@@ -10,8 +10,12 @@
     :copyright: (c) 2014, Andrii Gamaiunov
     :license: BSD, see LICENSE for details
 """
+import logging
 
 from dooku.ext import ExtensionManager
+
+
+logger = logging.getLogger(__name__)
 
 
 class CommandManager(object):
@@ -45,5 +49,5 @@ class CommandManager(object):
         try:
             self._commands[command_name]().execute(app)
         except KeyError:
-            app.logger.error(
+            logger.error(
                 'execute() method not found in %s module', command_name)
