@@ -1,7 +1,34 @@
 /*!
  * Stylesheet for default Holocron theme.
- * Distributed under same license as parent project.
+ * Distributed under same license as Holocron.
  */
+
+/* --------------------------------------------------------------------
+    download and use additional fonts
+   -------------------------------------------------------------------- */
+
+@font-face {
+  font-family: 'Source Serif Pro';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Source Serif Pro'), local('SourceSerifPro-Regular'), url(http://fonts.gstatic.com/s/sourceserifpro/v4/CeUM4np2c42DV49nanp55WexEcYmAZbjhZzYUOfAc5s.woff) format('woff');
+}
+@font-face {
+  font-family: 'Source Serif Pro';
+  font-style: normal;
+  font-weight: 700;
+  src: local('Source Serif Pro Bold'), local('SourceSerifPro-Bold'), url(http://fonts.gstatic.com/s/sourceserifpro/v4/yd5lDMt8Sva2PE17yiLarADgozsg_Bg4nze8RiJkiAA.woff) format('woff');
+}
+
+/* unfortunately, there's no italic version for source serif pro font.
+ * therefore, we need to simulate this - use another font for italic.
+ */
+@font-face {
+    font-family: 'Source Serif Pro';
+    font-style: italic;
+    font-weight: 400;
+    src: local('Georgia'), local('Times New Roman');
+}
 
 
 /* --------------------------------------------------------------------
@@ -22,14 +49,13 @@ body {
   border-top: 4px solid #0B739C;
   background-color: #FEFEFE;
   color: #3B3B3B;
-  font-family: 'Georgia', serif;
+  font-family: 'Source Serif Pro', Georgia, serif;
   font-size: 18px;
   line-height: 1.5em;
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-weight: normal;
-  font-family: 'Times New Roman', 'Georgia', serif;
   color: #005685;
 }
 
