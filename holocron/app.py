@@ -22,6 +22,9 @@ from .content import Document
 from .utils import iterfiles
 
 
+logger = logging.getLogger(__name__)
+
+
 class Holocron(object):
     """
     The Holocron object implements a blog instance.
@@ -139,7 +142,7 @@ class Holocron(object):
 
         for ext in converter.extensions:
             if ext in self._converters and not _force:
-                self.logger.warning(
+                logger.warning(
                     '%s converter: skipped for %s: already registered',
                     converter_class.__name__, ext
                 )
@@ -155,7 +158,7 @@ class Holocron(object):
         :param _force: re-register a generator, if it's already registered
         """
         if generator_class in self._generators and not _force:
-            self.logger.warning(
+            logger.warning(
                 '%s generator: skipped: already registered',
                 generator_class.__name__
             )
@@ -198,26 +201,6 @@ class Holocron(object):
         )
         return env
 
-    @cached_property
-    def logger(self):
-        """
-        Gets a logger instance with custom format settings. If you want
-        to log something, please use this property, do not create a new
-        logger instance.
-        """
-        class formatter(logging.Formatter):
-            def format(self, record):
-                record.levelname = record.levelname[:4]
-                return super(formatter, self).format(record)
-
-        streamHandler = logging.StreamHandler()
-        streamHandler.setFormatter(formatter())
-        streamHandler.setFormatter(formatter('[%(levelname)s] %(message)s'))
-
-        logger = logging.getLogger(self.__class__.__name__)
-        logger.addHandler(streamHandler)
-        return logger
-
     def run(self):
         """
         Starts build process.
@@ -240,7 +223,7 @@ class Holocron(object):
                 documents.append(document)
 
             except Exception:
-                self.logger.warning(
+                logger.warning(
                     'File %s is invalid. Building skipped.', document_path)
 
         # use generators to generate additional stuff

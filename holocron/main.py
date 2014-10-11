@@ -75,7 +75,37 @@ def create_app(conf):
     return app
 
 
+def configure_logger(logger_level=logging.WARNING):
+    """
+    Configure a root logger to print records in pretty format:
+
+        [WARN] message
+
+    This format is more useful and readable for end users, since it's
+    not necessary to know a record's time and a source.
+
+    :param logger_level: a minimum logging level to be printed
+    """
+    class formatter(logging.Formatter):
+        def format(self, record):
+            record.levelname = record.levelname[:4]
+            return super(formatter, self).format(record)
+
+    # create stream handler with custom formatter
+    stream_handler = logging.StreamHandler()
+    stream_handler.setFormatter(formatter('[%(levelname)s] %(message)s'))
+
+    # configure root logger
+    logger = logging.getLogger()
+    logger.addHandler(stream_handler)
+    logger.setLevel(logger_level)
+
+
 def main():
+    # initial logger configuration - use custom format for records
+    # and print records with WARNING level and higher.
+    configure_logger(logging.WARNING)
+
     command_manager = CommandManager()
     commands = command_manager.get_commands()
 

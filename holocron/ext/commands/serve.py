@@ -10,6 +10,7 @@
 """
 
 import os
+
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 
 from watchdog.observers import Observer
@@ -42,11 +43,7 @@ class ChangeHandler(FileSystemEventHandler):
         if document.startswith(output):
             return
 
-        try:
-            self.app.run()
-        except Exception:
-            self.app.logger.warning(
-                'File %s is invalid. Building skipped.', document)
+        self.app.run()
 
     def on_modified(self, event):
         if event.is_directory:
