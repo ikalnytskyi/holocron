@@ -17,6 +17,7 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
 from holocron import app
+from holocron.main import get_config, create_app
 from holocron.ext import Command
 
 
@@ -42,6 +43,11 @@ class ChangeHandler(FileSystemEventHandler):
         # do not track changes in the output directory
         if document.startswith(output):
             return
+
+        # if config file was changed, update application obejct
+        if document.startswith(os.path.abspath('_config.yml')):
+            config = get_config(document)
+            self.app = create_app(config)
 
         self.app.run()
 
