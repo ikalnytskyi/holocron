@@ -74,7 +74,6 @@ def create_holocron_handler(path):
             Changes default serving directory to the one specified in
             configurations under paths.output section.
             """
-
             path = super(HolocronHandler, self).translate_path(path)
             return os.path.join(self.serve, os.path.relpath(path))
 
