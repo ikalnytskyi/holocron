@@ -149,6 +149,7 @@ class Convertible(Document):
     #: A default template for convertible documents. Used if no template
     #: specified in the document metadata.
     template = 'document.html'
+    default_title = 'Untitled'
 
     #: A regex for splitting post header and post content.
     re_extract_header = re.compile('(---\s*\n.*\n)---\s*\n(.*)', re.M | re.S)
@@ -187,6 +188,9 @@ class Convertible(Document):
 
             if 'author' not in metadata:
                 metadata['author'] = self.app.conf['author']
+
+            if 'title' not in metadata:
+                metadata['title'] = self.default_title
 
         return metadata, html
 
