@@ -172,13 +172,17 @@ class Convertible(Document):
         with open(document, encoding='utf-8') as f:
             content = f.read()
 
-            header, content = self.re_extract_header.match(content).groups()
-            header = yaml.load(header)
+            # parse yaml header if exists
+            match = self.re_extract_header.match(content)
+            if match:
+                header, content = match.groups()
+                header = yaml.load(header)
+            else:
+                header = {}
 
             # get converter for building a given document
             converter = self.app._converters.get(
-                os.path.splitext(document)[1]
-            )
+                os.path.splitext(document)[1])
 
             # convert markup to html, extracting some meta
             metadata, html = converter.to_html(content)
