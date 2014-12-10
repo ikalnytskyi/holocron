@@ -5,8 +5,8 @@
 
     The package implements a Markdown converter.
 
-    :copyright: (c) 2014, Igor Kalnitsky
-    :license: BSD, see LICENSE for details
+    :copyright: (c) 2014 by the Holocron Team, see AUTHORS for details.
+    :license: 3-clause BSD, see LICENSE for details.
 """
 import re
 import markdown
