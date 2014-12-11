@@ -16,7 +16,9 @@ $ holocron_
   Fork and contribute: https://github.com/ikalnitsky/holocron
 """
 from setuptools import setup, find_packages
+
 from holocron import __version__ as holocron_version
+from holocron import __license__ as holocron_license
 
 
 setup(
@@ -24,7 +26,7 @@ setup(
     version=holocron_version,
     description='simple and extensible static blog generator',
     long_description=__doc__,
-    license='BSD',
+    license=holocron_license,
     url='http://github.com/ikalnitsky/holocron/',
     platforms=['Linux'],
 
