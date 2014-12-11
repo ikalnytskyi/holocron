@@ -15,12 +15,12 @@ from collections import defaultdict
 
 import jinja2
 
-from holocron.ext import Generator
+from holocron.ext import abc
 from holocron.content import Convertible
 from holocron.utils import normalize_url, mkdir
 
 
-class Blog(Generator):
+class Blog(abc.Generator):
     """
     A blog generator extension.
 

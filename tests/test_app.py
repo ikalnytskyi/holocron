@@ -12,8 +12,7 @@ import copy
 from unittest import mock
 
 from holocron.app import Holocron
-from holocron.ext import Converter
-from holocron.ext import Generator
+from holocron.ext.abc import Converter, Generator
 
 from tests import HolocronTestCase
 

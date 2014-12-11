@@ -9,10 +9,10 @@
     :license: 3-clause BSD, see LICENSE for details.
 """
 
-from holocron.ext import Command
+from holocron.ext import abc
 
 
-class Build(Command):
+class Build(abc.Command):
     """
     Build class implements the build command.
     It is responsibe for running the application instance.

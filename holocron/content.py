@@ -12,6 +12,7 @@
     :copyright: (c) 2014 by the Holocron Team, see AUTHORS for details.
     :license: 3-clause BSD, see LICENSE for details.
 """
+
 import os
 import re
 import abc
@@ -49,6 +50,7 @@ class Document(metaclass=abc.ABCMeta):
     :param filename: a path to physical file
     :param app: a reference to the application it's attached to
     """
+
     def __new__(cls, filename, app):
         # converter-based decision for creating object
         _, ext = os.path.splitext(filename)
@@ -226,16 +228,13 @@ class Convertible(Document):
                 document=metadata,
                 sitename=self.app.conf['sitename'],
                 siteurl=self.app.conf['siteurl'],
-                author=self.app.conf['author'],
-            ))
+                author=self.app.conf['author'], ))
 
     @property
     def destination(self):
         filename, _ = os.path.splitext(self.short_source)
         return os.path.join(
-            self.app.conf['paths.output'],
-            filename, 'index.html'
-        )
+            self.app.conf['paths.output'], filename, 'index.html')
 
     @property
     def url(self):
@@ -265,6 +264,7 @@ class Static(Document):
 
     in the output folder.
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 

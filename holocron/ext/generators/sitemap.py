@@ -12,10 +12,10 @@ import os
 import jinja2
 
 from holocron.content import Convertible
-from holocron.ext import Generator
+from holocron.ext import abc
 
 
-class Sitemap(Generator):
+class Sitemap(abc.Generator):
     """
     A sitemap extension.
 

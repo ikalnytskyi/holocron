@@ -15,13 +15,13 @@ from distutils.dir_util import copy_tree
 from distutils.errors import DistutilsFileError
 
 from holocron import app
-from holocron.ext import Command
+from holocron.ext import abc
 
 
 logger = logging.getLogger(__name__)
 
 
-class Init(Command):
+class Init(abc.Command):
     """
     Init is command class responsible for creation of a blog skeleton.
 

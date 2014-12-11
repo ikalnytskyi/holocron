@@ -8,6 +8,7 @@
     :copyright: (c) 2014 by the Holocron Team, see AUTHORS for details.
     :license: 3-clause BSD, see LICENSE for details.
 """
+
 import os
 import shutil
 import logging
@@ -144,8 +145,7 @@ class Holocron(object):
             if ext in self._converters and not _force:
                 logger.warning(
                     '%s converter: skipped for %s: already registered',
-                    converter_class.__name__, ext
-                )
+                    converter_class.__name__, ext)
                 continue
 
             self._converters[ext] = converter
@@ -160,8 +160,7 @@ class Holocron(object):
         if generator_class in self._generators and not _force:
             logger.warning(
                 '%s generator: skipped: already registered',
-                generator_class.__name__
-            )
+                generator_class.__name__)
             return
 
         self._generators[generator_class] = generator_class(self)

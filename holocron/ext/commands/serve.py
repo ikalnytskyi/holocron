@@ -18,7 +18,7 @@ from watchdog.events import FileSystemEventHandler
 
 from holocron import app
 from holocron.main import get_config, create_app
-from holocron.ext import Command
+from holocron.ext import abc
 
 
 class ChangeHandler(FileSystemEventHandler):
@@ -86,7 +86,7 @@ def create_holocron_handler(path):
     return HolocronHandler
 
 
-class Serve(Command):
+class Serve(abc.Command):
     """
     Serve is a serve command class.
 
