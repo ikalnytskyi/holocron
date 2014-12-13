@@ -11,10 +11,10 @@
 import re
 import markdown
 
-from holocron.ext import Converter
+from holocron.ext import abc
 
 
-class Markdown(Converter):
+class Markdown(abc.Converter):
     """
     A markdown converters.
 

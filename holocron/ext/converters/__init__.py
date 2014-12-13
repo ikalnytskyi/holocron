@@ -3,7 +3,7 @@
     holocron.ext.converters
     ~~~~~~~~~~~~~~~~~~~~~~~
 
-    The package contains Holocron's built-in converters.
+    The package contains Holocron's converters.
 
     This file itself is mostly for informational purposes and to tell
     the Python interpreter that it's a package.
