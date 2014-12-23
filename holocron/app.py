@@ -78,8 +78,6 @@ class Holocron(object):
             'enabled': ['sitemap', 'blog'],
 
             'blog': {
-                'is_post_dir': '^\d{2,4}/\d{1,2}/\d{1,2}',
-
                 'feed': {
                     'save_as': 'feed.xml',
                     'posts_number': 5,
