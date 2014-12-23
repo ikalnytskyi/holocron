@@ -169,14 +169,7 @@ class Blog(abc.Generator):
         The Atom specification: http://www.ietf.org/rfc/rfc4287.txt
         """
         posts_number = self.app.conf['generators.blog.feed.posts_number']
-        posts = posts[:posts_number]
-
         save_as = self.app.conf['generators.blog.feed.save_as']
-        save_as = os.path.join(self._output, save_as)
-        path = os.path.dirname(save_as)
-
-        if path:
-            mkdir(path)
 
         credentials = {
             'siteurl_self': normalize_url(self.app.conf['siteurl']) + save_as,
@@ -185,8 +178,13 @@ class Blog(abc.Generator):
             'date': datetime.datetime.utcnow().replace(microsecond=0)
         }
 
+        save_as = os.path.join(self._output, save_as)
+        path = os.path.dirname(save_as)
+        if not os.path.exists(path):
+            mkdir(path)
+
         with open(save_as, 'w', encoding='utf-8') as f:
             f.write(self.feed_template.render(
-                documents=posts,
+                documents=posts[:posts_number],
                 credentials=credentials
             ))
