@@ -3,11 +3,7 @@
     holocron.content
     ~~~~~~~~~~~~~~~~
 
-    This module contains models for all the content types. The main idea
-    is to divide the content into two parts:
-
-    * convertible;
-    * non-covertible (static).
+    This module contains models for all content types supported by Holocron.
 
     :copyright: (c) 2014 by the Holocron Team, see AUTHORS for details.
     :license: 3-clause BSD, see LICENSE for details.
@@ -33,29 +29,46 @@ logger = logging.getLogger(__name__)
 
 class Document(metaclass=abc.ABCMeta):
     """
-    Base document class.
+    An abstract base class for Holocron documents.
 
-    There are two document types in this hierarchy now:
+    It provides *document* interface and implements common stuff. It also
+    has a factory constructor that was designed to create some concrete
+    document based on input information (e.g. filename).
 
-    * a :class:`Convertible` document
-    * a :class:`Static` document
+    Example::
 
-    In addition to base class function, this class is used to creating
-    a certain document class based on some input (so called factory
-    constructor). For instance::
-
-        # the doc will be either Convertible or Static
+        # the `doc` is either Page or Post or Static instance
         doc = Document('/path/to/file', app)
+
+    Here's some rules which describe how the factory constructor is working:
+
+    #. There are two document types: convertible and static.
+    #. Convertible document is a document that could be converted by one of
+       registered converters. Otherwise - it's a static document.
+    #. If a document has year, month and day in its path then it's a post.
+       Otherwise - it's a page.
+
+       (e.g. 2014/12/24/test.mdown is a post, when talks/test.mdown is a page)
 
     :param filename: a path to physical file
     :param app: a reference to the application it's attached to
     """
 
+    #: regex pattern for separating posts from pages
+    _post_pattern = re.compile(r'^\d{2,4}/\d{1,2}/\d{1,2}')
+
     def __new__(cls, filename, app):
-        # converter-based decision for creating object
+        # let's assume that if we have a converter for a given file
+        # then it's either a post or a page
         _, ext = os.path.splitext(filename)
-        if app._converters.get(ext) is not None:
-            return super(Document, cls).__new__(Convertible)
+        if ext in app._converters:
+            # by Holocron convention, post is a convertible document that
+            # has the following format YEAR/MONTH/DAY in its path
+            content_path = os.path.abspath(app.conf['paths.content'])
+            document_path = os.path.abspath(filename)[len(content_path) + 1:]
+            if cls._post_pattern.search(document_path):
+                return super(Document, cls).__new__(Post)
+            return super(Document, cls).__new__(Page)
         return super(Document, cls).__new__(Static)
 
     def __init__(self, filename, app):
@@ -128,9 +141,9 @@ class Document(metaclass=abc.ABCMeta):
         """
 
 
-class Convertible(Document):
+class Page(Document):
     """
-    A convertible document representation.
+    A page document representation.
 
     This type of documents is converts an input markuped document into
     an HTML document and saves the result into ``%filename%`` folder
@@ -206,7 +219,7 @@ class Convertible(Document):
         document's created date.
         """
         # TODO: get created time from the folder structure
-        return super(Convertible, self).get_created_datetime(localtime)
+        return super(Page, self).get_created_datetime(localtime)
 
     def build(self):
         # create folder for the output file
@@ -244,6 +257,10 @@ class Convertible(Document):
     @property
     def abs_url(self):
         return self.app.conf['siteurl'] + self.url
+
+
+class Post(Page):
+    pass
 
 
 class Static(Document):

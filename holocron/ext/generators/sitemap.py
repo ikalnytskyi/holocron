@@ -11,7 +11,7 @@
 import os
 import jinja2
 
-from holocron.content import Convertible
+from holocron.content import Page, Post
 from holocron.ext import abc
 
 
@@ -51,7 +51,7 @@ class Sitemap(abc.Generator):
     def generate(self, documents):
         # it make sense to keep only convertible documents in the sitemap
         documents = (
-            doc for doc in documents if isinstance(doc, Convertible))
+            doc for doc in documents if isinstance(doc, (Page, Post)))
 
         # write sitemap to the file
         save_as = os.path.join(self.app.conf['paths.output'], self.save_as)

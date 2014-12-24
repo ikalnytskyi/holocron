@@ -9,14 +9,13 @@
     :license: 3-clause BSD, see LICENSE for details.
 """
 import os
-import re
 import datetime
 from collections import defaultdict
 
 import jinja2
 
 from holocron.ext import abc
-from holocron.content import Convertible
+from holocron.content import Post
 from holocron.utils import normalize_url, mkdir
 
 
@@ -83,11 +82,6 @@ class Blog(abc.Generator):
             self.index_pages_template
         )
 
-        # pattern that is used to match date in a path to a document
-        self._pattern = re.compile(
-            self.app.conf['generators.blog.is_post_dir']
-        )
-
         # output path directory for feed, index page and tags directory
         self._output = self.app.conf['paths.output']
 
@@ -110,9 +104,7 @@ class Blog(abc.Generator):
         :returns:         a list of Convertible documents, which satisfy the
                           post pattern
         """
-        ispost = lambda doc: self._pattern.search(
-            doc.short_source) and isinstance(doc, Convertible)
-        posts = (doc for doc in documents if ispost(doc))
+        posts = (doc for doc in documents if isinstance(doc, Post))
         posts = sorted(
             posts, key=lambda d: d.get_created_datetime(), reverse=True
         )
