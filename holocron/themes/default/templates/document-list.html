@@ -1,6 +1,6 @@
 {#-
-    holocron/theme/default/templates/document-list.html
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    holocron/themes/default/templates/document-list.html
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     Template for rendering Holocron index pages.
 
@@ -26,12 +26,12 @@
   <h2>{{ group.grouper }}</h2>
 
   {% for post in group.list %}
-  <section class="index-entry">
+  <div class="index-entry">
     <time datetime="{{ post.created.isoformat() }}">
       {{ post.created.strftime('%b %d, %Y') }}
     </time>
     <a href="{{ post.url }}">{{ post.meta["title"] }}</a>
-  </section>
+  </div> <!-- /.index-entry -->
   {% endfor %}
 {% endfor %}
 </div> <!-- /.index -->
