@@ -1,0 +1,19 @@
+{#-
+    holocron/themes/default/templates/post.html
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    Default template for rendering Holocron posts.
+
+    :copyright: (c) 2014 by the Holocron Team, see AUTHORS for details.
+    :license: 3-clause BSD, see LICENSE for details.
+-#}
+{% extends "page.html" %}
+
+
+{% block article_meta %}
+written by {{ document.author }} on
+
+<time datetime="{{ document.created.isoformat() }}">
+  {{ document.created.strftime('%B %d, %Y') }}
+</time>
+{% endblock %}
