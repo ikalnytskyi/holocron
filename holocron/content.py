@@ -161,13 +161,16 @@ class Page(Document):
     in the output folder.
     """
 
-    #: A default template for convertible documents. Used if no template
-    #: specified in the document metadata.
-    template = 'document.html'
+    #: A default template for page documents. Used if no template
+    #: specified in the page metadata.
+    template = 'page.html'
+
+    #: A default title for page documents. Used if no title specified in
+    #: the document metadata.
     default_title = 'Untitled'
 
-    #: A regex for splitting post header and post content.
-    re_extract_header = re.compile('(---\s*\n.*\n)---\s*\n(.*)', re.M | re.S)
+    #: A regex for splitting page header and page content.
+    _re_extract_header = re.compile('(---\s*\n.*\n)---\s*\n(.*)', re.M | re.S)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -188,7 +191,7 @@ class Page(Document):
             content = f.read()
 
             # parse yaml header if exists
-            match = self.re_extract_header.match(content)
+            match = self._re_extract_header.match(content)
             if match:
                 header, content = match.groups()
                 header = yaml.load(header)
@@ -260,7 +263,10 @@ class Page(Document):
 
 
 class Post(Page):
-    pass
+
+    #: A default template for post documents. Used if no template
+    #: specified in the post metadata.
+    template = 'post.html'
 
 
 class Static(Document):
