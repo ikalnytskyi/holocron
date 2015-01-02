@@ -48,23 +48,19 @@ class Blog(abc.Generator):
 
         '    {% for doc in documents %}',
         '    <entry>',
-        '      <title>{{ doc.meta["title"] }}</title>',
+        '      <title>{{ doc.title }}</title>',
         '      <link href="{{ doc.abs_url }}" rel="alternate" />',
         '      <id>{{ doc.abs_url }}</id>',
 
-        '      <published>{{',
-        '        doc.get_created_datetime(localtime=True).isoformat()',
-        '      }}</published>',
-        '      <updated>{{',
-        '        doc.get_modified_datetime(localtime=True).isoformat()',
-        '      }}</updated>',
+        '      <published>{{ doc.created_local.isoformat() }}</published>',
+        '      <updated>{{ doc.updated_local.isoformat() }}</updated>',
 
         '      <author>',
-        '        <name>{{ doc.meta["author"] }}</name>',
+        '        <name>{{ doc.author }}</name>',
         '      </author>',
 
         '      <content type="html">',
-        '        {{ doc.html | e }}',
+        '        {{ doc.content | e }}',
         '      </content>',
         '    </entry>',
         '    {% endfor %}',
@@ -106,7 +102,7 @@ class Blog(abc.Generator):
         """
         posts = (doc for doc in documents if isinstance(doc, Post))
         posts = sorted(
-            posts, key=lambda d: d.get_created_datetime(), reverse=True
+            posts, key=lambda d: d.created, reverse=True
         )
 
         return posts
@@ -131,7 +127,7 @@ class Blog(abc.Generator):
         # create a dictionnary of tags to corresponding posts
         tags = defaultdict(list)
         for post in posts:
-            for tag in post.meta['tags']:
+            for tag in getattr(post, 'tags', []):
                 tags[tag].append(post)
 
         for tag in tags:

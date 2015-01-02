@@ -27,20 +27,11 @@ from .utils import mkdir
 logger = logging.getLogger(__name__)
 
 
-class Document(metaclass=abc.ABCMeta):
+def create_document(filename, app):
     """
-    An abstract base class for Holocron documents.
+    Creates and returns a concrete :class:`Document` instance.
 
-    It provides *document* interface and implements common stuff. It also
-    has a factory constructor that was designed to create some concrete
-    document based on input information (e.g. filename).
-
-    Example::
-
-        # the `doc` is either Page or Post or Static instance
-        doc = Document('/path/to/file', app)
-
-    Here's some rules which describe how the factory constructor is working:
+    Here's some rules which describe how the factory is working:
 
     #. There are two document types: convertible and static.
     #. Convertible document is a document that could be converted by one of
@@ -53,258 +44,203 @@ class Document(metaclass=abc.ABCMeta):
     :param filename: a path to physical file
     :param app: a reference to the application it's attached to
     """
-
     #: regex pattern for separating posts from pages
     _post_pattern = re.compile(r'^\d{2,4}/\d{1,2}/\d{1,2}')
 
-    def __new__(cls, filename, app):
-        # let's assume that if we have a converter for a given file
-        # then it's either a post or a page
-        _, ext = os.path.splitext(filename)
-        if ext in app._converters:
-            # by Holocron convention, post is a convertible document that
-            # has the following format YEAR/MONTH/DAY in its path
-            content_path = os.path.abspath(app.conf['paths.content'])
-            document_path = os.path.abspath(filename)[len(content_path) + 1:]
-            if cls._post_pattern.search(document_path):
-                return super(Document, cls).__new__(Post)
-            return super(Document, cls).__new__(Page)
-        return super(Document, cls).__new__(Static)
+    # let's assume that if we have a converter for a given file
+    # then it's either a post or a page
+    _, ext = os.path.splitext(filename)
+    if ext in app._converters:
+        # by Holocron convention, post is a convertible document that
+        # has the following format YEAR/MONTH/DAY in its path
+        content_path = os.path.abspath(app.conf['paths.content'])
+        document_path = os.path.abspath(filename)[len(content_path) + 1:]
+        if _post_pattern.search(document_path):
+            return Post(filename, app)
+        return Page(filename, app)
+    return Static(filename, app)
+
+
+class Document(metaclass=abc.ABCMeta):
+    """
+    An abstract base class for Holocron documents.
+
+    It provides a *document* interface and implements common stuff.
+
+    :param filename: a path to physical file
+    :param app: a reference to the application it's attached to
+    """
 
     def __init__(self, filename, app):
-        self.filename = os.path.abspath(filename)
-        self.app = app
+        logger.info(
+            'Creating a %s document - %s', self.__class__.__name__, filename)
+        self._app = app
 
-    def get_created_datetime(self, localtime=False):
-        """
-        Returns a :class:`datetime.datetime` object which represents the
-        document's created date.
-        """
-        tz = Local if localtime else UTC
-        created = os.path.getctime(self.source)
-        return datetime.datetime.fromtimestamp(created, tz)
+        #: an absolute path to the source document
+        self.source = os.path.abspath(filename)
 
-    def get_modified_datetime(self, localtime=False):
-        """
-        Returns a :class:`datetime.datetime` object which represents the
-        document's modified date.
-        """
-        tz = Local if localtime else UTC
-        lastmod = os.path.getmtime(self.source)
-        return datetime.datetime.fromtimestamp(lastmod, tz)
+        #: a path to the source document relative to the content folder
+        self.short_source = self.source[
+            len(os.path.abspath(self._app.conf['paths.content'])) + 1:]
 
-    @property
-    def source(self):
-        """
-        Returns a path to the source document.
-        """
-        return self.filename
+        #: a created date in UTC as :class:`datetime.datetime` object
+        self.created = datetime.datetime.fromtimestamp(
+            os.path.getctime(self.source), UTC)
+        self.created_local = self.created.astimezone(Local)
 
-    @cached_property
-    def short_source(self):
-        """
-        Returns a short path to the source document. What is a short path?
-        It's a path relative to the content directory.
-        """
-        path_to_content = os.path.abspath(self.app.conf['paths.content'])
-        cut_length = len(path_to_content)
+        #: an updated date in UTC as :class:`datetime.datetime` object
+        self.updated = datetime.datetime.fromtimestamp(
+            os.path.getmtime(self.source), UTC)
+        self.updated_local = self.updated.astimezone(Local)
 
-        # cut the path to content dir and the first slash of the following dir
-        return self.filename[cut_length + 1:]
+        #: an absolute url to the built document
+        self.abs_url = self._app.conf['siteurl'] + self.url
 
-    @property
     @abc.abstractmethod
-    def destination(self):
+    def build(self):
         """
-        Returns a path to the destination document. The built document
-        will be saved in this file.
+        Builds a current document object.
         """
 
     @property
     @abc.abstractmethod
     def url(self):
         """
-        Returns an URL to the resource this object represent.
-        """
-
-    @property
-    @abc.abstractmethod
-    def abs_url(self):
-        """
-        Returns an absolute URL to the resource this object represents.
-        """
-
-    @abc.abstractmethod
-    def build(self):
-        """
-        Starts build process of the document.
+        Returns a URL to the resource this object represents.
         """
 
 
 class Page(Document):
     """
-    A page document representation.
+    A Page document implementation and representation.
 
-    This type of documents is converts an input markuped document into
-    an HTML document and saves the result into ``%filename%`` folder
-    with ``index.html`` filename, preserving the directory structure of
-    the content folder.
+    The Page document is a kind of Holocron's documents that converts some
+    markuped text document (e.g. markdown, restructuredtext) into HTML. The
+    conversion process is complex and includes both YAML-header parsing and
+    searching for valuable information in the content body (e.g. title).
 
-    For instance, a file::
+    The resulted HTML will be saved as ``{filename}/index.html``, preserving
+    the filesystem structure of the content directory. Here's an example of
+    conversion basics:
 
-        /2014/01/01/birthday.rst
+      ===================  ========================  ==============
+          Content Dir             Output Dir              URL
+      ===================  ========================  ==============
+        /about/cv.mdown      /about/cv/index.html     /about/cv/
+      ===================  ========================  ==============
 
-    from the content folder will be converts into::
-
-        /2014/01/01/birthday/index.html
-
-    in the output folder.
     """
-
-    #: A default template for page documents. Used if no template
-    #: specified in the page metadata.
-    template = 'page.html'
-
-    #: A default title for page documents. Used if no title specified in
-    #: the document metadata.
-    default_title = 'Untitled'
 
     #: A regex for splitting page header and page content.
     _re_extract_header = re.compile('(---\s*\n.*\n)---\s*\n(.*)', re.M | re.S)
 
+    #: A default template for page documents.
+    template = 'page.html'
+
+    #: A default title for page documents.
+    title = 'Untitled'
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        logger.info('Found a convertible document: "%s"', self.source)
+        # set default author (if none was specified in the document)
+        self.author = self._app.conf['author']
 
-        # parse a given convertible document and save the result as attributes
-        self.meta, self.html = self._parse_document(self.filename)
+        # set extracted information and override default one
+        meta = self._parse_document()
+        for key, value in meta.items():
+            setattr(self, key, value)
 
-    def _parse_document(self, document):
+    def _parse_document(self):
         """
         Parses a given document and returns result
 
-        :param document: a path to document
-        :returns: a tuple with header and content
+        :returns: a dictionary with parsed information
         """
-        with open(document, encoding='utf-8') as f:
+        with open(self.source, encoding='utf-8') as f:
+            headers = {}
             content = f.read()
 
             # parse yaml header if exists
             match = self._re_extract_header.match(content)
             if match:
-                header, content = match.groups()
-                header = yaml.load(header)
-            else:
-                header = {}
+                headers, content = match.groups()
+                headers = yaml.load(headers)
 
             # get converter for building a given document
-            converter = self.app._converters.get(
-                os.path.splitext(document)[1])
-
+            converter = self._app._converters[os.path.splitext(self.source)[1]]
             # convert markup to html, extracting some meta
             metadata, html = converter.to_html(content)
-
-            # override extracted metainformation with document's one
-            metadata.update(header)
-
-            if 'author' not in metadata:
-                metadata['author'] = self.app.conf['author']
-
-            if 'title' not in metadata:
-                metadata['title'] = self.default_title
-
-        return metadata, html
-
-    def get_created_datetime(self, localtime=False):
-        """
-        Returns a :class:`datetime.datetime` object which represents the
-        document's created date.
-        """
-        # TODO: get created time from the folder structure
-        return super(Page, self).get_created_datetime(localtime)
+            metadata['content'] = html
+            # override extracted meta information with document's headers
+            metadata.update(headers)
+        return metadata
 
     def build(self):
-        # create folder for the output file
-        mkdir(os.path.dirname(self.destination))
-
-        metadata = dict(self.meta)
-        metadata['content'] = self.html
-        metadata['created'] = self.get_created_datetime()
-        metadata['modified'] = self.get_modified_datetime()
-        metadata['author'] = self.app.conf['author']
-
-        # render result file
-        template = metadata.get('template', self.template)
-        template = self.app.jinja_env.get_template(template)
-
-        with open(self.destination, 'w', encoding='utf-8') as f:
-            # TODO: I definetely need to do something with this ugly code
-            f.write(template.render(
-                document=metadata,
-                sitename=self.app.conf['sitename'],
-                siteurl=self.app.conf['siteurl'],
-                author=self.app.conf['author'], ))
-
-    @property
-    def destination(self):
         filename, _ = os.path.splitext(self.short_source)
-        return os.path.join(
-            self.app.conf['paths.output'], filename, 'index.html')
+        destination = os.path.join(
+            self._app.conf['paths.output'], filename, 'index.html')
+        mkdir(os.path.dirname(destination))
 
-    @property
+        template = self._app.jinja_env.get_template(self.template)
+        with open(destination, 'w', encoding='utf-8') as f:
+            f.write(template.render(
+                document=self,
+                sitename=self._app.conf['sitename'],
+                siteurl=self._app.conf['siteurl'], ))
+
+    @cached_property
     def url(self):
         filename, _ = os.path.splitext(self.short_source)
         return '/' + filename + '/'
 
-    @property
-    def abs_url(self):
-        return self.app.conf['siteurl'] + self.url
-
 
 class Post(Page):
+    """
+    A Post document implementation and representation.
 
-    #: A default template for post documents. Used if no template
-    #: specified in the post metadata.
+    To be honest, a Post document is almost same as Page document. There
+    are a lot of common things, that's why the Post inherits the Page.
+
+    Still, we need to separate those two models, because, for instance, only
+    posts should be used by feed generator. Looking forward we see many
+    similar pitfalls.
+
+    So how the Holocron decides whether it's a post or a page? Simple.
+    If a path to the document represents a date - ``/2015/01/04/`` - and
+    there's a converter for this document, the document is a post.
+    """
+
+    #: We're using a separate template, since unlike a page we need to show
+    #: post's author, published date and a list of tags.
     template = 'post.html'
 
 
 class Static(Document):
     """
-    A static document representation.
+    A Static document implementation and representation.
 
-    This type of documents are those documents that have not been identidied
-    as convertible. Satic documents just copy an input file to output folder,
-    preserving the directory structure of the content folder.
+    Just copy "As Is" from the content directory to the output directory.
+    Here's an example of building basics:
 
-    For instance, an input file::
+      ===================  ===================  ===================
+          Content Dir           Output Dir              URL
+      ===================  ===================  ===================
+         /about/me.png        /about/me.png        /about/me.png
+      ===================  ===================  ===================
 
-        /2014/01/01/cake.png
-
-    will be built as::
-
-        /2014/01/01/cake.png
-
-    in the output folder.
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        logger.info("Found a static document: '%s'", self.filename)
-
-    def build(self):
-        mkdir(os.path.dirname(self.destination))
-        shutil.copy(self.source, self.destination)
-
-    @property
-    def destination(self):
-        return os.path.join(self.app.conf['paths.output'], self.short_source)
-
-    @property
+    @cached_property
     def url(self):
+        # A URL to the static document is the same as a path to this file.
+        # There is only one note: the path to this file should be relative
+        # to the content/output directory.
         return '/' + self.short_source
 
-    @property
-    def abs_url(self):
-        return self.app.conf['siteurl'] + self.url
+    def build(self):
+        destination = os.path.join(
+            self._app.conf['paths.output'], self.short_source)
+
+        mkdir(os.path.dirname(destination))
+        shutil.copy(self.source, destination)

@@ -8,6 +8,7 @@
     :copyright: (c) 2014 by the Holocron Team, see AUTHORS for details.
     :license: 3-clause BSD, see LICENSE for details.
 """
+
 from datetime import datetime
 from unittest import mock
 from xml.dom import minidom
@@ -40,17 +41,9 @@ class TestSitemapGenerator(HolocronTestCase):
         self.post_date = datetime(2013, 4, 1)
 
         self.post = mock.Mock(
-            spec=Post,
-            abs_url=self.post_url,
-            get_modified_datetime=mock.Mock(return_value=self.post_date),
-        )
-
+            spec=Post, abs_url=self.post_url, updated_local=self.post_date)
         self.page = mock.Mock(
-            spec=Page,
-            abs_url=self.page_url,
-            get_modified_datetime=mock.Mock(return_value=self.page_date),
-        )
-
+            spec=Page, abs_url=self.page_url, updated_local=self.page_date)
         self.static = mock.Mock(spec=Static)
 
     def _get_output_content(self, documents):
@@ -63,7 +56,6 @@ class TestSitemapGenerator(HolocronTestCase):
 
             # extract what was generated and what was passed to f.write()
             content, = mopen().write.call_args[0]
-
             return content
 
     def _get_sitemap_dict(self, xml):

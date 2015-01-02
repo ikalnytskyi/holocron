@@ -19,7 +19,7 @@ from dooku.conf import Conf
 from dooku.decorator import cached_property
 from dooku.ext import ExtensionManager
 
-from .content import Document
+from .content import create_document
 from .utils import iterfiles
 
 
@@ -42,9 +42,8 @@ class Holocron(object):
     :param conf: (dict) a user configuration, that overrides a default one
     """
 
-    #: The class that is used for document objects. See
-    #: :class:`~holocron.content.Document` for more information.
-    document_class = Document
+    #: The factory function that is used to create a new document instance.
+    document_factory = create_document
 
     #: Default configuration parameters.
     default_conf = {
@@ -109,7 +108,7 @@ class Holocron(object):
         #: A `file extension` -> `converter` map
         #:
         #: Holds a dicionary of all registered converters, that is used to
-        #: getting converter for the :attr:`document_class`.
+        #: getting converter for the :class:`holocron.content.Document`.
         self._converters = {}
 
         #: Holds a dictionary of all registered generators. The dict is used
@@ -212,7 +211,10 @@ class Holocron(object):
         for index, document_path in enumerate(documents_paths):
             try:
                 percent = int((index + 1) * 100.0 / len(documents_paths))
-                document = self.document_class(document_path, self)
+                # TODO (@ikalnitsky):
+                #   Rethink document factory through the class. Should be
+                #   more flexible and nifty.
+                document = Holocron.document_factory(document_path, self)
                 print('[{percent:>3d}%] Building {doc}'.format(
                     percent=percent, doc=document.short_source))
 

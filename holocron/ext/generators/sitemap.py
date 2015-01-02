@@ -40,13 +40,10 @@ class Sitemap(abc.Generator):
         '  {%- for doc in documents %}',
         '    <url>',
         '      <loc>{{ doc.abs_url }}</loc>',
-        '      <lastmod>{{',
-        '        doc.get_modified_datetime(localtime=True).isoformat()',
-        '      }}</lastmod>',
+        '      <lastmod>{{ doc.updated_local.isoformat() }}</lastmod>',
         '    </url>',
         '  {% endfor -%}',
-        '  </urlset>',
-    ]))
+        '  </urlset>', ]))
 
     def generate(self, documents):
         # it make sense to keep only convertible documents in the sitemap
@@ -55,6 +52,5 @@ class Sitemap(abc.Generator):
 
         # write sitemap to the file
         save_as = os.path.join(self.app.conf['paths.output'], self.save_as)
-
         with open(save_as, 'w', encoding='utf-8') as f:
             f.write(self.template.render(documents=documents))
