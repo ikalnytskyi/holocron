@@ -121,7 +121,7 @@ class TestHolocron(HolocronTestCase):
         Tests build process.
         """
         iterfiles.return_value = ['doc_a', 'doc_b', 'doc_c']
-        self.app.document_class = mock.Mock()
+        self.app.__class__.document_factory = mock.Mock()
         self.app._copy_theme = mock.Mock()
         self.app._generators = {
             mock.Mock(): mock.Mock(),
@@ -134,7 +134,7 @@ class TestHolocron(HolocronTestCase):
         iterfiles.assert_called_with(
             self.app.conf['paths']['content'], '[!_.]*', True)
 
-        self.app.document_class.assert_has_calls([
+        self.app.__class__.document_factory.assert_has_calls([
             # check that document class was used to generate class instances
             mock.call('doc_a', self.app),
             # check that document instances were built
@@ -144,7 +144,7 @@ class TestHolocron(HolocronTestCase):
             mock.call('doc_c', self.app),
             mock.call().build(),
         ])
-        self.assertEqual(self.app.document_class.call_count, 3)
+        self.assertEqual(self.app.__class__.document_factory.call_count, 3)
 
         # check that generators was used
         for _, generator in self.app._generators.items():
