@@ -37,9 +37,13 @@ class TestNormalizeUrl(HolocronTestCase):
         """
         Tests that func works correctly with default parameters.
         """
-        self.assertEqual(normalize_url('test.com'), 'http://test.com/')
-        self.assertEqual(normalize_url('http://test.com'), 'http://test.com/')
-        self.assertEqual(normalize_url('https://test.com'), 'https://test.com/')
+        corner_cases = (
+            ('test.com', 'http://test.com/'),
+            ('http://test.com', 'http://test.com/'),
+            ('https://test.com', 'https://test.com/'), )
+
+        for url, expected in corner_cases:
+            self.assertEqual(normalize_url(url), expected)
 
     def test_trailing_slash(self):
         """

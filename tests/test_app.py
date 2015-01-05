@@ -103,7 +103,8 @@ class TestHolocron(HolocronTestCase):
         self.assertEqual(len(self.app._generators), 1)
 
         self.assertIn(TestGenerator, self.app._generators)
-        self.assertIsInstance(self.app._generators[TestGenerator], TestGenerator)
+        self.assertIsInstance(
+            self.app._generators[TestGenerator], TestGenerator)
 
         # test double registering protection
         generator_id = id(self.app._generators[TestGenerator])
@@ -113,7 +114,8 @@ class TestHolocron(HolocronTestCase):
         # test force re-registering
         generator_id = id(self.app._generators[TestGenerator])
         self.app.register_generator(TestGenerator, _force=True)
-        self.assertNotEqual(generator_id, id(self.app._generators[TestGenerator]))
+        self.assertNotEqual(
+            generator_id, id(self.app._generators[TestGenerator]))
 
     @mock.patch('holocron.app.iterfiles')
     def test_run(self, iterfiles):
