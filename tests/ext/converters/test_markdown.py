@@ -1,7 +1,7 @@
 # coding: utf-8
 """
-    tests.ext.converters.markdown
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    tests.ext.converters.test_markdown
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     Tests Markdown converter.
 
@@ -20,9 +20,7 @@ class TestMarkdownConverter(HolocronTestCase):
     def setUp(self):
         self.conv = markdown.Markdown(Conf({
             'markdown': {
-                'extensions': [],
-            }
-        }))
+                'extensions': [], }}))
 
     def test_markdown_simple_post(self):
         meta, html = self.conv.to_html(
@@ -38,15 +36,13 @@ class TestMarkdownConverter(HolocronTestCase):
             'some text with **bold** and *italic*\n')
 
         self.assertEqual(meta, {})
-        self.assertEqual(
-            html, '<p>some text with <strong>bold</strong> and <em>italic</em></p>')
+        self.assertEqual(html, (
+            '<p>some text with <strong>bold</strong> and <em>italic</em></p>'))
 
     def test_markdown_codehilite_extension(self):
         self.conv = markdown.Markdown(Conf({
             'markdown': {
-                'extensions': ['codehilite', 'extra'],
-            }
-        }))
+                'extensions': ['codehilite', 'extra'], }}))
 
         _, html = self.conv.to_html(
             '```python\n'
