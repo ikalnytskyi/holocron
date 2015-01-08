@@ -4,6 +4,10 @@ branches:
   only:
     - master
 
+os:
+  - linux
+  - osx
+
 env:
   - TOXENV=py33
   - TOXENV=py34
