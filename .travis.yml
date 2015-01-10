@@ -8,11 +8,6 @@ os:
   - linux
   - osx
 
-env:
-  - TOXENV=py33
-  - TOXENV=py34
-  - TOXENV=flake8
-
 install:
   - pip install tox coveralls
 
