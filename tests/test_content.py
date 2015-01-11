@@ -197,7 +197,8 @@ class TestPage(DocumentTestCase):
         self.assertEqual(self.doc.myattr, 'value')
         self.assertEqual(self.doc.title, 'My Path')
 
-    def test_build(self):
+    @mock.patch('holocron.content.mkdir')
+    def test_build(self, mkdir):
         """
         The page instance has to be rendered in the right place.
         """
