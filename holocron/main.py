@@ -43,9 +43,16 @@ def parse_command_line(commands):
         help='a path to settings file')
 
     parser.add_argument(
-        '-v', '--verbose', dest='verbose', action='store_const',
-        const=logging.INFO, default=logging.WARNING,
-        help='show more information')
+        '-q', '--quiet', dest='verbosity', action='store_const',
+        const=logging.CRITICAL, help='show only critical errors')
+
+    parser.add_argument(
+        '-v', '--verbose', dest='verbosity', action='store_const',
+        const=logging.INFO, help='show additional messages')
+
+    parser.add_argument(
+        '-d', '--debug', dest='verbosity', action='store_const',
+        const=logging.DEBUG, help='show all messages')
 
     return parser.parse_args()
 
@@ -115,7 +122,7 @@ def main():
 
     # initial logger configuration - use custom format for records
     # and print records with WARNING level and higher.
-    configure_logger(arguments.verbose)
+    configure_logger(arguments.verbosity or logging.WARNING)
 
     # this hack's used to bypass lack of user's config file when init invoked
     conf = {}
