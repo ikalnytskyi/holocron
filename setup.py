@@ -24,26 +24,25 @@ from holocron import __license__ as holocron_license
 setup(
     name='holocron',
     version=holocron_version,
+    license=holocron_license,
     description='simple and extensible static blog generator',
     long_description=__doc__,
-    license=holocron_license,
     url='http://github.com/ikalnitsky/holocron/',
-    platforms=['Linux'],
+    platforms='any',
 
     author='Igor Kalnitsky',
     author_email='igor@kalnitsky.org',
 
     packages=find_packages(exclude=['tests']),
-    include_package_data=True,
     test_suite='tests',
 
     install_requires=[
         # core parts
+        'dooku >= 0.3.0',
         'Jinja2 >= 2.7',
         'PyYAML >= 3.11',
         'Pygments >= 1.6',
         'watchdog >= 0.8.0',
-        'dooku >= 0.1.0',
 
         # markdown converter
         'Markdown >= 2.4',
