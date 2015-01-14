@@ -75,8 +75,7 @@ class Blog(abc.Generator):
 
         # load template for rendering index and tag pages
         self._template = self.app.jinja_env.get_template(
-            self.index_pages_template
-        )
+            self.index_pages_template)
 
         # output path directory for feed, index page and tags directory
         self._output = self.app.conf['paths.output']
@@ -101,10 +100,7 @@ class Blog(abc.Generator):
                           post pattern
         """
         posts = (doc for doc in documents if isinstance(doc, Post))
-        posts = sorted(
-            posts, key=lambda d: d.created, reverse=True
-        )
-
+        posts = sorted(posts, key=lambda d: d.created, reverse=True)
         return posts
 
     def index(self, posts):
@@ -117,8 +113,7 @@ class Blog(abc.Generator):
         with open(save_as, 'w', encoding='utf-8') as f:
             f.write(self._template.render(
                 posts=posts,
-                sitename=self.app.conf['sitename'],
-            ))
+                sitename=self.app.conf['sitename']))
 
     def tags(self, posts):
         """
@@ -134,11 +129,9 @@ class Blog(abc.Generator):
             path = os.path.join(
                 self._output,
                 self.app.conf['generators.blog.tags.output'],
-                tag,
-            )
+                tag)
 
-            if path:
-                mkdir(path)
+            mkdir(path)
 
             save_as = self.app.conf['generators.blog.tags.save_as']
             save_as = os.path.join(path, save_as)
@@ -146,8 +139,7 @@ class Blog(abc.Generator):
             with open(save_as, 'w', encoding='utf-8') as f:
                 f.write(self._template.render(
                     posts=tags[tag],
-                    sitename=self.app.conf['sitename'],
-                ))
+                    sitename=self.app.conf['sitename']))
 
     def feed(self, posts):
         """
@@ -163,16 +155,13 @@ class Blog(abc.Generator):
             'siteurl_self': normalize_url(self.app.conf['siteurl']) + save_as,
             'siteurl_alt': normalize_url(self.app.conf['siteurl']),
             'sitename': self.app.conf['sitename'],
-            'date': datetime.datetime.utcnow().replace(microsecond=0)
-        }
+            'date': datetime.datetime.utcnow().replace(microsecond=0), }
 
         save_as = os.path.join(self._output, save_as)
         path = os.path.dirname(save_as)
-        if not os.path.exists(path):
-            mkdir(path)
+        mkdir(path)
 
         with open(save_as, 'w', encoding='utf-8') as f:
             f.write(self.feed_template.render(
                 documents=posts[:posts_number],
-                credentials=credentials
-            ))
+                credentials=credentials))

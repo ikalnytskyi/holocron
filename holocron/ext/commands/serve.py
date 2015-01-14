@@ -17,7 +17,6 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
 from holocron import app
-from holocron.main import get_config, create_app
 from holocron.ext import abc
 
 
@@ -26,6 +25,7 @@ class ChangeHandler(FileSystemEventHandler):
     Implements catching system events of adding or changing files. Responsible
     for processing events and rebuilding theme files and blogposts.
     """
+
     def __init__(self, app):
         super(ChangeHandler, self).__init__()
         self.app = app
@@ -46,8 +46,7 @@ class ChangeHandler(FileSystemEventHandler):
 
         # if config file was changed, update application obejct
         if document.startswith(os.path.abspath('_config.yml')):
-            config = get_config(document)
-            self.app = create_app(config)
+            self.app = app.create_app(document)
 
         self.app.run()
 
@@ -119,7 +118,7 @@ class Serve(abc.Command):
         holocron_handler = create_holocron_handler(app.conf['paths.output'])
         httpd = HTTPServer((self.host, self.port), holocron_handler)
 
-        print('\nHTTP server started at {host}\n'.format(host=self.full_host))
+        print('\nHTTP server started at {host}'.format(host=self.full_host))
         print('In order to stop serving, press Ctrl+C\n')
 
         try:

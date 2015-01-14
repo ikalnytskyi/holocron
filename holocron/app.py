@@ -13,6 +13,7 @@ import os
 import shutil
 import logging
 
+import yaml
 import jinja2
 
 from dooku.conf import Conf
@@ -24,6 +25,34 @@ from .utils import iterfiles
 
 
 logger = logging.getLogger(__name__)
+
+
+def create_app(confpath):
+    """
+    Creates a Holocron instance from a given settings file.
+
+    :param confpath: a path to the settings file; use defaults in case of None
+    :returns: a :class:`holocron.app.Holocron` instance
+    """
+    try:
+        conf = None
+        if confpath is not None:
+            with open(confpath, 'r', encoding='utf-8') as f:
+                conf = yaml.load(f.read())
+
+    except yaml.YAMLError:
+        # we have an ill-formed settings file, thus we can't apply users'
+        # settings. so treat error and go on
+        logger.error(
+            'Could not parse %s, fallback to default settings.', confpath)
+
+    except IOError:
+        # it's ok that users don't have a settings file, so just treat
+        # a warning and continue execution
+        logger.warning(
+            'Could not read %s, fallback to default settings.', confpath)
+
+    return Holocron(conf)
 
 
 class Holocron(object):
@@ -45,7 +74,7 @@ class Holocron(object):
     #: The factory function that is used to create a new document instance.
     document_factory = create_document
 
-    #: Default configuration parameters.
+    #: Default settings.
     default_conf = {
         'sitename': 'Obi-Wan Kenobi',
         'siteurl': 'http://obi-wan.jedi',
@@ -54,24 +83,19 @@ class Holocron(object):
         'encoding': 'utf-8',
 
         'paths': {
-            'content': './',
-            'output': '_build/',
-            'theme': '_theme/',
-        },
+            'content': '.',
+            'output': '_build',
+            'theme': '_theme', },
 
         'theme': {
             'navigation': [
-                ('feed', '/feed.xml'),
-            ],
-        },
+                ('feed', '/feed.xml'), ], },
 
         'converters': {
             'enabled': ['markdown'],
 
             'markdown': {
-                'extensions': ['codehilite', 'extra'],
-            },
-        },
+                'extensions': ['codehilite', 'extra'], }, },
 
         'generators': {
             'enabled': ['sitemap', 'blog'],
@@ -79,26 +103,19 @@ class Holocron(object):
             'blog': {
                 'feed': {
                     'save_as': 'feed.xml',
-                    'posts_number': 5,
-                },
+                    'posts_number': 5, },
 
                 'index': {
-                    'save_as': 'index.html',
-                },
+                    'save_as': 'index.html', },
 
                 'tags': {
                     'output': 'tags/',
-                    'save_as': 'index.html',
-                },
-            },
-        },
+                    'save_as': 'index.html', }, }, },
 
         'commands': {
             'serve': {
                 'host': '0.0.0.0',
-                'port': '5000',
-            },
-        },
+                'port': '5000', }, },
     }
 
     def __init__(self, conf=None):
@@ -181,20 +198,13 @@ class Holocron(object):
             path = os.path.join(path, 'templates')
             loaders.insert(0, jinja2.FileSystemLoader(path))
 
-        env = jinja2.Environment(
-            loader=jinja2.ChoiceLoader(loaders), extensions=['jinja2.ext.do'])
+        env = jinja2.Environment(loader=jinja2.ChoiceLoader(loaders))
         env.globals.update(
             # pass some useful conf options to the template engine
             sitename=self.conf['sitename'],
             siteurl=self.conf['siteurl'],
             author=self.conf['author'],
-            theme=self.conf['theme'],
-
-            # TODO: I'm not a very fun of this hack, but it looks
-            # like it is only solution we have to make possible
-            # to change some attributes inside Template engine.
-            setattr=setattr,
-        )
+            theme=self.conf['theme'])
         return env
 
     def run(self):
@@ -211,10 +221,7 @@ class Holocron(object):
         for index, document_path in enumerate(documents_paths):
             try:
                 percent = int((index + 1) * 100.0 / len(documents_paths))
-                # TODO (@ikalnitsky):
-                #   Rethink document factory through the class. Should be
-                #   more flexible and nifty.
-                document = Holocron.document_factory(document_path, self)
+                document = self.__class__.document_factory(document_path, self)
                 print('[{percent:>3d}%] Building {doc}'.format(
                     percent=percent, doc=document.short_source))
 
@@ -222,8 +229,7 @@ class Holocron(object):
                 documents.append(document)
 
             except Exception:
-                logger.warning(
-                    'File %s is invalid. Building skipped.', document_path)
+                logger.warning('skip %s: invalid file', document_path)
 
         # use generators to generate additional stuff
         for _, generator in self._generators.items():
