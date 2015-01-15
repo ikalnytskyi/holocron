@@ -16,6 +16,7 @@ import argparse
 
 from dooku.ext import ExtensionManager
 
+from holocron import __version__ as holocron_version
 from holocron.app import create_app
 
 
@@ -86,6 +87,10 @@ def parse_command_line(commands):
     parser.add_argument(
         '-d', '--debug', dest='verbosity', action='store_const',
         const=logging.DEBUG, help='show all messages')
+
+    parser.add_argument(
+        '--version', action='version', version=holocron_version,
+        help='show the holocron version and exit')
 
     return parser.parse_args()
 
