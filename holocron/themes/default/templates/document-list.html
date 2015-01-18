@@ -17,7 +17,7 @@
 
 {#- Prints all posts grouped by year. -#}
 <div class="index">
-{% for group in posts|groupby('created.year') %}
+{% for group in posts|groupby('created.year')|sort(attribute='grouper', reverse=True) %}
   <h2>{{ group.grouper }}</h2>
 
   {% for post in group.list %}
