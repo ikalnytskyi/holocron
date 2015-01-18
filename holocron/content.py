@@ -73,7 +73,7 @@ class Document(metaclass=abc.ABCMeta):
 
     def __init__(self, filename, app):
         logger.info(
-            'Creating a %s document - %s', self.__class__.__name__, filename)
+            '%s: creating %s', filename, self.__class__.__name__.lower())
         self._app = app
 
         #: an absolute path to the source document

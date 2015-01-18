@@ -8,12 +8,13 @@
     :copyright: (c) 2014 by the Holocron Team, see AUTHORS for details.
     :license: 3-clause BSD, see LICENSE for details.
 """
+
 import os
 import copy
 from unittest import mock
 
 import holocron
-from holocron.app import Holocron
+from holocron.app import Holocron, create_app
 from holocron.ext.abc import Converter, Generator
 
 from tests import HolocronTestCase
@@ -214,3 +215,82 @@ class TestHolocronDefaults(HolocronTestCase):
             registered_generators.add(generator)
 
         self.assertEqual(len(registered_generators), len(enabled_generators))
+
+
+class TestCreateApp(HolocronTestCase):
+
+    def _create_app(self, conf_raw=None, side_effect=None):
+        """
+        Creates an application instance with mocked settings file. All
+        arguments will be passed into mock_open.
+        """
+        mopen = mock.mock_open(read_data=conf_raw)
+        mopen.side_effect = side_effect if side_effect else None
+
+        with mock.patch('holocron.app.open', mopen, create=True):
+            return create_app('_config.yml')
+
+    def test_default(self):
+        """
+        The create_app with no arguments has to create a Holocron instance
+        with default settings.
+        """
+        app = create_app()
+
+        self.assertIsNotNone(app)
+        self.assertEqual(app.conf, Holocron.default_conf)
+
+    def test_custom_conf(self):
+        """
+        Tests that custom conf overrides default one.
+        """
+        conf_raw = [
+            'sitename: MySite',
+            'author: User',
+        ]
+        app = self._create_app(conf_raw='\n'.join(conf_raw))
+
+        self.assertIsNotNone(app)
+        self.assertEqual(app.conf['sitename'], 'MySite')
+        self.assertEqual(app.conf['author'], 'User')
+
+    def test_illformed_conf(self):
+        """
+        Tests that in case of ill-formed conf we can't create app instance.
+        """
+        conf_raw = [
+            'error',
+            'sitename: MySite',
+        ]
+        app = self._create_app(conf_raw='\n'.join(conf_raw))
+
+        self.assertIsNone(app)
+
+    def test_filenotfounderror(self):
+        """
+        Tests that we create application with default settings in case user's
+        settings wasn't found.
+        """
+        app = self._create_app(side_effect=FileNotFoundError)
+
+        self.assertIsNotNone(app)
+        self.assertEqual(app.conf, Holocron.default_conf)
+
+    def test_permissionerror(self):
+        """
+        Tests that we create application with default settings in case we
+        don't have permissions to read user settings.
+        """
+        app = self._create_app(side_effect=PermissionError)
+
+        self.assertIsNotNone(app)
+        self.assertEqual(app.conf, Holocron.default_conf)
+
+    def test_isadirectoryerror(self):
+        """
+        Tests that we can't create app instance if we pass a directory as
+        settings file.
+        """
+        app = self._create_app(side_effect=IsADirectoryError)
+
+        self.assertIsNone(app)

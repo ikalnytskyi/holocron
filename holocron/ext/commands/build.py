@@ -14,8 +14,7 @@ from holocron.ext import abc
 
 class Build(abc.Command):
     """
-    Build class implements the build command.
-    It is responsibe for running the application instance.
+    Generates a static site for a given Holocron instance.
     """
 
     def execute(self, app):

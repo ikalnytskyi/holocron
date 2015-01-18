@@ -8,6 +8,7 @@
     :copyright: (c) 2014 by the Holocron Team, see AUTHORS for details.
     :license: 3-clause BSD, see LICENSE for details.
 """
+
 from unittest import mock
 
 from holocron.utils import mkdir, normalize_url, iterfiles
