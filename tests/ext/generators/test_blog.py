@@ -81,8 +81,7 @@ class BlogTestCase(HolocronTestCase):
 
         self.post_early = mock.Mock(
             spec=Post,
-            created=self.date_early,
-            created_local=self.date_early,
+            published=self.date_early,
             updated_local=self.date_early_updated,
             tags=['testtag1', 'testtag2'],
             title='MyTestPost',
@@ -91,12 +90,12 @@ class BlogTestCase(HolocronTestCase):
 
         self.post_moderate = mock.Mock(
             spec=Post,
-            created=self.date_moderate,
+            published=self.date_moderate,
             url='www.post_moderate.com',
             tags=['testtag2', 'testtag3'])
 
         self.post_late = mock.Mock(
-            spec=Post, created=self.date_late, url='www.post_late.com')
+            spec=Post, published=self.date_late, url='www.post_late.com')
 
     @mock.patch('holocron.ext.generators.blog.mkdir')
     def _get_content(self, documents, test_function, _):

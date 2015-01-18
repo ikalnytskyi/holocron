@@ -218,6 +218,35 @@ class TestPost(TestPage):
     """
 
     document_class = content.Post
+    document_filename = '2014/10/8/testpost.mdown'
+
+    def test_url(self):
+        """
+        The url property has to be the same as a path relative to the
+        content folder, but without file extensions and with trailing
+        slash.
+        """
+        self.assertEqual(self.doc.url, '/2014/10/8/testpost/')
+
+    def test_build(self):
+        """
+        The post instance has to be rendered in the right place.
+        """
+        mopen = mock.mock_open(read_data=self._document_no_meta_raw)
+        with mock.patch(self._open_fn, mopen, create=True):
+            self.doc.build()
+
+        filename, *_ = mopen.call_args[0]
+        self.assertEqual(filename, './_output/2014/10/8/testpost/index.html')
+
+    def test_published(self):
+        """
+        The published attribute has to contain the date, which is formed from
+        the path to the post document file.
+        """
+        self.assertEqual(self.doc.published.year, 2014)
+        self.assertEqual(self.doc.published.month,  10)
+        self.assertEqual(self.doc.published.day,     8)
 
 
 class TestStatic(DocumentTestCase):
