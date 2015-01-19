@@ -8,9 +8,11 @@
     :copyright: (c) 2014 by the Holocron Team, see AUTHORS for details.
     :license: 3-clause BSD, see LICENSE for details.
 """
+import os
 import copy
 from unittest import mock
 
+import holocron
 from holocron.app import Holocron
 from holocron.ext.abc import Converter, Generator
 
@@ -154,6 +156,31 @@ class TestHolocron(HolocronTestCase):
 
         # check that _copy_theme was called
         self.app._copy_theme.assert_called_once_with()
+
+    @mock.patch('holocron.app.shutil.os.path.exists', return_value=False)
+    @mock.patch('holocron.app.shutil.rmtree')
+    @mock.patch('holocron.app.shutil.copytree')
+    def test_copy_base_theme(self, mcopytree, mrmtree, _):
+        output = os.path.join(self.app.conf['paths.output'], 'static')
+        theme = os.path.join(
+            os.path.dirname(holocron.__file__), 'theme', 'static')
+
+        self.app._copy_theme()
+
+        mrmtree.assert_called_with(output, ignore_errors=True)
+        mcopytree.assert_called_with(theme, output)
+
+    @mock.patch('holocron.app.shutil.os.path.exists', return_value=True)
+    @mock.patch('holocron.app.shutil.rmtree')
+    @mock.patch('holocron.app.shutil.copytree')
+    def test_copy_user_theme(self, mcopytree, mrmtree, _):
+        output = os.path.join(self.app.conf['paths.output'], 'static')
+        theme = os.path.join(self.app.conf['paths.theme'], 'static')
+
+        self.app._copy_theme()
+
+        mrmtree.assert_called_with(output, ignore_errors=True)
+        mcopytree.assert_called_with(theme, output)
 
 
 class TestHolocronDefaults(HolocronTestCase):

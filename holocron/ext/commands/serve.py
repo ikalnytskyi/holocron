@@ -95,7 +95,7 @@ class Serve(abc.Command):
     """
     # path to the default theme
     app_path = os.path.abspath(os.path.dirname(app.__file__))
-    theme_default = os.path.join(app_path, 'themes', 'default')
+    theme_default = os.path.join(app_path, 'theme')
 
     def execute(self, app):
         app.run()
