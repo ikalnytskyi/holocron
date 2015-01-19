@@ -186,7 +186,7 @@ class Holocron(object):
         Calculates only once, since it's a cached property.
         """
         # makes a default template loader
-        templates_path = os.path.join('themes', 'default', 'templates')
+        templates_path = os.path.join('theme', 'templates')
         loader = jinja2.PackageLoader('holocron', templates_path)
 
         # PrefixLoader provides a direct access to the default templates
@@ -244,7 +244,7 @@ class Holocron(object):
         """
         root = os.path.dirname(__file__)
 
-        base_static = os.path.join(root, 'themes', 'default', 'static')
+        base_static = os.path.join(root, 'theme', 'static')
         user_static = os.path.join(self.conf['paths.theme'], 'static')
 
         if not os.path.exists(user_static):
