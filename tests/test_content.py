@@ -33,7 +33,9 @@ class DocumentTestCase(HolocronTestCase):
         'siteurl': 'http://example.com',
         'paths': {
             'content': './content',
-            'output': './_output', }})
+            'output': './_output',
+        }
+    })
 
     document_class = None       # a document constructor
     document_filename = None    # a document filename, relative to the content
@@ -246,10 +248,13 @@ class TestDocumentFactory(HolocronTestCase):
     def _create_document(self, filename, getcwd, getctime, getmtime, _):
         fake_app = mock.Mock(
             _converters={
-                '.mdown': mock.Mock(), },
+                '.mdown': mock.Mock(),
+            },
             conf=Conf(app.Holocron.default_conf, {
                 'paths': {
-                    'content': './content', }}))
+                    'content': './content',
+                }
+            }))
         return content.create_document(filename, fake_app)
 
     def test_create_post(self):

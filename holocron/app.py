@@ -27,12 +27,12 @@ from .utils import iterfiles
 logger = logging.getLogger(__name__)
 
 
-def create_app(confpath):
+def create_app(confpath=None):
     """
     Creates a Holocron instance from a given settings file.
 
     :param confpath: a path to the settings file; use defaults in case of None
-    :returns: a :class:`holocron.app.Holocron` instance
+    :returns: a :class:`holocron.app.Holocron` instance or None
     """
     try:
         conf = None
@@ -40,17 +40,26 @@ def create_app(confpath):
             with open(confpath, 'r', encoding='utf-8') as f:
                 conf = yaml.load(f.read())
 
-    except yaml.YAMLError:
-        # we have an ill-formed settings file, thus we can't apply users'
-        # settings. so treat error and go on
-        logger.error(
-            'Could not parse %s, fallback to default settings.', confpath)
+    except (FileNotFoundError, PermissionError) as exc:
+        # it's ok that a user doesn't have a settings file or doesn't have
+        # permissions to read it, so just treat a warning and continue
+        # execution.
+        logger.warning('%s: %s', exc.filename, exc.strerror)
+        logger.warning('Fallback to default settings')
 
-    except IOError:
-        # it's ok that users don't have a settings file, so just treat
-        # a warning and continue execution
-        logger.warning(
-            'Could not read %s, fallback to default settings.', confpath)
+    except (IsADirectoryError, ) as exc:
+        # well, if we try to read settings from a directory, it's probably
+        # a user have a wrong setup. we have no choice but treat error and
+        # do not create application instance.
+        logger.error('%s: %s', exc.filename, exc.strerror)
+        return None
+
+    except (yaml.YAMLError, ) as exc:
+        # we have an ill-formed settings file, thus we can't apply users'
+        # settings. in this case it's better show errors and do not create
+        # application instance.
+        logger.error('%s: %s', confpath, str(exc))
+        return None
 
     return Holocron(conf)
 
@@ -62,9 +71,9 @@ class Holocron(object):
     Once it's created it will act as a central registry for the extensions,
     converters, template configuration and much more.
 
-    Here the interaction workflow for an end-user:
+    Here the interaction workflow for end-users:
 
-    * create instance with default/custom configuration
+    * create instance with default or custom settings
     * register extensions: converters and/or generators
     * call :meth:`run` method in order to build weblog
 
@@ -85,17 +94,22 @@ class Holocron(object):
         'paths': {
             'content': '.',
             'output': '_build',
-            'theme': '_theme', },
+            'theme': '_theme',
+        },
 
         'theme': {
             'navigation': [
-                ('feed', '/feed.xml'), ], },
+                ('feed', '/feed.xml'),
+            ],
+        },
 
         'converters': {
             'enabled': ['markdown'],
 
             'markdown': {
-                'extensions': ['codehilite', 'extra'], }, },
+                'extensions': ['codehilite', 'extra'],
+            },
+        },
 
         'generators': {
             'enabled': ['sitemap', 'blog'],
@@ -103,19 +117,26 @@ class Holocron(object):
             'blog': {
                 'feed': {
                     'save_as': 'feed.xml',
-                    'posts_number': 5, },
+                    'posts_number': 5,
+                },
 
                 'index': {
-                    'save_as': 'index.html', },
+                    'save_as': 'index.html',
+                },
 
                 'tags': {
                     'output': 'tags/',
-                    'save_as': 'index.html', }, }, },
+                    'save_as': 'index.html',
+                },
+            },
+        },
 
         'commands': {
             'serve': {
                 'host': '0.0.0.0',
-                'port': '5000', }, },
+                'port': '5000',
+            },
+        },
     }
 
     def __init__(self, conf=None):

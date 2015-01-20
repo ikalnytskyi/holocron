@@ -8,6 +8,7 @@
     :copyright: (c) 2015 by the Holocron Team, see AUTHORS for details.
     :license: 3-clause BSD, see LICENSE for details.
 """
+
 from unittest import mock
 from datetime import datetime
 from xml.dom import minidom

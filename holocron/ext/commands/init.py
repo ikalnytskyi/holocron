@@ -8,13 +8,14 @@
     :copyright: (c) 2014 by the Holocron Team, see AUTHORS for details.
     :license: 3-clause BSD, see LICENSE for details.
 """
+
 import os
 import logging
 
 from distutils.dir_util import copy_tree
 from distutils.errors import DistutilsFileError
 
-from holocron import app
+import holocron
 from holocron.ext import abc
 
 
@@ -23,18 +24,17 @@ logger = logging.getLogger(__name__)
 
 class Init(abc.Command):
     """
-    Init is command class responsible for creation of a blog skeleton.
-
-    Init command is an entry point for the user's workflow. It initializes
-    current folder with a basic _config.yml file and creates an example post.
+    Creates a blog skeleton in the current working directory.
     """
-    default_content = os.path.join(os.path.dirname(app.__file__), 'example/')
+
+    #: path to an example content
+    content = os.path.join(os.path.dirname(holocron.__file__), 'example')
 
     def execute(self, app):
-        # if holocron content exists, copy it to current directory
         try:
-            copied_files = copy_tree(self.default_content, os.curdir)
+            copied_files = copy_tree(self.content, os.curdir)
             for file_ in copied_files:
-                print('File {file} created.'.format(file=file_))
+                logger.info('%s: created', file_)
+
         except DistutilsFileError:
             logger.error('Holocron example content was not found.')

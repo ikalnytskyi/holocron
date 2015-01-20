@@ -46,7 +46,7 @@ class ChangeHandler(FileSystemEventHandler):
 
         # if config file was changed, update application obejct
         if document.startswith(os.path.abspath('_config.yml')):
-            self.app = app.create_app(document)
+            self.app = app.create_app(document) or self.app
 
         self.app.run()
 
