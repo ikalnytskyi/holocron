@@ -53,7 +53,7 @@ class Blog(abc.Generator):
         '      <link href="{{ doc.abs_url }}" rel="alternate" />',
         '      <id>{{ doc.abs_url }}</id>',
 
-        '      <published>{{ doc.created_local.isoformat() }}</published>',
+        '      <published>{{ doc.published.isoformat() }}</published>',
         '      <updated>{{ doc.updated_local.isoformat() }}</updated>',
 
         '      <author>',
@@ -101,7 +101,7 @@ class Blog(abc.Generator):
                           post pattern
         """
         posts = (doc for doc in documents if isinstance(doc, Post))
-        posts = sorted(posts, key=lambda d: d.created, reverse=True)
+        posts = sorted(posts, key=lambda d: d.published, reverse=True)
         return posts
 
     def index(self, posts):

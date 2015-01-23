@@ -13,7 +13,7 @@
 {% block article_meta %}
 written by {{ document.author }} on
 
-<time datetime="{{ document.created.isoformat() }}">
-  {{ document.created.strftime('%B %d, %Y') }}
+<time datetime="{{ document.published.isoformat() }}">
+  {{ document.published.strftime('%B %d, %Y') }}
 </time>
 {% endblock %}

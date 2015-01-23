@@ -215,6 +215,14 @@ class Post(Page):
     #: post's author, published date and a list of tags.
     template = 'post.html'
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        date = self.short_source.split(os.sep)[:3]
+        date = ''.join(date)
+
+        self.published = datetime.datetime.strptime(date, '%Y%m%d').date()
+
 
 class Static(Document):
     """
