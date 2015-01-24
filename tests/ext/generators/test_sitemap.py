@@ -27,6 +27,9 @@ class TestSitemapGenerator(HolocronTestCase):
         Prepares a sitemap instance with a fake config.
         """
         self.sitemap = sitemap.Sitemap(mock.Mock(conf=Conf({
+            'encoding': {
+                'output': 'my-enc',
+            },
             'paths': {
                 'output': 'path/to/output',
             }
@@ -76,7 +79,7 @@ class TestSitemapGenerator(HolocronTestCase):
 
         return content
 
-    def test_sitemap_save_to_path(self):
+    def test_sitemap_save_to_path_and_enc(self):
         """
         The sitemap generator has to place "sitemap.xml" file in the output
         folder, which is specified in holocron settings.
@@ -86,6 +89,16 @@ class TestSitemapGenerator(HolocronTestCase):
 
             self.assertEqual(
                 mopen.call_args[0][0], 'path/to/output/sitemap.xml')
+            self.assertEqual(
+                mopen.call_args[1]['encoding'], 'my-enc')
+
+    def test_sitemap_encoding_attr(self):
+        """
+        The sitemap.xml has to have an XML tag with right encoding.
+        """
+        output = self._get_output_content([])
+
+        self.assertIn('encoding="my-enc"', output)
 
     def test_sitemap_wo_documents(self):
         """
