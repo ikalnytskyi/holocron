@@ -36,7 +36,7 @@ class Blog(abc.Generator):
     """
     #: an atom template
     feed_template = jinja2.Template('\n'.join([
-        '<?xml version="1.0" encoding="utf-8"?>',
+        '<?xml version="1.0" encoding="{{ encoding }}"?>',
         '  <feed xmlns="http://www.w3.org/2005/Atom" >',
         '    <title>{{ credentials.sitename }} Feed</title>',
         '    <updated>{{ credentials.date.isoformat() + "Z" }}</updated>',
@@ -110,8 +110,9 @@ class Blog(abc.Generator):
         """
         save_as = self.app.conf['generators.blog.index.save_as']
         save_as = os.path.join(self._output, save_as)
+        encoding = self.app.conf['encoding.output']
 
-        with open(save_as, 'w', encoding='utf-8') as f:
+        with open(save_as, 'w', encoding=encoding) as f:
             f.write(self._template.render(
                 posts=posts,
                 sitename=self.app.conf['sitename']))
@@ -136,8 +137,9 @@ class Blog(abc.Generator):
 
             save_as = self.app.conf['generators.blog.tags.save_as']
             save_as = os.path.join(path, save_as)
+            encoding = self.app.conf['encoding.output']
 
-            with open(save_as, 'w', encoding='utf-8') as f:
+            with open(save_as, 'w', encoding=encoding) as f:
                 f.write(self._template.render(
                     posts=tags[tag],
                     sitename=self.app.conf['sitename']))
@@ -159,10 +161,11 @@ class Blog(abc.Generator):
             'date': datetime.datetime.utcnow().replace(microsecond=0), }
 
         save_as = os.path.join(self._output, save_as)
-        path = os.path.dirname(save_as)
-        mkdir(path)
+        mkdir(os.path.dirname(save_as))
+        encoding = self.app.conf['encoding.output']
 
-        with open(save_as, 'w', encoding='utf-8') as f:
+        with open(save_as, 'w', encoding=encoding) as f:
             f.write(self.feed_template.render(
                 documents=posts[:posts_number],
-                credentials=credentials))
+                credentials=credentials,
+                encoding=encoding))

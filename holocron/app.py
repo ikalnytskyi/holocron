@@ -89,7 +89,10 @@ class Holocron(object):
         'siteurl': 'http://obi-wan.jedi',
         'author': 'Obi-Wan Kenobi',
 
-        'encoding': 'utf-8',
+        'encoding': {
+            'content': 'utf-8',
+            'output': 'utf-8',
+        },
 
         'paths': {
             'content': '.',
@@ -225,7 +228,8 @@ class Holocron(object):
             sitename=self.conf['sitename'],
             siteurl=self.conf['siteurl'],
             author=self.conf['author'],
-            theme=self.conf['theme'])
+            theme=self.conf['theme'],
+            encoding=self.conf['encoding.output'])
         return env
 
     def run(self):

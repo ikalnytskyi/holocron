@@ -41,14 +41,12 @@ class BlogTestCase(HolocronTestCase):
             'siteurl': 'www.mytest.com',
             'author': 'Tester',
 
-            'paths': {
-                'output': 'path/to/output',
+            'encoding': {
+                'output': 'my-enc',
             },
 
-            'theme': {
-                'navigation': [
-                    ('feed', '/feed.xml'),
-                ],
+            'paths': {
+                'output': 'path/to/output',
             },
 
             'generators': {
@@ -161,7 +159,7 @@ class TestIndexGenerator(BlogTestCase):
     # tag that preceds a group of posts with the same year
     year_tag = '<h2>'
 
-    def test_save_index_to_filesystem(self):
+    def test_save_index_to_filesystem_and_enc(self):
         """
         Test that index function saves index.html file to a proper location.
         """
@@ -170,6 +168,16 @@ class TestIndexGenerator(BlogTestCase):
 
             self.assertEqual(
                 mopen.call_args[0][0], 'path/to/output/myindex.html')
+            self.assertEqual(
+                mopen.call_args[1]['encoding'], 'my-enc')
+
+    def test_index_encoding_meta_tag(self):
+        """
+        The feed.xml has to have an XML tag with right encoding.
+        """
+        output = self._get_content([], self.blog.index)
+
+        self.assertIn('charset="my-enc"', output)
 
     def test_index_empty(self):
         """
@@ -334,7 +342,7 @@ class TestFeedGenerator(BlogTestCase):
         return content
 
     @mock.patch('holocron.ext.generators.blog.mkdir')
-    def test_save_feed_to_filesystem(self, _):
+    def test_feed_filename_and_enc(self, _):
         """
         Feed function has to save feed xml file to a proper location and with
         proper filename. All settings are fetched from the configuration file.
@@ -344,6 +352,16 @@ class TestFeedGenerator(BlogTestCase):
 
             self.assertEqual(
                 mopen.call_args[0][0], 'path/to/output/myfeed.xml')
+            self.assertEqual(
+                mopen.call_args[1]['encoding'], 'my-enc')
+
+    def test_feed_encoding_attr(self):
+        """
+        The feed.xml has to have an XML tag with right encoding.
+        """
+        output = self._get_content([], self.blog.feed)
+
+        self.assertIn('encoding="my-enc"', output)
 
     def test_feed_template(self):
         """

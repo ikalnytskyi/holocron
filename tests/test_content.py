@@ -31,6 +31,10 @@ class DocumentTestCase(HolocronTestCase):
 
     _fake_conf = Conf(app.Holocron.default_conf, {
         'siteurl': 'http://example.com',
+        'encoding': {
+            'content': 'cont-enc',
+            'output': 'out-enc',
+        },
         'paths': {
             'content': './content',
             'output': './_output',
@@ -165,6 +169,8 @@ class TestPage(DocumentTestCase):
         with mock.patch(self._open_fn, mopen, create=True):
             super(TestPage, self).setUp()
 
+        self.assertEqual(mopen.call_args[1]['encoding'], 'cont-enc')
+
     def test_url(self):
         """
         The url property has to be the same as a path relative to the
@@ -208,8 +214,10 @@ class TestPage(DocumentTestCase):
         with mock.patch(self._open_fn, mopen, create=True):
             self.doc.build()
 
-        filename, *_ = mopen.call_args[0]
-        self.assertEqual(filename, './_output/about/cv/index.html')
+        self.assertEqual(
+            mopen.call_args[0][0], './_output/about/cv/index.html')
+
+        self.assertEqual(mopen.call_args[1]['encoding'], 'out-enc')
 
 
 class TestPost(TestPage):
@@ -236,8 +244,10 @@ class TestPost(TestPage):
         with mock.patch(self._open_fn, mopen, create=True):
             self.doc.build()
 
-        filename, *_ = mopen.call_args[0]
-        self.assertEqual(filename, './_output/2014/10/8/testpost/index.html')
+        self.assertEqual(
+            mopen.call_args[0][0], './_output/2014/10/8/testpost/index.html')
+
+        self.assertEqual(mopen.call_args[1]['encoding'], 'out-enc')
 
     def test_published(self):
         """

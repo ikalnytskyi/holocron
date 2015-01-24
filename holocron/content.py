@@ -157,7 +157,8 @@ class Page(Document):
 
         :returns: a dictionary with parsed information
         """
-        with open(self.source, encoding='utf-8') as f:
+        encoding = self._app.conf['encoding.content']
+        with open(self.source, encoding=encoding) as f:
             headers = {}
             content = f.read()
 
@@ -183,7 +184,9 @@ class Page(Document):
         mkdir(os.path.dirname(destination))
 
         template = self._app.jinja_env.get_template(self.template)
-        with open(destination, 'w', encoding='utf-8') as f:
+        encoding = self._app.conf['encoding.output']
+
+        with open(destination, 'w', encoding=encoding) as f:
             f.write(template.render(
                 document=self,
                 sitename=self._app.conf['sitename'],

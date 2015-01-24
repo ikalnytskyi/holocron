@@ -36,7 +36,7 @@ class Sitemap(abc.Generator):
 
     #: a sitemap template
     template = jinja2.Template('\n'.join([
-        '<?xml version="1.0" encoding="utf-8"?>',
+        '<?xml version="1.0" encoding="{{ encoding }}"?>',
         '  <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
         '  {%- for doc in documents %}',
         '    <url>',
@@ -53,5 +53,8 @@ class Sitemap(abc.Generator):
 
         # write sitemap to the file
         save_as = os.path.join(self.app.conf['paths.output'], self.save_as)
-        with open(save_as, 'w', encoding='utf-8') as f:
-            f.write(self.template.render(documents=documents))
+        encoding = self.app.conf['encoding.output']
+
+        with open(save_as, 'w', encoding=encoding) as f:
+            f.write(
+                self.template.render(documents=documents, encoding=encoding))
