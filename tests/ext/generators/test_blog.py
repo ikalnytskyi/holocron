@@ -95,8 +95,8 @@ class BlogTestCase(HolocronTestCase):
         self.post_late = mock.Mock(
             spec=Post, published=self.date_late, url='www.post_late.com')
 
-    @mock.patch('holocron.ext.generators.blog.mkdir')
-    def _get_content(self, documents, test_function, _):
+    @mock.patch('holocron.ext.generators.blog.mkdir', mock.Mock())
+    def _get_content(self, documents, test_function):
         """
         This helper method mocks the open function and return the content
         passed as input to write function.
@@ -341,8 +341,8 @@ class TestFeedGenerator(BlogTestCase):
 
         return content
 
-    @mock.patch('holocron.ext.generators.blog.mkdir')
-    def test_feed_filename_and_enc(self, _):
+    @mock.patch('holocron.ext.generators.blog.mkdir', mock.Mock())
+    def test_feed_filename_and_enc(self):
         """
         Feed function has to save feed xml file to a proper location and with
         proper filename. All settings are fetched from the configuration file.
