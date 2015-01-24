@@ -115,22 +115,15 @@ class Holocron(object):
         },
 
         'generators': {
-            'enabled': ['sitemap', 'blog'],
+            'enabled': ['sitemap', 'index', 'feed', 'tags'],
 
-            'blog': {
-                'feed': {
-                    'save_as': 'feed.xml',
-                    'posts_number': 5,
-                },
+            'feed': {
+                'save_as': 'feed.xml',
+                'posts_number': 5,
+            },
 
-                'index': {
-                    'save_as': 'index.html',
-                },
-
-                'tags': {
-                    'output': 'tags/',
-                    'save_as': 'index.html',
-                },
+            'tags': {
+                'output': 'tags/',
             },
         },
 
