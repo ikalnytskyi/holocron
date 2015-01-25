@@ -205,8 +205,8 @@ class TestPage(DocumentTestCase):
         self.assertEqual(self.doc.myattr, 'value')
         self.assertEqual(self.doc.title, 'My Path')
 
-    @mock.patch('holocron.content.mkdir')
-    def test_build(self, mkdir):
+    @mock.patch('holocron.content.mkdir', mock.Mock())
+    def test_build(self):
         """
         The page instance has to be rendered in the right place.
         """
@@ -236,6 +236,7 @@ class TestPost(TestPage):
         """
         self.assertEqual(self.doc.url, '/2014/10/8/testpost/')
 
+    @mock.patch('holocron.content.mkdir', mock.Mock())
     def test_build(self):
         """
         The post instance has to be rendered in the right place.
