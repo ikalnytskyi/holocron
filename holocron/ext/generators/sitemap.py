@@ -3,7 +3,7 @@
     holocron.ext.generators.sitemap
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    The package implements a Sitemap generator.
+    This module implements a Sitemap generator.
 
     :copyright: (c) 2014 by the Holocron Team, see AUTHORS for details.
     :license: 3-clause BSD, see LICENSE for details.

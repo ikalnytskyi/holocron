@@ -58,8 +58,10 @@ setup(
         ],
 
         'holocron.ext.generators': [
+            'feed = holocron.ext.generators.feed:Feed',
+            'index = holocron.ext.generators.index:Index',
             'sitemap = holocron.ext.generators.sitemap:Sitemap',
-            'blog = holocron.ext.generators.blog:Blog',
+            'tags = holocron.ext.generators.tags:Tags',
         ],
 
         'holocron.ext.commands': [
