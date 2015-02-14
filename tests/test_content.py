@@ -67,7 +67,10 @@ class TestDocument(DocumentTestCase):
 
     class DocumentImpl(content.Document):
         url = '/url/to/doc'
-        build = lambda: 42
+
+        def build(self):
+            return 42
+
     document_class = DocumentImpl
     document_filename = 'about/cv.mdown'
 
