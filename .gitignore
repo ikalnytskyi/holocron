@@ -28,5 +28,6 @@ docs/_build
 holocron/example/**
 !holocron/example/2014/04/20/holocron.mdown
 !holocron/example/2014/04/20/logo.png
+!holocron/example/about.mdown
 !holocron/example/_config.yml
 
