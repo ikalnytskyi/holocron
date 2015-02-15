@@ -221,10 +221,10 @@ class Post(Page):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        date = self.short_source.split(os.sep)[:3]
-        date = ''.join(date)
+        published = ''.join(self.short_source.split(os.sep)[:3])
+        published = datetime.datetime.strptime(published, '%Y%m%d')
 
-        self.published = datetime.datetime.strptime(date, '%Y%m%d').date()
+        self.published = published.replace(tzinfo=Local)
 
 
 class Static(Document):
