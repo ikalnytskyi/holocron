@@ -100,11 +100,7 @@ class Holocron(object):
             'theme': '_theme',
         },
 
-        'theme': {
-            'navigation': [
-                ('feed', '/feed.xml'),
-            ],
-        },
+        'theme': {},
 
         'converters': {
             'enabled': ['markdown'],

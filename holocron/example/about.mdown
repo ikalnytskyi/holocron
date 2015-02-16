@@ -1,0 +1,44 @@
+---
+author: Obi-Wan Kenobi
+---
+
+About me
+========
+
+![Kenobi picture](/images/young_obiWan.png "Kenobi picture")
+
+My name is Obi-Wan Kenobi, some close friends know me as Ben Kenobi. I'm a
+passionate Jedi Master, mentor of both Anakin and Luke Skywalkers and a huge
+fan of training both ways of the Force. Some people say that I've played a
+significant role in the fate of the galaxy, but I think they overrate my merits.
+I'm now retired and don't participate in any of the adventures. I prefer to
+chill out with Master Yoda and young Anakin.
+
+Short bio:
+----------
+
+* __Name__: Obi-Wan Kenobi
+* __Nickname__: Ben Kenobi
+* __Born__: 57 BBY (22 BrS), Stewjon
+* __Gender__: Male
+
+
+Honors and achivements:
+-----------------------
+
+* Became the first Jedi in 1000 years to defeat a Sith Lord (Dart Maul)
+* Faught during many battles of the Clone Wars
+* Earned a "The Negotiator" appelation for the ability to handle words as
+  equally as my lightsaber
+
+
+If you want to reach me, you're welcome to send an [E-mail] or add me on [Facebook].
+
+[E-mail]: Obi-Wan-Kenobi@tatuin.sw
+[Facebook]: https://www.facebook.com/obiwan.kenobi57
+
+Links:
+------
+
+* [Obi Wan Kenobi at Starwars Wikia](http://starwars.wikia.com/wiki/Obi-Wan_Kenobi)
+
