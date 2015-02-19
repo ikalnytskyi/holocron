@@ -27,7 +27,7 @@
 
     <nav>
     {% if theme.navigation -%}
-      {% for name, url in theme.navigation -%}
+      {% for name, url in theme.get('navigation', []) -%}
       <a href="{{ url }}">{{ name }}</a>
       {%- endfor %}
     {%- endif %}

@@ -1,7 +1,7 @@
 # coding: utf-8
 """
     holocron.ext.commands.init
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     The module implements an init command.
 
@@ -31,6 +31,10 @@ class Init(abc.Command):
     content = os.path.join(os.path.dirname(holocron.__file__), 'example')
 
     def execute(self, app):
+        if os.listdir(os.curdir) != []:
+            logger.error('Init command cannot run in a non-empty directory.')
+            return
+
         try:
             copied_files = copy_tree(self.content, os.curdir)
             for file_ in copied_files:

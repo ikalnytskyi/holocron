@@ -12,3 +12,8 @@
 sitename:    Kenobi's Thoughts
 siteurl:     http://obi-wan.jedi
 author:      Obi-Wan Kenobi
+
+theme:
+   navigation: !!pairs
+      - feed: /feed.xml
+      - about: /about
