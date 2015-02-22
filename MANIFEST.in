@@ -1,10 +1,9 @@
-include AUTHORS
-include LICENSE
-include README
-
 recursive-include holocron/themes *
-recursive-include holocron/example *
-recursive-exclude holocron/example/_build *
+recursive-include holocron/example
+prune             holocron/example/_build
 
 recursive-include tests *
 recursive-exclude tests *.pyc *.pyo
+
+include README.rst LICENSE AUTHORS CHANGES
+include tox.ini

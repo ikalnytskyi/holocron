@@ -3,12 +3,15 @@
     holocron
     ~~~~~~~~
 
-    Holocron is an easy and lightweight static blog generator, based on markup
-    text and Jinja2 templates.
+    Holocron is a simple, lightweight and extendable static blog generator.
 
-    First of all, we want to notice that Holocron isn't a yet another script.
-    A long time we've searched across Web the script which would be useful for
-    us. Our search was failed. So we've decided to write a new one...
+    Like others, it reads text files in various formats, renders them using
+    templates and produces a ready-to-publish static website which could be
+    served by Nginx or another web server.
+
+    Unlike others, it tries to retrieve as many information as possible from
+    the file system. Its core follows the KISS principle and doesn't reinvent
+    the wheel.
 
     :copyright: (c) 2014 by the Holocron Team, see AUTHORS for details.
     :license: 3-clause BSD, see LICENSE for details.
