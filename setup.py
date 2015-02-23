@@ -1,40 +1,27 @@
 #!/usr/bin/env python
 # coding: utf-8
-"""
-$ holocron_
 
-  Holocron is an easy and lightweight static blog generator, based on
-  markup text and Jinja2 templates. It's written in Python trying to
-  keep things simple and extensible.
-
-  Holocron in two points:
-
-  * simple and extensible
-  * clear theme and markdown out of the box
-
-  Read the docs for more information: http://holocron.readthedocs.org/
-  Fork and contribute: https://github.com/ikalnitsky/holocron
-"""
 from setuptools import setup, find_packages
 
 from holocron import __version__ as holocron_version
 from holocron import __license__ as holocron_license
 
-
 setup(
     name='holocron',
     version=holocron_version,
     license=holocron_license,
-    description='simple and extensible static blog generator',
-    long_description=__doc__,
+    description='simple, lightweight and extendable static blog generator',
     url='http://github.com/ikalnitsky/holocron/',
-    platforms='any',
-
     author='Igor Kalnitsky',
     author_email='igor@kalnitsky.org',
 
+    long_description='{0}\n{1}'.format(
+        open('README.rst', 'r', encoding='utf-8').read(),
+        open('CHANGES', 'r', encoding='utf-8').read()),
+
     packages=find_packages(exclude=['tests']),
     test_suite='tests',
+    zip_safe=False,
 
     install_requires=[
         # core parts
@@ -72,17 +59,15 @@ setup(
     },
 
     classifiers=[
+        'Environment :: Console',
         'Intended Audience :: End Users/Desktop',
         'License :: OSI Approved :: BSD License',
-
-        'Environment :: Console',
         'Operating System :: OS Independent',
-
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
-
         'Programming Language :: Python :: Implementation :: CPython',
+        'Topic :: Internet :: WWW/HTTP',
     ],
 )
