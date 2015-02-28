@@ -17,5 +17,5 @@ class Build(abc.Command):
     Generates a static site for a given Holocron instance.
     """
 
-    def execute(self, app):
+    def execute(self, app, arguments):
         app.run()

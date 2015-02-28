@@ -114,4 +114,4 @@ def main():
         sys.exit(1)
 
     command = command_manager[arguments.command]()
-    command.execute(holocron)
+    command.execute(holocron, arguments)
