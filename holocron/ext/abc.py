@@ -31,11 +31,12 @@ class Command(object, metaclass=abc.ABCMeta):
     """
 
     @abc.abstractmethod
-    def execute(self, app):
+    def execute(self, app, arguments):
         """
         Execute is a uniform method used to execute commands.
 
         :param app: an application instance
+        :param arguments: a Namespace object with parsed command line arguments
         """
 
 

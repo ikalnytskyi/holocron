@@ -30,7 +30,7 @@ class Init(abc.Command):
     #: path to an example content
     content = os.path.join(os.path.dirname(holocron.__file__), 'example')
 
-    def execute(self, app):
+    def execute(self, app, arguments):
         if os.listdir(os.curdir) != []:
             logger.error('Init command cannot run in a non-empty directory.')
             return

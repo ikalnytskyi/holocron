@@ -26,9 +26,10 @@ class ChangeHandler(FileSystemEventHandler):
     for processing events and rebuilding theme files and blogposts.
     """
 
-    def __init__(self, app):
+    def __init__(self, app, conf):
         super(ChangeHandler, self).__init__()
         self.app = app
+        self.conf = conf
 
     def process(self, document_path):
         """
@@ -45,7 +46,7 @@ class ChangeHandler(FileSystemEventHandler):
             return
 
         # if config file was changed, update application obejct
-        if document.startswith(os.path.abspath('_config.yml')):
+        if document.startswith(os.path.abspath(self.conf)):
             self.app = app.create_app(document) or self.app
 
         self.app.run()
@@ -87,24 +88,24 @@ def create_holocron_handler(path):
 
 class Serve(abc.Command):
     """
-    Serve is a serve command class.
+    Run a local development server for previewing content in browser.
 
     Serve class is responsible for serving the holocron application at a local
-    server. Command creates a simple htttp server and shares html files that
+    server. Command creates a simple http server and shares html files that
     generated in the output directory (build_/ by default).
     """
-    # path to the default theme
-    app_path = os.path.abspath(os.path.dirname(app.__file__))
-    theme_default = os.path.join(app_path, 'theme')
 
-    def execute(self, app):
+    default_theme = os.path.join(
+        os.path.abspath(os.path.dirname(app.__file__)), 'theme')
+
+    def execute(self, app, arguments):
         app.run()
 
         self.host = app.conf['commands.serve.host']
         self.port = int(app.conf['commands.serve.port'])
 
         # paths to track for chnages
-        watch_paths = [os.curdir, self.theme_default]
+        watch_paths = [os.curdir, self.default_theme]
 
         # check if there is a user theme and add it to watch directories list
         if os.path.exists(os.path.abspath(app.conf['paths.theme'])):
@@ -113,7 +114,8 @@ class Serve(abc.Command):
         observer = Observer()
 
         for path in watch_paths:
-            observer.schedule(ChangeHandler(app), path=path, recursive=True)
+            handler = ChangeHandler(app, arguments.conf)
+            observer.schedule(handler, path=path, recursive=True)
 
         holocron_handler = create_holocron_handler(app.conf['paths.output'])
         httpd = HTTPServer((self.host, self.port), holocron_handler)
