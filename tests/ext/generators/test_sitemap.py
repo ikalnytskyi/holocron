@@ -70,7 +70,8 @@ class TestSitemapGenerator(HolocronTestCase):
 
         content = {root.nodeName: []}
 
-        def is_element(n): return n.nodeType == n.ELEMENT_NODE
+        def is_element(n):
+            return n.nodeType == n.ELEMENT_NODE
 
         for url in filter(is_element, root.childNodes):
             url_data = {attr.nodeName: attr.firstChild.nodeValue
