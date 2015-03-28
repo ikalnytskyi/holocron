@@ -120,8 +120,9 @@ class TestHolocron(HolocronTestCase):
         self.assertNotEqual(
             generator_id, id(self.app._generators[TestGenerator]))
 
+    @mock.patch('holocron.app.mkdir')
     @mock.patch('holocron.app.iterfiles')
-    def test_run(self, iterfiles):
+    def test_run(self, iterfiles, mkdir):
         """
         Tests build process.
         """
@@ -138,6 +139,9 @@ class TestHolocron(HolocronTestCase):
         # check iterfiles call signature
         iterfiles.assert_called_with(
             self.app.conf['paths']['content'], '[!_.]*', True)
+
+        # check mkdir create ourpur dir
+        mkdir.assert_called_with(self.app.conf['paths.output'])
 
         # check that generators was used
         for _, generator in self.app._generators.items():
