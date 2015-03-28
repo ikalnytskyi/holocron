@@ -109,13 +109,16 @@ class TestFeedGenerator(HolocronTestCase):
         root = parsed.documentElement
 
         #: use this to sort DOM Elements from DOM Text containing \n and spaces
-        def is_element(n): return n.nodeType == n.ELEMENT_NODE
+        def is_element(n):
+            return n.nodeType == n.ELEMENT_NODE
 
         #: use this to parse <link> which contain attributes instead of values
-        def is_attribute(n): return len(n.attributes) != 0
+        def is_attribute(n):
+            return len(n.attributes) != 0
 
         #: use this to distinguish feed common elements (link, title) from post
-        def has_child(n): return len(n.childNodes) < 2
+        def has_child(n):
+            return len(n.childNodes) < 2
 
         urls = [url for url in filter(is_element, root.childNodes)]
 
