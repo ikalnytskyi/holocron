@@ -18,4 +18,11 @@ class Build(abc.Command):
     """
 
     def execute(self, app, arguments):
+        """
+        :param app: a :class:`holocron.app.Holocron` instance
+        :param arguments: an object with parsed command line arguments
+        """
+        # From API point of view, all we have to do is just to run
+        # Holocron's .run() method. So the command is nothing more
+        # than a CLI handler for calling it.
         app.run()
