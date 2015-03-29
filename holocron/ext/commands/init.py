@@ -11,9 +11,9 @@
 
 import os
 import logging
+import textwrap
 
 from distutils.dir_util import copy_tree
-from distutils.errors import DistutilsFileError
 
 import holocron
 from holocron.ext import abc
@@ -27,18 +27,23 @@ class Init(abc.Command):
     Creates a blog skeleton in the current working directory.
     """
 
-    #: path to an example content
-    content = os.path.join(os.path.dirname(holocron.__file__), 'example')
+    _content = os.path.join(os.path.dirname(holocron.__file__), 'example')
 
     def execute(self, app, arguments):
-        if os.listdir(os.curdir) != []:
-            logger.error('Init command cannot run in a non-empty directory.')
-            return
+        if os.listdir(os.curdir):
+            return logger.error('Could not initialize non-empty directory.')
 
-        try:
-            copied_files = copy_tree(self.content, os.curdir)
-            for file_ in copied_files:
-                logger.info('%s: created', file_)
+        copy_tree(self._content, os.curdir)
 
-        except DistutilsFileError:
-            logger.error('Holocron example content was not found.')
+        print(textwrap.dedent('''
+            The current working directory has been initialized with a blog
+            template. Here are some commands you might be interested in:
+
+               $ holocron build     # compile blog into static html
+               $ holocron serve     # preview blog in your browser
+
+            Look into the documentation https://holocron.readthedocs.org
+            for details.
+
+            May the Force be with you!
+        '''))
