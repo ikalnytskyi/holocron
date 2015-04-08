@@ -139,21 +139,21 @@ class TestHolocron(HolocronTestCase):
         iterfiles.assert_called_with(
             self.app.conf['paths']['content'], '[!_.]*', True)
 
-        self.app.__class__.document_factory.assert_has_calls([
-            # check that document class was used to generate class instances
-            mock.call('doc_a', self.app),
-            # check that document instances were built
-            mock.call().build(),
-            mock.call('doc_b', self.app),
-            mock.call().build(),
-            mock.call('doc_c', self.app),
-            mock.call().build(),
-        ])
-        self.assertEqual(self.app.__class__.document_factory.call_count, 3)
-
         # check that generators was used
         for _, generator in self.app._generators.items():
             self.assertEqual(generator.generate.call_count, 1)
+
+        self.app.__class__.document_factory.assert_has_calls([
+            # check that document class was used to generate class instances
+            mock.call('doc_a', self.app),
+            mock.call('doc_b', self.app),
+            mock.call('doc_c', self.app),
+            # check that document instances were built
+            mock.call().build(),
+            mock.call().build(),
+            mock.call().build(),
+        ])
+        self.assertEqual(self.app.__class__.document_factory.call_count, 3)
 
         # check that _copy_theme was called
         self.app._copy_theme.assert_called_once_with()

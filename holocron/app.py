@@ -21,7 +21,7 @@ from dooku.decorator import cached_property
 from dooku.ext import ExtensionManager
 
 from .content import create_document
-from .utils import iterfiles
+from .utils import iterfiles, mkdir
 
 
 logger = logging.getLogger(__name__)
@@ -218,38 +218,51 @@ class Holocron(object):
             siteurl=self.conf['siteurl'],
             author=self.conf['author'],
             theme=self.conf['theme'],
-            encoding=self.conf['encoding.output'])
+            encoding=self.conf['encoding.output'],
+            generators_enabled=self.conf['generators.enabled'])
         return env
 
-    def run(self):
+    def _get_documents(self):
         """
-        Starts build process.
+        Iterates over files in the content directory except files/dirs
+        starting with underscore or dot and converts files into document
+        objects.
         """
-        # iterate over files in the content directory
-        # except files/dirs starting with underscore or dot
+
         documents_paths = list(
             iterfiles(self.conf['paths.content'], '[!_.]*', True))
 
-        # consequently builds all found documents
+        # create document objects from raw files
         documents = []
         for index, document_path in enumerate(documents_paths):
             try:
-                percent = int((index + 1) * 100.0 / len(documents_paths))
                 document = self.__class__.document_factory(document_path, self)
-                print('[{percent:>3d}%] Building {doc}'.format(
-                    percent=percent, doc=document.short_source))
-
-                document.build()
                 documents.append(document)
 
             except Exception:
                 logger.warning('skip %s: invalid file', document_path)
 
+        return documents
+
+    def run(self):
+        """
+        Starts build process.
+        """
+        documents = self._get_documents()
+
+        mkdir(self.conf['paths.output'])
+
         # use generators to generate additional stuff
         for _, generator in self._generators.items():
             generator.generate(documents)
 
+        # build all documents found
+        for document in documents:
+            document.build()
+
         self._copy_theme()
+
+        print('Documents were built successfully')
 
     def _copy_theme(self):
         """

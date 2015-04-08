@@ -13,8 +13,17 @@ import os
 from collections import defaultdict
 
 from holocron.ext import abc
-from holocron.utils import mkdir
 from holocron.content import Post
+from holocron.utils import mkdir
+
+
+class Tag(object):
+    """
+    Simple wrapper to provide useful methods for manipulating with tag.
+    """
+    def __init__(self, tags_dir, tag):
+        self.name = tag
+        self.url = '/{path}/'.format(path=os.path.join(tags_dir, self.name))
 
 
 class Tags(abc.Generator):
@@ -33,23 +42,31 @@ class Tags(abc.Generator):
 
         #: output path directory for tags directory
         output_path = self.app.conf['paths.output']
-        tags_dir_name = self.app.conf['generators.tags.output']
+        tags_dir = self.app.conf['generators.tags.output']
 
         #: load template for rendering tag pages
-        _template = self.app.jinja_env.get_template(self._template_name)
+        template = self.app.jinja_env.get_template(self._template_name)
 
         #: create a dictionnary of tags to corresponding posts
         tags = defaultdict(list)
+
         for post in posts:
-            for tag in getattr(post, 'tags', []):
-                tags[tag].append(post)
+
+            if hasattr(post, 'tags'):
+                tag_objects = []
+                for tag in post.tags:
+                    tag = Tag(tags_dir, tag)
+                    tags[tag.name].append(post)
+                    tag_objects.append(tag)
+
+                post.tags = tag_objects
 
         for tag in tags:
-            path = os.path.join(output_path, tags_dir_name, tag)
+            path = os.path.join(output_path, tags_dir, tag)
             mkdir(path)
 
             save_as = os.path.join(path, self._save_as)
             encoding = self.app.conf['encoding.output']
 
             with open(save_as, 'w', encoding=encoding) as f:
-                f.write(_template.render(posts=tags[tag]))
+                f.write(template.render(posts=tags[tag]))
