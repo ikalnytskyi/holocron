@@ -13,11 +13,42 @@ from unittest import mock
 from datetime import datetime
 
 from dooku.conf import Conf
-from holocron.ext.generators import tags
+from holocron.ext.generators.tags import Tags, Tag
 from holocron.content import Post, Page, Static
 from holocron.app import Holocron
 
 from tests import HolocronTestCase
+
+
+class TestTagObjects(HolocronTestCase):
+    """
+    Test tag wrapper class.
+    """
+    def setUp(self):
+        # fake tags
+        self.tag1 = 'tag1'
+        self.tag2 = 'tag2'
+
+        # some directory where all tag pages locates
+        self.tag_dir = 'test/tags'
+
+    def test_tag_name(self):
+        """
+        Test that tag object returns correct tag name.
+        """
+        tag1_obj = Tag(self.tag_dir, self.tag1)
+        tag2_obj = Tag(self.tag_dir, self.tag2)
+
+        self.assertEquals(tag1_obj.name, self.tag1)
+        self.assertEquals(tag2_obj.name, self.tag2)
+
+    def test_tag_url(self):
+        """
+        Tag object should return correct url with leading and closing slashes.
+        """
+        tag1_obj = Tag(self.tag_dir, self.tag1)
+
+        self.assertEquals(tag1_obj.url, '/test/tags/tag1/')
 
 
 class TestTagsGenerator(HolocronTestCase):
@@ -29,7 +60,7 @@ class TestTagsGenerator(HolocronTestCase):
 
     def setUp(self):
 
-        self.tags = tags.Tags(Holocron(conf=Conf({
+        self.tags = Tags(Holocron(conf=Conf({
             'sitename': 'MyTestSite',
             'siteurl': 'www.mytest.com',
             'author': 'Tester',
@@ -108,7 +139,7 @@ class TestTagsGenerator(HolocronTestCase):
 
             return content
 
-    def test_tags_with_posts(self):
+    def test_tag_template_building(self):
         """
         Test that tags function writes a post to a tag template.
         """
@@ -151,7 +182,7 @@ class TestTagsGenerator(HolocronTestCase):
 
         self.assertEqual('path/to/output/mypath/tags/testtag3', content[2][2])
 
-    def test_mixed_documents(self):
+    def test_sorting_out_mixed_documents(self):
         """
         Test that Tags sorts out post documents from documents of other types.
         """
@@ -160,3 +191,11 @@ class TestTagsGenerator(HolocronTestCase):
 
         self.assertIn(self.h_year(2014), content)
         self.assertIn('<a href="www.post_late.com">', content)
+
+    def test_posts_patching_with_tag_objects(self):
+        posts = [self.post_late]
+
+        self._get_tags_content(posts)
+
+        self.assertEquals(self.post_late.tags[0].name, 'testtag2')
+        self.assertEquals(self.post_late.tags[0].url, '/mypath/tags/testtag2/')

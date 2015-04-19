@@ -16,4 +16,17 @@ written by {{ document.author }} on
 <time datetime="{{ document.published.isoformat() }}">
   {{ document.published.strftime('%B %d, %Y') }}
 </time>
+
+
+{% if 'tags' in generators_enabled and document.tags %}
+<div id="post-tags">
+{% for tag in document.tags %}
+    <a href="{{ tag.url }}">{{ tag.name }}</a>
+    {%- if not loop.last -%}
+        ,
+    {% endif %}
+{% endfor %}
+</div>
+{% endif %}
+
 {% endblock %}
