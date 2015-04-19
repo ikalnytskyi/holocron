@@ -38,7 +38,10 @@ def create_app(confpath=None):
         conf = None
         if confpath is not None:
             with open(confpath, 'r', encoding='utf-8') as f:
-                conf = yaml.load(f.read())
+                # the conf may contain the {here} macro, so we have to
+                # replace it with actual value.
+                here = os.path.dirname(os.path.abspath(confpath))
+                conf = yaml.load(f.read().format(here=here))
 
     except (FileNotFoundError, PermissionError) as exc:
         # it's ok that a user doesn't have a settings file or doesn't have

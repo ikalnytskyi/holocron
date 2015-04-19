@@ -1,19 +1,33 @@
 #
-# HOLOCRON CONFIGURATION FILE.  PLEASE DO NOT FORGET
-# TO CHANGE THE SETTINGS BELOW FOR YOURSELF. ALL THE
-# SETTINGS ARE COMMENTED FOR EASY CHANGES.
+# HOLOCRON CONFIGURATION FILE. PLEASE DO NOT FORGET TO CHANGE THE
+# SETTINGS BELOW FOR YOURSELF. ALL THE SETTINGS ARE COMMENTED FOR
+# EASY CHANGES.
 #
 # YOU CAN REMOVE UNNECESSARY SETTINGS FROM THIS FILE.
 # IN THIS CASE DEFAULT SETTINGS WILL BE USED.
 #
 
-# Here is a blog credentials. You should change it
-# on your own way.
+
 sitename:    Kenobi's Thoughts
 siteurl:     http://obi-wan.jedi
 author:      Obi-Wan Kenobi
 
+# Paths to various input / output stuff, such as where to search
+# for content and where to store built results. The {here} macro
+# will be replaced with a path to config's folder.
+paths:
+   content: {here}/
+   output:  {here}/_build
+   theme:   {here}/_theme
+
+# The place where you can customize your theme. The default one
+# supports only these settings, but third party ones may contain
+# more, so don't forget to check it out.
 theme:
    navigation: !!pairs
       - feed: /feed.xml
       - about: /about
+
+   # counters:
+   #    google_analytics: XX-XXXXXXXX-X
+   #    yandex_metrika: XXXXXXX
