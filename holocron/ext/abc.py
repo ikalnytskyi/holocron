@@ -30,6 +30,15 @@ class Command(object, metaclass=abc.ABCMeta):
                 # perform some actions
     """
 
+    def set_arguments(self, parser):
+        """
+        Declare additional command line arguments for the command. By default,
+        there are no arguments. Each command has to overwite this method in
+        order to add new arguments.
+
+        :param parser: an :class:`argparse.ArgumentParser` for the command
+        """
+
     @abc.abstractmethod
     def execute(self, app, arguments):
         """
