@@ -97,7 +97,7 @@ class Serve(abc.Command):
 
     Serve class is responsible for serving the holocron application at
     a local server. Command creates a simple http server and shares html
-    files that generated in the output directory (build_/ by default).
+    files that generated in the output directory (_build/ by default).
     """
 
     def execute(self, app, arguments):

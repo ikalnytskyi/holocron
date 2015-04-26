@@ -58,7 +58,7 @@ def parse_command_line(commands):
     Builds a command line interface, and parses its arguments. Returns
     an object with attributes, that are represent CLI arguments.
 
-    :param commands: a list of available commands
+    :param commands: a dict with available commands (name -> instance)
     :returns: a parsed object with cli options
     """
     parser = argparse.ArgumentParser(
@@ -68,9 +68,6 @@ def parse_command_line(commands):
         epilog=(
             'With no CONF, read _config.yml in the current working dir. '
             'If no CONF found, the default settings will be used.'))
-
-    parser.add_argument(
-        'command', choices=commands, help='a command to execute')
 
     parser.add_argument(
         '-c', '--conf', dest='conf', default='_config.yml',
@@ -92,13 +89,22 @@ def parse_command_line(commands):
         '--version', action='version', version=holocron_version,
         help='show the holocron version and exit')
 
+    command_parser = parser.add_subparsers(
+        dest='command', help='command to execute')
+
+    # declare commands
+    for name, command in commands.items():
+        subparser = command_parser.add_parser(name)
+        command.set_arguments(subparser)
+
     return parser.parse_args()
 
 
 def main():
-    # initialize command manager and get a list of available commands
-    command_manager = ExtensionManager('holocron.ext.commands')
-    arguments = parse_command_line(command_manager.names())
+    # get available commands and build cli based on it
+    commands_manager = ExtensionManager('holocron.ext.commands')
+    commands = {name: command() for name, command in commands_manager}
+    arguments = parse_command_line(commands)
 
     # initial logger configuration - use custom format for records
     # and print records with WARNING level and higher.
@@ -113,5 +119,5 @@ def main():
     if holocron is None:
         sys.exit(1)
 
-    command = command_manager[arguments.command]()
-    command.execute(holocron, arguments)
+    # execute passed command
+    commands[arguments.command].execute(holocron, arguments)
