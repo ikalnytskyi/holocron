@@ -53,11 +53,12 @@ def configure_logger(level):
     logger.setLevel(level)
 
 
-def parse_command_line(commands):
+def parse_command_line(args, commands):
     """
     Builds a command line interface, and parses its arguments. Returns
     an object with attributes, that are represent CLI arguments.
 
+    :param args: a list of command line arguments
     :param commands: a dict with available commands (name -> instance)
     :returns: a parsed object with cli options
     """
@@ -97,14 +98,14 @@ def parse_command_line(commands):
         subparser = command_parser.add_parser(name)
         command.set_arguments(subparser)
 
-    return parser.parse_args()
+    return parser.parse_args(args)
 
 
-def main():
+def main(args=sys.argv[1:]):
     # get available commands and build cli based on it
     commands_manager = ExtensionManager('holocron.ext.commands')
     commands = {name: command() for name, command in commands_manager}
-    arguments = parse_command_line(commands)
+    arguments = parse_command_line(args, commands)
 
     # initial logger configuration - use custom format for records
     # and print records with WARNING level and higher.
