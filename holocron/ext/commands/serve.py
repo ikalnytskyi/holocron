@@ -10,6 +10,8 @@
 """
 
 import os
+import time
+import threading
 
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 
@@ -22,11 +24,22 @@ from holocron.ext import abc
 
 
 class _ChangeWatcher(FileSystemEventHandler):
+    """
+    Handles filesystem events and decides whether blog should be rebuilt
+    or not. The class asks a :class:`_Builder` to rebuild blog on next
+    schedule if there were some "interesting" events.
 
-    def __init__(self, app, recreate_app=False, watch_for=None, ignore=None):
+    :param builder: a :class:`_Builder` instance
+    :param recreate_app: recreated the app as well as rebuilt blog if True
+    :param watch_for: a list of paths we should watch for
+    :param ignore: a list of files which should be ignored
+    """
+
+    def __init__(self, builder, recreate_app=False, watch_for=None,
+                 ignore=None):
         super(_ChangeWatcher, self).__init__()
 
-        self._app = app
+        self._builder = builder
         self._recreate_app = recreate_app
         self._watch_for = watch_for
         self._ignore = ignore
@@ -52,14 +65,14 @@ class _ChangeWatcher(FileSystemEventHandler):
 
         # If some file is changed/created in output directory then do not
         # rebuild blog again, because it's senseless.
-        output = os.path.abspath(self._app.conf['paths.output'])
+        output = os.path.abspath(self._builder._app.conf['paths.output'])
         if document.startswith(output):
             return
 
         # Recreate application if it's possible and we have to.
         if self._recreate_app:
-            self._app = app.create_app(document) or self._app
-        self._app.run()
+            self._builder.recreate_app()
+        self._builder.rebuild()
 
     def on_created(self, event):
         if not event.is_directory:
@@ -69,7 +82,50 @@ class _ChangeWatcher(FileSystemEventHandler):
         self.on_created(event)
 
 
-def create_holocron_handler(path):
+class _Builder(threading.Thread):
+    """
+    The class is intended to wake up each N seconds and rebuild blog if
+    it was asked to do so.
+
+    :param app: a Holocron instance to build blog
+    :param confpath: a path to config file
+    :param sleep: a time in seconds between awakenings
+    """
+
+    def __init__(self, app, confpath, sleep=1):
+        super(_Builder, self).__init__()
+
+        self._app = app
+        self._confpath = confpath
+        self._sleep = sleep
+        self._recreate_app = False
+        self._rebuild = False
+        self._quit = False
+
+    def recreate_app(self):
+        self._recreate_app = True
+
+    def rebuild(self):
+        self._rebuild = True
+
+    def shutdown(self):
+        self._quit = True
+
+    def run(self):
+        while not self._quit:
+
+            if self._recreate_app:
+                self._app = app.create_app(self._confpath) or self._app
+                self._recreate_app = False
+
+            if self._rebuild:
+                self._app.run()
+                self._rebuild = False
+
+            time.sleep(self._sleep)
+
+
+def _create_holocron_handler(path):
     """
     This factory method is used to create the http handler class with
     a custom attribute indicating a serve path.
@@ -101,12 +157,28 @@ class Serve(abc.Command):
     """
 
     def execute(self, app, arguments):
+        wakeup = int(app.conf['commands.serve.wakeup'])
+
         app.run()
 
-        self._watch(app, arguments)
-        self._serve(app)
+        builder = _Builder(app, arguments.conf, wakeup)
+        observer = self._watch(app, arguments, builder)
+        httpd = self._serve(app)
 
-    def _watch(self, app, arguments):
+        try:
+            builder.start()
+            observer.start()
+            httpd.serve_forever()
+
+        except KeyboardInterrupt:
+            print(' recieved, shutting down server')
+
+        finally:
+            httpd.socket.close()
+            observer.stop()
+            builder.shutdown()
+
+    def _watch(self, app, arguments, builder):
         # By default we're watching for events in both content and default
         # theme directories.
         watch_paths = [
@@ -121,21 +193,21 @@ class Serve(abc.Command):
         observer = Observer()
         for path in watch_paths:
             observer.schedule(
-                _ChangeWatcher(app, ignore=[
+                _ChangeWatcher(builder, ignore=[
                     os.path.abspath(arguments.conf),
                 ]),
                 path, recursive=True)
 
         # We also should watch for user's settings explicitly, because
-        # they may located not in the content directory. Unfortunately,
+        # they may located not in the content directory.
         if os.path.exists(arguments.conf):
             observer.schedule(
-                _ChangeWatcher(app, recreate_app=True, watch_for=[
+                _ChangeWatcher(builder, recreate_app=True, watch_for=[
                     os.path.abspath(arguments.conf),
                 ]),
                 os.path.abspath(os.path.dirname(arguments.conf)))
 
-        observer.start()
+        return observer
 
     def _serve(self, app):
         host = app.conf['commands.serve.host']
@@ -144,11 +216,5 @@ class Serve(abc.Command):
         print('HTTP server started at http://{0}:{1}/'.format(host, port))
         print('In order to stop serving, press Ctrl+C')
 
-        holocron_handler = create_holocron_handler(app.conf['paths.output'])
-        httpd = HTTPServer((host, port), holocron_handler)
-
-        try:
-            httpd.serve_forever()
-        except KeyboardInterrupt:
-            print(' recieved, shutting down server')
-            httpd.socket.close()
+        holocron_handler = _create_holocron_handler(app.conf['paths.output'])
+        return HTTPServer((host, port), holocron_handler)
