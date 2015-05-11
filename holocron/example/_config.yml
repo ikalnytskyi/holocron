@@ -8,9 +8,11 @@
 #
 
 
-sitename:    Kenobi's Thoughts
-siteurl:     http://obi-wan.jedi
-author:      Obi-Wan Kenobi
+site:
+   title:      Kenobi's Thoughts
+   subtitle:   the Force techniques
+   url:        http://obi-wan.jedi
+   author:     Obi-Wan Kenobi
 
 # Paths to various input / output stuff, such as where to search
 # for content and where to store built results. The {here} macro

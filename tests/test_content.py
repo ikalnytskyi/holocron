@@ -30,7 +30,9 @@ class DocumentTestCase(HolocronTestCase):
     _getmtime = 1420121400  # UTC: 2015/01/01 2:10pm
 
     _fake_conf = Conf(app.Holocron.default_conf, {
-        'siteurl': 'http://example.com',
+        'site': {
+            'url': 'http://example.com',
+        },
         'encoding': {
             'content': 'cont-enc',
             'output': 'out-enc',
@@ -193,7 +195,7 @@ class TestPage(DocumentTestCase):
         with mock.patch(self._open_fn, mopen, create=True):
             super(TestPage, self).setUp()
 
-        self.assertEqual(self.doc.author, self._fake_conf['author'])
+        self.assertEqual(self.doc.author, self._fake_conf['site.author'])
         self.assertEqual(self.doc.template, self.document_class.template)
         self.assertEqual(self.doc.title, self.document_class.title)
 

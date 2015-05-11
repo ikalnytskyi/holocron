@@ -29,9 +29,11 @@ class TestFeedGenerator(HolocronTestCase):
     def setUp(self):
 
         self.feed = feed.Feed(Holocron(conf=Conf({
-            'sitename': 'MyTestSite',
-            'siteurl': 'www.mytest.com',
-            'author': 'Tester',
+            'site': {
+                'title': 'MyTestSite',
+                'author': 'Tester',
+                'url': 'http://www.mytest.com/',
+            },
 
             'encoding': {
                 'output': 'my-enc',
@@ -183,7 +185,7 @@ class TestFeedGenerator(HolocronTestCase):
 
         feed = content['feed']
 
-        self.assertEqual('MyTestSite Feed', feed['title'])
+        self.assertEqual('MyTestSite', feed['title'])
         self.assertEqual('http://www.mytest.com/', feed['id'])
         self.assertEqual('http://www.mytest.com/myfeed.xml', feed['link.self'])
         self.assertEqual('http://www.mytest.com/', feed['link.alternate'])

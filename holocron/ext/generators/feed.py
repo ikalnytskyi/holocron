@@ -11,6 +11,7 @@
 
 import os
 import datetime
+import textwrap
 
 import jinja2
 
@@ -28,38 +29,42 @@ class Feed(abc.Generator):
     """
 
     #: an atom template
-    _template = jinja2.Template('\n'.join([
-        '<?xml version="1.0" encoding="{{ encoding }}"?>',
-        '  <feed xmlns="http://www.w3.org/2005/Atom" >',
-        '    <title>{{ credentials.sitename }} Feed</title>',
-        '    <updated>{{ credentials.date.isoformat() + "Z" }}</updated>',
-        '    <id>{{ credentials.siteurl_alt }}</id>',
-        '    ',
-        '    <link href="{{ credentials.siteurl_self }}" rel="self" />',
-        '    <link href="{{ credentials.siteurl_alt }}" rel="alternate" />',
-        '    ',
-        '    <generator>Holocron</generator>',
+    _template = jinja2.Template(textwrap.dedent('''\
+        <?xml version="1.0" encoding="{{ encoding }}"?>
+          <feed xmlns="http://www.w3.org/2005/Atom" >
+            <title>{{ credentials.site.title }}</title>
+            {% if credentials.site.subtitle -%}
+            <subtitle>{{ credentials.site.subtitle }}</subtitle>
+            {%- endif %}
 
-        '    {% for doc in documents %}',
-        '    <entry>',
-        '      <title>{{ doc.title }}</title>',
-        '      <link href="{{ doc.abs_url }}" rel="alternate" />',
-        '      <id>{{ doc.abs_url }}</id>',
+            <updated>{{ credentials.date.isoformat() + "Z" }}</updated>
+            <id>{{ credentials.siteurl_alt }}</id>
 
-        '      <published>{{ doc.published.isoformat() }}</published>',
-        '      <updated>{{ doc.updated_local.isoformat() }}</updated>',
+            <link href="{{ credentials.siteurl_self }}" rel="self" />
+            <link href="{{ credentials.siteurl_alt }}" rel="alternate" />
 
-        '      <author>',
-        '        <name>{{ doc.author }}</name>',
-        '      </author>',
+            <generator>Holocron</generator>
 
-        '      <content type="html">',
-        '        {{ doc.content | e }}',
-        '      </content>',
-        '    </entry>',
-        '    {% endfor %}',
-        '  </feed>',
-    ]))
+            {% for doc in documents %}
+            <entry>
+              <title>{{ doc.title }}</title>
+              <link href="{{ doc.abs_url }}" rel="alternate" />
+              <id>{{ doc.abs_url }}</id>
+
+              <published>{{ doc.published.isoformat() }}</published>
+              <updated>{{ doc.updated_local.isoformat() }}</updated>
+
+              <author>
+                <name>{{ doc.author }}</name>
+              </author>
+
+              <content type="html">
+                {{ doc.content | e }}
+              </content>
+            </entry>
+            {% endfor %}
+          </feed>
+    '''))
 
     def generate(self, documents):
         posts = (doc for doc in documents if isinstance(doc, Post))
@@ -69,9 +74,9 @@ class Feed(abc.Generator):
         save_as = self.app.conf['generators.feed.save_as']
 
         credentials = {
-            'siteurl_self': normalize_url(self.app.conf['siteurl']) + save_as,
-            'siteurl_alt': normalize_url(self.app.conf['siteurl']),
-            'sitename': self.app.conf['sitename'],
+            'siteurl_self': normalize_url(self.app.conf['site.url']) + save_as,
+            'siteurl_alt': normalize_url(self.app.conf['site.url']),
+            'site': self.app.conf['site'],
             'date': datetime.datetime.utcnow().replace(microsecond=0), }
 
         save_as = os.path.join(self.app.conf['paths.output'], save_as)
