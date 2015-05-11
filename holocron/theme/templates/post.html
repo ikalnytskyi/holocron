@@ -19,9 +19,10 @@ written by {{ document.author }} on
 
 
 {% if 'tags' in generators_enabled and document.tags %}
-<div id="post-tags">
+<div class="post-tags">
+tagged with
 {% for tag in document.tags %}
-    <a href="{{ tag.url }}">{{ tag.name }}</a>
+    <a href="{{ tag.url }}">#{{ tag.name }}</a>
     {%- if not loop.last -%}
         ,
     {% endif %}
