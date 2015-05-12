@@ -26,8 +26,8 @@ paths:
 # more, so don't forget to check it out.
 theme:
    navigation: !!pairs
-      - feed: /feed.xml
       - about: /about
+      - feed:  /feed.xml
 
    # counters:
    #    google_analytics: XX-XXXXXXXX-X

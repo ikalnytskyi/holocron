@@ -23,14 +23,12 @@
   <div class="header-wrapper">
   <header class="header">
     <img src="/static/logo.svg" alt="Logotype" class="logo">
-    <h1><a href="/">{{ site.title }}</a></h1>
+    <a href="/" class="title">{{ site.title }}</a>
 
     <nav>
-    {% if theme.navigation -%}
       {% for name, url in theme.get('navigation', []) -%}
       <a href="{{ url }}">{{ name }}</a>
       {%- endfor %}
-    {%- endif %}
     </nav>
   </header>
   </div> <!-- /.header-wrapper -->
