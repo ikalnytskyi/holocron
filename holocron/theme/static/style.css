@@ -7,18 +7,8 @@
     download and use additional fonts
    -------------------------------------------------------------------- */
 
-@font-face {
-  font-family: 'Source Serif Pro';
-  font-style: normal;
-  font-weight: 400;
-  src: local('Source Serif Pro'), local('SourceSerifPro-Regular'), url(http://fonts.gstatic.com/s/sourceserifpro/v4/CeUM4np2c42DV49nanp55WexEcYmAZbjhZzYUOfAc5s.woff) format('woff');
-}
-@font-face {
-  font-family: 'Source Serif Pro';
-  font-style: normal;
-  font-weight: 700;
-  src: local('Source Serif Pro Bold'), local('SourceSerifPro-Bold'), url(http://fonts.gstatic.com/s/sourceserifpro/v4/yd5lDMt8Sva2PE17yiLarADgozsg_Bg4nze8RiJkiAA.woff) format('woff');
-}
+@import url(http://fonts.googleapis.com/css?family=Source+Serif+Pro:400,700);
+@import url(http://fonts.googleapis.com/css?family=Source+Code+Pro);
 
 /* unfortunately, there's no italic version for source serif pro font.
  * therefore, we need to simulate this - use another font for italic.
@@ -46,38 +36,38 @@
    -------------------------------------------------------------------- */
 
 body {
-  border-top: 4px solid #0B739C;
-  background-color: #FEFEFE;
-  color: #3B3B3B;
+  border-top: 5px solid #2f5a8b;
+  background-color: #fffffe;
+  color: #2a2a2a;
   font-family: 'Source Serif Pro', Georgia, serif;
-  font-size: 18px;
+  font-size: 20px;
   line-height: 1.5em;
 }
 
 h1, h2, h3, h4, h5, h6 {
+  color: #2f5a8b;
+  font-family: 'Times New Roman', 'Source Serif Pro', serif;
   font-weight: normal;
-  color: #005685;
 }
 
 a {
-  color: #0B739C;
+  color: #0B739c;
   text-decoration: none;
 }
 
 a:hover {
-  color: #0B739C;
+  color: #2f5a8b;
   text-decoration: underline;
 }
 
-header.header,
-footer.footer {
+.header-wrapper, .content-wrapper, .footer-wrapper {
   margin: 0 auto;
-  max-width: 790px;
+  max-width: 800px;
+  box-sizing: border-box;
 }
 
-#content {
-  margin: 0 auto;
-  max-width: 720px;
+.content-wrapper {
+  padding: 0em 2em;
 }
 
 .align-center {
@@ -85,68 +75,60 @@ footer.footer {
   display: block;
 }
 
-/* pre-defined classes for using inside markuped test */
-.width200 { width: 200px; }
-.width400 { width: 400px; }
-.width600 { width: 600px; }
-
 /* --------------------------------------------------------------------
     header
    -------------------------------------------------------------------- */
 
 header.header {
-  padding: 1em 0em;
+  padding: 0.5em 0em;
   text-align: center;
 }
 
 header.header .logo {
-  width: 4em;
+  width: 90px;
 }
 
 header.header h1 {
   font-weight: normal;
-  font-family: 'Times New Roman';
-  padding: 0.5em;
-}
-
-header.header nav {
-  font-family: 'Georgia', 'Times New Roman', serif;
-  border-top: 1px solid #E0E0E0;
-  border-bottom: 1px solid #E0E0E0;
-
-  padding: 0.4em 0em;
-  font-size: 0.8em;
+  padding-bottom: 0.5em;
 }
 
 header.header a {
   color: #3b3b3b;
-  border-bottom: none;
   text-transform: uppercase;
   text-decoration: none;
 }
 
 header.header a:hover {
-  color: #0B739C;
-  transition: all 0.25s ease-in-out;
+  color: #2f5a8b;
+}
+
+header.header nav {
+  border-top: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 0.4em 0em;
+  font-size: 0.8em;
 }
 
 header.header nav a {
-  margin: 0em 1em;
+  margin: 0em 0.7em;
 }
+
 
 /* --------------------------------------------------------------------
     footer
    -------------------------------------------------------------------- */
 
 footer.footer {
-  border-top: 1px solid #E0E0E0;
-  font-size: 0.9em;
+  border-top: 1px solid #E0e0e0;
+  font-size: 0.8em;
+  line-height: 1.4em;
   text-align: center;
-  color: #666;
+  color: #555555;
 }
 
 footer.footer p {
-  margin: 0.8em 0;
+  margin: 0.7em 0;
 }
 
 
@@ -158,16 +140,12 @@ footer.footer p {
   padding: 1em 0em;
 }
 
-#content header {
-  margin-bottom: 1em;
-}
-
 #content header .meta {
   font-style: italic;
-  margin-left: 1em;
-  font-family: 'Georgia', serif;
-  font-size: 0.85em;
-  opacity: 0.7;
+  color: #555555;
+  font-size: 0.9em;
+  line-height: 1.4em;
+  padding: 0.5em 0em 0.5em 1.5em;
 }
 
 #content p {
@@ -240,14 +218,18 @@ footer.footer p {
 }
 
 #content pre.code,
-#content .codehilite {
-  border-top: 1px solid #eaeaea;
-  border-bottom: 1px solid #eaeaea;
+#content .codehilite pre {
+  border-top: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
   padding: 0.7em 1em;
-  font-size: 0.8em;
+  font-size: 16px;
   line-height: 1.2em;
+  font-family: 'Source Code Pro', monospace;
 }
 
+#content code {
+  font-family: 'Source Code Pro', monospace;
+}
 
 
 /* --------------------------------------------------------------------
@@ -263,3 +245,68 @@ footer.footer p {
   float: left;
   text-align: center;
 }
+
+/* --------------------------------------------------------------------
+    hacks for responsive design
+   -------------------------------------------------------------------- */
+
+@media screen and (max-width: 800px) {
+  /* let's use much smaller padding for small displays */
+  .header-wrapper, .footer-wrapper { padding: 0em 0.5em; }
+  .content-wrapper { padding: 0em 1em; }
+}
+
+
+/* --------------------------------------------------------------------
+    some awesome animations
+   -------------------------------------------------------------------- */
+
+/* link animation for title */
+header.header h1 a:hover {
+  transition: all 0.25s ease-in-out;
+}
+
+/* links animation for navigation bar */
+header.header nav a {
+  margin: 0em;
+}
+header.header nav a::before,
+header.header nav a::after {
+  display: inline-block;
+  opacity: 0;
+  -webkit-transition: -webkit-transform 0.3s, opacity 0.2s;
+  -moz-transition: -moz-transform 0.3s, opacity 0.2s;
+  transition: transform 0.3s, opacity 0.2s;
+}
+header.header nav a::before {
+  margin-right: 0.5em;
+  content: '[';
+  -webkit-transform: translateX(20px);
+  -moz-transform: translateX(20px);
+  transform: translateX(20px);
+}
+header.header nav a::after {
+  margin-left: 0.5em;
+  content: ']';
+  -webkit-transform: translateX(-20px);
+  -moz-transform: translateX(-20px);
+  transform: translateX(-20px);
+}
+header.header nav a:hover::before,
+header.header nav a:hover::after,
+header.header nav a:focus::before,
+header.header nav a:focus::after {
+  opacity: 1;
+  -webkit-transform: translateX(0px);
+  -moz-transform: translateX(0px);
+  transform: translateX(0px);
+}
+
+
+/* --------------------------------------------------------------------
+    pre-defined classes to be used inside markuped text
+   -------------------------------------------------------------------- */
+
+.width200 { width: 200px; }
+.width400 { width: 400px; }
+.width600 { width: 600px; }

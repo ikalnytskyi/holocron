@@ -13,7 +13,7 @@
   <meta charset="{{ encoding }}">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <link rel="stylesheet" href="/static/holocron.css">
+  <link rel="stylesheet" href="/static/style.css">
   <link rel="stylesheet" href="/static/pygments.css">
 
   <title>{% block title %}{{ site.title }}{% endblock title %}</title>
@@ -22,7 +22,7 @@
 
   <div class="header-wrapper">
   <header class="header">
-    <img src="/static/logo.png" alt="Logotype" class="logo">
+    <img src="/static/logo.svg" alt="Logotype" class="logo">
     <h1><a href="/">{{ site.title }}</a></h1>
 
     <nav>
@@ -35,12 +35,12 @@
   </header>
   </div> <!-- /.header-wrapper -->
 
-
+  <div class="content-wrapper">
   <div id="content">
     {% block content %}
     {% endblock %}
   </div>
-
+  </div> <!-- /.content-wrapper -->
 
   <div class="footer-wrapper">
   <footer class="footer">
