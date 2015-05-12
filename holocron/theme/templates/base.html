@@ -16,14 +16,14 @@
   <link rel="stylesheet" href="/static/holocron.css">
   <link rel="stylesheet" href="/static/pygments.css">
 
-  <title>{% block title %}{{ sitename }}{% endblock title %}</title>
+  <title>{% block title %}{{ site.title }}{% endblock title %}</title>
 
 <body>
 
   <div class="header-wrapper">
   <header class="header">
     <img src="/static/logo.png" alt="Logotype" class="logo">
-    <h1><a href="/">{{ sitename }}</a></h1>
+    <h1><a href="/">{{ site.title }}</a></h1>
 
     <nav>
     {% if theme.navigation -%}
@@ -48,7 +48,7 @@
       Content is licensed under the <br>
       Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License
     </p>
-    <p>&copy; 2014, {{ author }}</p>
+    <p>&copy; 2014, {{ site.author }}</p>
   </footer>
   </div> <!-- /.footer-wrapper -->
 

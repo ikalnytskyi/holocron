@@ -88,9 +88,12 @@ class Holocron(object):
 
     #: Default settings.
     default_conf = {
-        'sitename': 'Obi-Wan Kenobi',
-        'siteurl': 'http://obi-wan.jedi',
-        'author': 'Obi-Wan Kenobi',
+        'site': {
+            'title': 'Obi-Wan Kenobi',
+            'subtitle': None,
+            'url': 'http://obi-wan.jedi',
+            'author': 'Obi-Wan Kenobi',
+        },
 
         'encoding': {
             'content': 'utf-8',
@@ -218,9 +221,7 @@ class Holocron(object):
         env = jinja2.Environment(loader=jinja2.ChoiceLoader(loaders))
         env.globals.update(
             # pass some useful conf options to the template engine
-            sitename=self.conf['sitename'],
-            siteurl=self.conf['siteurl'],
-            author=self.conf['author'],
+            site=self.conf['site'],
             theme=self.conf['theme'],
             encoding=self.conf['encoding.output'],
             generators_enabled=self.conf['generators.enabled'])

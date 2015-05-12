@@ -94,7 +94,7 @@ class Document(metaclass=abc.ABCMeta):
         self.updated_local = self.updated.astimezone(Local)
 
         #: an absolute url to the built document
-        self.abs_url = self._app.conf['siteurl'] + self.url
+        self.abs_url = self._app.conf['site.url'] + self.url
 
     @abc.abstractmethod
     def build(self):
@@ -144,7 +144,7 @@ class Page(Document):
         super().__init__(*args, **kwargs)
 
         # set default author (if none was specified in the document)
-        self.author = self._app.conf['author']
+        self.author = self._app.conf['site.author']
 
         # set extracted information and override default one
         meta = self._parse_document()
@@ -187,10 +187,7 @@ class Page(Document):
         encoding = self._app.conf['encoding.output']
 
         with open(destination, 'w', encoding=encoding) as f:
-            f.write(template.render(
-                document=self,
-                sitename=self._app.conf['sitename'],
-                siteurl=self._app.conf['siteurl'], ))
+            f.write(template.render(document=self))
 
     @cached_property
     def url(self):
