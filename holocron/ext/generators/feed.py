@@ -33,9 +33,6 @@ class Feed(abc.Generator):
         <?xml version="1.0" encoding="{{ encoding }}"?>
           <feed xmlns="http://www.w3.org/2005/Atom" >
             <title>{{ credentials.site.title }}</title>
-            {% if credentials.site.subtitle -%}
-            <subtitle>{{ credentials.site.subtitle }}</subtitle>
-            {%- endif %}
 
             <updated>{{ credentials.date.isoformat() + "Z" }}</updated>
             <id>{{ credentials.siteurl_alt }}</id>
