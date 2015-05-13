@@ -10,6 +10,8 @@
 """
 
 import os
+import textwrap
+
 import jinja2
 
 from holocron.content import Page, Post
@@ -32,19 +34,21 @@ class Sitemap(abc.Generator):
     See the :class:`~holocron.ext.Generator` class for interface details.
     """
     #: an output filename
-    save_as = 'sitemap.xml'
+    _save_as = 'sitemap.xml'
 
     #: a sitemap template
-    template = jinja2.Template('\n'.join([
-        '<?xml version="1.0" encoding="{{ encoding }}"?>',
-        '  <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-        '  {%- for doc in documents %}',
-        '    <url>',
-        '      <loc>{{ doc.abs_url }}</loc>',
-        '      <lastmod>{{ doc.updated_local.isoformat() }}</lastmod>',
-        '    </url>',
-        '  {% endfor -%}',
-        '  </urlset>', ]))
+    _template = jinja2.Template(textwrap.dedent('''\
+        <?xml version="1.0" encoding="{{ encoding }}"?>
+          <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+          {%- for doc in documents %}
+            <url>
+              <loc>{{ doc.abs_url }}</loc>
+              <lastmod>{{ doc.updated_local.isoformat() }}</lastmod>
+            </url>
+          {% endfor -%}
+
+          </urlset>'''))
 
     def generate(self, documents):
         # it make sense to keep only convertible documents in the sitemap
@@ -52,9 +56,9 @@ class Sitemap(abc.Generator):
             doc for doc in documents if isinstance(doc, (Page, Post)))
 
         # write sitemap to the file
-        save_as = os.path.join(self.app.conf['paths.output'], self.save_as)
+        save_as = os.path.join(self.app.conf['paths.output'], self._save_as)
         encoding = self.app.conf['encoding.output']
 
         with open(save_as, 'w', encoding=encoding) as f:
             f.write(
-                self.template.render(documents=documents, encoding=encoding))
+                self._template.render(documents=documents, encoding=encoding))

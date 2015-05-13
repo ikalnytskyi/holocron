@@ -63,8 +63,7 @@ class Feed(abc.Generator):
               </content>
             </entry>
             {% endfor %}
-          </feed>
-    '''))
+          </feed>'''))
 
     def generate(self, documents):
         posts = (doc for doc in documents if isinstance(doc, Post))
