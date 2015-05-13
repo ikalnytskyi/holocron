@@ -89,10 +89,9 @@ class Holocron(object):
     #: Default settings.
     default_conf = {
         'site': {
-            'title': 'Obi-Wan Kenobi',
-            'subtitle': None,
-            'url': 'http://obi-wan.jedi',
+            'title': "Kenobi's Thought",
             'author': 'Obi-Wan Kenobi',
+            'url': 'http://obi-wan.jedi',
         },
 
         'encoding': {

@@ -10,9 +10,8 @@
 
 site:
    title:      Kenobi's Thoughts
-   subtitle:   the Force techniques
-   url:        http://obi-wan.jedi
    author:     Obi-Wan Kenobi
+   url:        http://obi-wan.jedi
 
 # Paths to various input / output stuff, such as where to search
 # for content and where to store built results. The {here} macro
