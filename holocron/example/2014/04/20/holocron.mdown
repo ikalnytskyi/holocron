@@ -1,5 +1,4 @@
 ---
-author: Igor Kalnitsky
 tags: [holocron, software]
 ---
 
@@ -83,14 +82,14 @@ After installation, pip will make holocron an executable in your Terminal window
 The basic holocron usage is as follows:
 
 ```bash
+# Generates initial settings file and this blog post as example
 $ holocron init
-# => Generates initial simplified configuration file and this blog post as example
 
+# Builds html entries from text sources and generates additional content
 $ holocron build
-# => Builds html entries from text sources and runs generators for additional content
 
+# Runs a development server at http://0.0.0.0:5000/
 $ holocron serve
-# => Runs a development server at http://localhost:5000/
 ```
 
 Links

@@ -3,32 +3,12 @@
  * Distributed under same license as Holocron.
  */
 
-/* --------------------------------------------------------------------
-    download and use additional fonts
-   -------------------------------------------------------------------- */
-
-@import url(http://fonts.googleapis.com/css?family=Source+Serif+Pro:400,700);
-@import url(http://fonts.googleapis.com/css?family=Source+Code+Pro);
-
-/* unfortunately, there's no italic version for source serif pro font.
- * therefore, we need to simulate this - use another font for italic.
- */
-@font-face {
-    font-family: 'Source Serif Pro';
-    font-style: italic;
-    font-weight: 400;
-    src: local('Georgia'), local('Times New Roman');
-}
-
 
 /* --------------------------------------------------------------------
     reset and fixes
    -------------------------------------------------------------------- */
 
-* {
-  margin: 0;
-  padding: 0;
-}
+* { margin: 0; padding: 0; }
 
 
 /* --------------------------------------------------------------------
@@ -37,16 +17,15 @@
 
 body {
   border-top: 5px solid #2f5a8b;
-  background-color: #fffffe;
-  color: #2a2a2a;
-  font-family: 'Source Serif Pro', Georgia, serif;
+  background-color: #fefefe;
+  color: #3f3f3f;
+  font-family: 'Georgia', 'Athelas', 'PT Serif', serif;
   font-size: 20px;
-  line-height: 1.5em;
+  line-height: 1.6em;
 }
 
 h1, h2, h3, h4, h5, h6 {
   color: #2f5a8b;
-  font-family: 'Times New Roman', 'Source Serif Pro', serif;
   font-weight: normal;
 }
 
@@ -70,11 +49,6 @@ a:hover {
   padding: 0em 2em;
 }
 
-.align-center {
-  margin: 0 auto;
-  display: block;
-}
-
 /* --------------------------------------------------------------------
     header
    -------------------------------------------------------------------- */
@@ -85,12 +59,16 @@ header.header {
 }
 
 header.header .logo {
-  width: 90px;
+  width: 64px;
+  margin: 0px auto;
+  display: block;
 }
 
-header.header h1 {
-  font-weight: normal;
-  padding-bottom: 0.5em;
+header.header .title {
+  font-family: 'Times New Roman', Georgia, serif;
+  font-size: 1.6em;
+  line-height: 1.8em;
+  display: block;
 }
 
 header.header a {
@@ -124,7 +102,7 @@ footer.footer {
   font-size: 0.8em;
   line-height: 1.4em;
   text-align: center;
-  color: #555555;
+  color: #777777;
 }
 
 footer.footer p {
@@ -142,15 +120,21 @@ footer.footer p {
 
 #content header .meta {
   font-style: italic;
-  color: #555555;
-  font-size: 0.9em;
+  color: #777777;
+  font-size: 0.8em;
   line-height: 1.4em;
-  padding: 0.5em 0em 0.5em 1.5em;
+  padding: 0.5em 0em 0.5em 2em;
 }
 
 #content p {
   padding: 0.5em 0;
+  text-align: justify;
 }
+
+#content p:first-of-type {
+  padding-top: 0em;
+}
+
 
 #content ul {
   list-style: square;
@@ -224,11 +208,12 @@ footer.footer p {
   padding: 0.7em 1em;
   font-size: 16px;
   line-height: 1.2em;
-  font-family: 'Source Code Pro', monospace;
+  font-family: monospace;
+  background: #fafafa;
 }
 
 #content code {
-  font-family: 'Source Code Pro', monospace;
+  font-family: monospace;
 }
 
 
@@ -262,7 +247,7 @@ footer.footer p {
    -------------------------------------------------------------------- */
 
 /* link animation for title */
-header.header h1 a:hover {
+header.header a.title:hover {
   transition: all 0.25s ease-in-out;
 }
 
@@ -310,3 +295,4 @@ header.header nav a:focus::after {
 .width200 { width: 200px; }
 .width400 { width: 400px; }
 .width600 { width: 600px; }
+.align-center { margin: 0 auto; display: block; }
