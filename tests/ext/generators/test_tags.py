@@ -9,6 +9,7 @@
     :license: 3-clause BSD, see LICENSE for details.
 """
 
+import textwrap
 from unittest import mock
 from datetime import datetime
 
@@ -30,14 +31,14 @@ class TestTagObjects(HolocronTestCase):
         self.tag2 = 'tag2'
 
         # some directory where all tag pages locates
-        self.tag_dir = 'test/tags'
+        self.output = 'test/tags/{tag}'
 
     def test_tag_name(self):
         """
         Test that tag object returns correct tag name.
         """
-        tag1_obj = Tag(self.tag_dir, self.tag1)
-        tag2_obj = Tag(self.tag_dir, self.tag2)
+        tag1_obj = Tag(self.tag1, self.output)
+        tag2_obj = Tag(self.tag2, self.output)
 
         self.assertEquals(tag1_obj.name, self.tag1)
         self.assertEquals(tag2_obj.name, self.tag2)
@@ -46,7 +47,7 @@ class TestTagObjects(HolocronTestCase):
         """
         Tag object should return correct url with leading and closing slashes.
         """
-        tag1_obj = Tag(self.tag_dir, self.tag1)
+        tag1_obj = Tag(self.tag1, self.output)
 
         self.assertEquals(tag1_obj.url, '/test/tags/tag1/')
 
@@ -59,8 +60,7 @@ class TestTagsGenerator(HolocronTestCase):
     h_year = '<h2>{0}</h2>'.format
 
     def setUp(self):
-
-        self.tags = Tags(Holocron(conf=Conf({
+        self.app = Holocron(conf=Conf({
             'sitename': 'MyTestSite',
             'siteurl': 'www.mytest.com',
             'author': 'Tester',
@@ -73,14 +73,13 @@ class TestTagsGenerator(HolocronTestCase):
                 'output': 'path/to/output',
             },
 
-            'generators': {
-
+            'ext': {
                 'tags': {
-                    'output': 'mypath/tags/',
+                    'output': 'mypath/tags/{tag}',
                 },
-
             },
-        })))
+        }))
+        self.tags = Tags(self.app)
 
         self.date_early = datetime(2012, 2, 2)
         self.date_moderate = datetime(2013, 4, 1)
@@ -119,7 +118,7 @@ class TestTagsGenerator(HolocronTestCase):
         with mock.patch(self.open_fn, mock.mock_open(), create=True) as mopen:
             self.tags.generate(documents)
 
-            #: extract what was generated and what was passed to f.write()
+            # extract what was generated and what was passed to f.write()
             content, = mopen().write.call_args[0]
             return content
 
@@ -132,8 +131,8 @@ class TestTagsGenerator(HolocronTestCase):
             write_calls = [c[0][0] for c in mopen().write.call_args_list]
             mkdir_calls = [c[0][0] for c in mock_mkdir.call_args_list]
 
-            #: form a tuple that contains corresponding open and write calls
-            #: and sort it aplhabetically, so the testtag1 comes first
+            # form a tuple that contains corresponding open and write calls
+            # and sort it aplhabetically, so the testtag1 comes first
             content = list(zip(open_calls, write_calls, mkdir_calls))
             content.sort()
 
@@ -147,12 +146,12 @@ class TestTagsGenerator(HolocronTestCase):
 
         content = self._get_tags_content(posts)
 
-        #: check that open, write and mkdir functions were called three times
-        #: according to the number of different tags in test documents
+        # check that open, write and mkdir functions were called three times
+        # according to the number of different tags in test documents
         for entry in content:
             self.assertEqual(len(entry), 3)
 
-        #: test that output html contains early_post with its unique tag
+        # test that output html contains early_post with its unique tag
         self.assertEqual(
             'path/to/output/mypath/tags/testtag1/index.html', content[0][0])
 
@@ -161,7 +160,7 @@ class TestTagsGenerator(HolocronTestCase):
 
         self.assertEqual('path/to/output/mypath/tags/testtag1', content[0][2])
 
-        #: test that output html contains posts with common tag
+        # test that output html contains posts with common tag
         self.assertEqual(
             'path/to/output/mypath/tags/testtag2/index.html', content[1][0])
 
@@ -173,7 +172,7 @@ class TestTagsGenerator(HolocronTestCase):
 
         self.assertEqual('path/to/output/mypath/tags/testtag2', content[1][2])
 
-        #: test that output html contains moderate_post with its unique tag
+        # test that output html contains moderate_post with its unique tag
         self.assertEqual(
             'path/to/output/mypath/tags/testtag3/index.html', content[2][0])
 
@@ -193,9 +192,42 @@ class TestTagsGenerator(HolocronTestCase):
         self.assertIn('<a href="www.post_late.com">', content)
 
     def test_posts_patching_with_tag_objects(self):
+        """
+        Test that Tags patches post's tags attribute.
+        """
         posts = [self.post_late]
 
         self._get_tags_content(posts)
 
         self.assertEquals(self.post_late.tags[0].name, 'testtag2')
         self.assertEquals(self.post_late.tags[0].url, '/mypath/tags/testtag2/')
+
+    @mock.patch('holocron.content.os.mkdir', mock.Mock())
+    @mock.patch('holocron.content.os.path.getmtime')
+    @mock.patch('holocron.content.os.path.getctime')
+    def test_tags_are_shown_in_post(self, _, __):
+        """
+        Test that tags are actually get to the output.
+        """
+        data = textwrap.dedent('''\
+            ---
+            tags: [tag1, tag2]
+            ---
+
+            some text''')
+
+        open_fn = 'holocron.content.open'
+        with mock.patch(open_fn, mock.mock_open(read_data=data), create=True):
+            post = Post('2015/05/23/filename.mdown', self.app)
+
+        self._get_content([post])
+
+        with mock.patch(open_fn, mock.mock_open(), create=True) as mopen:
+            post.build()
+            content = mopen().write.call_args[0][0]
+
+        err = 'Could not find link for #tag1.'
+        self.assertIn('<a href="/mypath/tags/tag1/">#tag1</a>', content, err)
+
+        err = 'Could not find link for #tag2.'
+        self.assertIn('<a href="/mypath/tags/tag2/">#tag2</a>', content, err)

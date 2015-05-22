@@ -69,7 +69,7 @@ def create_app(confpath=None):
 
 class Holocron(object):
     """
-    The Holocron object implements a blog instance.
+    The Holocron class implements a blog instance.
 
     Once it's created it will act as a central registry for the extensions,
     converters, template configuration and much more.
@@ -107,25 +107,8 @@ class Holocron(object):
 
         'theme': {},
 
-        'converters': {
-            'enabled': ['markdown'],
-
-            'markdown': {
-                'extensions': ['codehilite', 'extra'],
-            },
-        },
-
-        'generators': {
-            'enabled': ['sitemap', 'index', 'feed', 'tags'],
-
-            'feed': {
-                'save_as': 'feed.xml',
-                'posts_number': 5,
-            },
-
-            'tags': {
-                'output': 'tags/',
-            },
+        'ext': {
+            'enabled': ['markdown', 'feed', 'index', 'sitemap', 'tags'],
         },
 
         'commands': {
@@ -141,62 +124,58 @@ class Holocron(object):
         #: The configuration dictionary.
         self.conf = Conf(self.default_conf, conf or {})
 
-        #: A `file extension` -> `converter` map
+        #: name -> extension instance
         #:
-        #: Holds a dicionary of all registered converters, that is used to
-        #: getting converter for the :class:`holocron.content.Document`.
+        #: Keeps all registered extensions and is used for preventing them
+        #: to be handled by garbage collector. Also I believe it might be
+        #: useful for extension developers in future.
+        self._extensions = {}
+
+        #: file extension -> converter instance
+        #:
+        #: Keeps all registered converters and is used for retrieving
+        #: converters for specific file types (by its extension).
         self._converters = {}
 
-        #: Holds a dictionary of all registered generators. The dict is used
-        #: to prevent generator double registration.
-        self._generators = {}
+        #: generator instance, ...
+        #:
+        #: Keeps all registered generators and is used for executing them.
+        self._generators = []
 
-        # Register enabled converters in the application instance.
-        for _, ext in ExtensionManager(
-            namespace='holocron.ext.converters',
-            names=self.conf['converters']['enabled'],
+        #: Discover and execute all found extensions.
+        for name, ext in ExtensionManager(
+            namespace='holocron.ext',
+            names=self.conf['ext']['enabled'],
         ):
-            self.register_converter(ext)
+            if name in self._extensions:
+                logger.warning(
+                    '%s extension skipped: already registered', name)
+                continue
+            self._extensions[name] = ext(self)
 
-        # Register enabled generators in the application instance.
-        for _, ext in ExtensionManager(
-            namespace='holocron.ext.generators',
-            names=self.conf['generators']['enabled'],
-        ):
-            self.register_generator(ext)
-
-    def register_converter(self, converter_class, _force=False):
+    def add_converter(self, converter, _force=False):
         """
-        Registers a converter on the application.
+        Registers a given converter in the application instance.
 
-        :param converter_class: a converter class to register
+        :param converter: a converter to be registered
         :param _force: allows to override already registered converters
         """
-        converter = converter_class(self.conf['converters'])
-
         for ext in converter.extensions:
             if ext in self._converters and not _force:
                 logger.warning(
-                    '%s converter: skipped for %s: already registered',
-                    converter_class.__name__, ext)
+                    '%s converter skipped for %s: already registered',
+                    type(converter).__name__, ext)
                 continue
 
             self._converters[ext] = converter
 
-    def register_generator(self, generator_class, _force=False):
+    def add_generator(self, generator):
         """
-        Registers a given generator on the application.
+        Registers a given generator in the application instance.
 
-        :param generator_class: a generator class to register
-        :param _force: re-register a generator, if it's already registered
+        :param generator: a generator to be registered
         """
-        if generator_class in self._generators and not _force:
-            logger.warning(
-                '%s generator: skipped: already registered',
-                generator_class.__name__)
-            return
-
-        self._generators[generator_class] = generator_class(self)
+        self._generators.append(generator)
 
     @cached_property
     def jinja_env(self):
@@ -222,8 +201,7 @@ class Holocron(object):
             # pass some useful conf options to the template engine
             site=self.conf['site'],
             theme=self.conf['theme'],
-            encoding=self.conf['encoding.output'],
-            generators_enabled=self.conf['generators.enabled'])
+            encoding=self.conf['encoding.output'])
         return env
 
     def _get_documents(self):
@@ -252,12 +230,11 @@ class Holocron(object):
         """
         Starts build process.
         """
+        mkdir(self.conf['paths.output'])
         documents = self._get_documents()
 
-        mkdir(self.conf['paths.output'])
-
         # use generators to generate additional stuff
-        for _, generator in self._generators.items():
+        for generator in self._generators:
             generator.generate(documents)
 
         # build all documents found

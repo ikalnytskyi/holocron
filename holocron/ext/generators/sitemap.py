@@ -20,23 +20,27 @@ from holocron.ext import abc
 
 class Sitemap(abc.Generator):
     """
-    A sitemap extension.
+    A sitemap generator.
 
-    The class is a generator extension for Holocron that is designed to
-    generate a site map - a list of pages of a web site accessible to
-    crawlers or users.
+    This class is a generator extension that is designed to generate a site
+    map - a list of public web pages accessible to crawlers or users.
+    See the :class:`~holocron.ext.Generator` class for interface details.
 
-    Sitemaps can be represented in various formats, but this implementation
+    Sitemap can be represented in various formats, but this implementation
     uses the most popular one - XML-based representation - 'sitemap.xml'.
-
     The protocol details: http://www.sitemaps.org/protocol.html
 
-    See the :class:`~holocron.ext.Generator` class for interface details.
+    The class is actually both extension and generator in terms of Holocron
+    at one time. It means that this class will be discovered by Holocron as
+    extension, and this class register its instance as generator in the
+    application.
+
+    :param app: an application instance for which we're creating extension
     """
-    #: an output filename
+
+    #: An output filename is defined by the Sitemap protocol.
     _save_as = 'sitemap.xml'
 
-    #: a sitemap template
     _template = jinja2.Template(textwrap.dedent('''\
         <?xml version="1.0" encoding="{{ encoding }}"?>
           <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -50,15 +54,21 @@ class Sitemap(abc.Generator):
 
           </urlset>'''))
 
+    def __init__(self, app):
+        super(Sitemap, self).__init__()
+
+        self._encoding = app.conf['encoding.output']
+        self._save_as = os.path.join(app.conf['paths.output'], self._save_as)
+
+        app.add_generator(self)
+
     def generate(self, documents):
-        # it make sense to keep only convertible documents in the sitemap
+        # we are interested only in web pages, so let's filter by post
+        # and pages
         documents = (
             doc for doc in documents if isinstance(doc, (Page, Post)))
 
-        # write sitemap to the file
-        save_as = os.path.join(self.app.conf['paths.output'], self._save_as)
-        encoding = self.app.conf['encoding.output']
-
-        with open(save_as, 'w', encoding=encoding) as f:
-            f.write(
-                self._template.render(documents=documents, encoding=encoding))
+        with open(self._save_as, 'w', encoding=self._encoding) as f:
+            f.write(self._template.render(
+                documents=documents,
+                encoding=self._encoding))
