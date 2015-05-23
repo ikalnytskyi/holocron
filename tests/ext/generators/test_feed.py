@@ -27,7 +27,7 @@ class TestFeedGenerator(HolocronTestCase):
     """
 
     def setUp(self):
-        self.feed = feed.Feed(Holocron(conf=Conf({
+        self.app = Holocron(conf=Conf({
             'site': {
                 'title': 'MyTestSite',
                 'author': 'Tester',
@@ -43,15 +43,15 @@ class TestFeedGenerator(HolocronTestCase):
             },
 
             'ext': {
-                'enabled': ['feed'],
+                'enabled': ['feed', 'markdown'],
 
                 'feed': {
                     'save_as': 'myfeed.xml',
                     'posts_number': 3,
                 },
-
             },
-        })))
+        }))
+        self.feed = feed.Feed(self.app)
 
         self.date_early = datetime(2012, 2, 2)
         self.date_moderate = datetime(2013, 4, 1)
@@ -278,3 +278,24 @@ class TestFeedGenerator(HolocronTestCase):
         self.assertNotIn('www.page.com', content)
         self.assertNotIn('www.image.com', content)
         self.assertIn('www.post_late.com', content)
+
+    @mock.patch('holocron.content.os.mkdir', mock.Mock())
+    @mock.patch('holocron.content.os.path.getmtime')
+    @mock.patch('holocron.content.os.path.getctime')
+    def test_feed_link_in_html_header(self, _, __):
+        """
+        Test that html pages have the link to feed.
+        """
+        open_fn = 'holocron.content.open'
+        with mock.patch(open_fn, mock.mock_open(read_data=''), create=True):
+            page = Page('filename.mdown', self.app)
+
+        with mock.patch(open_fn, mock.mock_open(), create=True) as mopen:
+            page.build()
+            content = mopen().write.call_args[0][0]
+
+        err = 'could not find link to feed in html header'
+        self.assertIn(
+            '<link rel="alternate" type="application/atom+xml" '
+            'href="http://www.mytest.com/myfeed.xml" title="MyTestSite">',
+            content, err)
