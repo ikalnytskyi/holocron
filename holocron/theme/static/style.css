@@ -19,9 +19,9 @@ body {
   border-top: 5px solid #2f5a8b;
   background-color: #fefefe;
   color: #3f3f3f;
-  font-family: 'Georgia', 'Athelas', 'PT Serif', serif;
+  font-family: 'PT Serif', 'Droid Serif', 'Georgia', serif;
   font-size: 20px;
-  line-height: 1.6em;
+  line-height: 1.65em;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -119,16 +119,14 @@ footer.footer p {
 }
 
 #content header .meta {
-  font-style: italic;
   color: #777777;
-  font-size: 0.8em;
+  font-size: 0.85em;
   line-height: 1.4em;
   padding: 0.5em 0em 0.5em 2em;
 }
 
 #content p {
   padding: 0.5em 0;
-  text-align: justify;
 }
 
 #content p:first-of-type {
@@ -208,7 +206,7 @@ footer.footer p {
   padding: 0.7em 1em;
   font-size: 16px;
   line-height: 1.2em;
-  font-family: monospace;
+  font-family: 'PT Mono', monospace;
   background: #fafafa;
 }
 
