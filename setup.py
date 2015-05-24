@@ -6,6 +6,7 @@ from setuptools import setup, find_packages
 from holocron import __version__ as holocron_version
 from holocron import __license__ as holocron_license
 
+
 setup(
     name='holocron',
     version=holocron_version,
@@ -40,11 +41,9 @@ setup(
             'holocron = holocron.main:main',
         ],
 
-        'holocron.ext.converters': [
+        'holocron.ext': [
             'markdown = holocron.ext.converters.markdown:Markdown',
-        ],
 
-        'holocron.ext.generators': [
             'feed = holocron.ext.generators.feed:Feed',
             'index = holocron.ext.generators.index:Index',
             'sitemap = holocron.ext.generators.sitemap:Sitemap',

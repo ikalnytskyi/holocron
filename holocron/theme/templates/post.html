@@ -18,7 +18,7 @@ written by {{ document.author }} on
 </time>
 
 
-{% if 'tags' in generators_enabled and document.tags %}
+{% if show_tags and document.tags %}
 <div class="post-tags">
 tagged with
 {% for tag in document.tags %}

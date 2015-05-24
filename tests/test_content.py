@@ -55,10 +55,11 @@ class DocumentTestCase(HolocronTestCase):
         """
         filename = os.path.join(
             self._fake_conf['paths.content'], self.document_filename)
+        self._fake_app = mock.Mock(conf=self._fake_conf)
 
         self.doc = self.document_class(filename, mock.Mock(
             _converters={
-                '.mdown': markdown.Markdown(self._fake_conf['converters']), },
+                '.mdown': markdown.Markdown(self._fake_app), },
             conf=self._fake_conf))
 
 

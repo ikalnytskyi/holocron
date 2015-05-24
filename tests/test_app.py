@@ -11,11 +11,14 @@
 
 import os
 import copy
+import textwrap
 from unittest import mock
 
 import holocron
 from holocron.app import Holocron, create_app
-from holocron.ext.abc import Converter, Generator
+from holocron.ext import abc
+from holocron.ext import converters
+from holocron.ext import generators
 
 from tests import HolocronTestCase
 
@@ -23,16 +26,8 @@ from tests import HolocronTestCase
 class TestHolocron(HolocronTestCase):
 
     def setUp(self):
-        """
-        Creates a pure holocron instance withot any extension stuff for
-        each testcase.
-        """
         self.app = Holocron({
-            'converters': {
-                'enabled': [],
-            },
-
-            'generators': {
+            'ext': {
                 'enabled': [],
             },
         })
@@ -55,70 +50,59 @@ class TestHolocron(HolocronTestCase):
 
         self.assertEqual(app.conf, conf)
 
-    def test_register_converter(self):
+    def test_add_converter(self):
         """
         Tests converter registration process.
         """
-        def to_html(self, text):
-            return {}, text
+        class TestConverter(abc.Converter):
+            extensions = ['.tst', '.test']
 
-        # create converter class
-        TestConverter = type('TestConverter', (Converter,), {
-            'extensions': ['.tst', '.test'],
-            'to_html': to_html,
-        })
+            def to_html(self, text):
+                return {}, text
 
         # test registration process
+        converter = TestConverter()
         self.assertEqual(len(self.app._converters), 0)
-        self.app.register_converter(TestConverter)
+        self.app.add_converter(converter)
         self.assertEqual(len(self.app._converters), 2)
 
         self.assertIn('.tst', self.app._converters)
         self.assertIn('.test', self.app._converters)
 
-        self.assertIsInstance(self.app._converters['.tst'], TestConverter)
+        self.assertIs(self.app._converters['.tst'], converter)
+        self.assertIs(self.app._converters['.test'], converter)
 
-        # test double registering protection
-        converter_id = id(self.app._converters['.tst'])
-        self.app.register_converter(TestConverter)
-        self.assertEqual(converter_id, id(self.app._converters['.tst']))
+        # test protection from double registration
+        self.app.add_converter(TestConverter())
+        self.assertIs(self.app._converters['.tst'], converter)
+        self.assertIs(self.app._converters['.test'], converter)
 
-        # test force re-registering
-        converter_id = id(self.app._converters['.tst'])
-        self.app.register_converter(TestConverter, _force=True)
-        self.assertNotEqual(converter_id, id(self.app._converters['.tst']))
+        # test force registration
+        new_converter = TestConverter()
+        self.app.add_converter(new_converter, _force=True)
+        self.assertIs(self.app._converters['.tst'], new_converter)
+        self.assertIs(self.app._converters['.test'], new_converter)
 
-    def test_register_generator(self):
+    def test_add_generator(self):
         """
         Tests generator registration process.
         """
-        def generate(self, text):
-            return
-
-        # create converter class
-        TestGenerator = type('TestGenerator', (Generator, ), {
-            'generate': generate,
-        })
+        class TestGenerator(abc.Generator):
+            def generate(self, text):
+                pass
 
         # test registration process
+        generator = TestGenerator()
         self.assertEqual(len(self.app._generators), 0)
-        self.app.register_generator(TestGenerator)
+        self.app.add_generator(generator)
         self.assertEqual(len(self.app._generators), 1)
+        self.assertIn(generator, self.app._generators)
 
-        self.assertIn(TestGenerator, self.app._generators)
-        self.assertIsInstance(
-            self.app._generators[TestGenerator], TestGenerator)
-
-        # test double registering protection
-        generator_id = id(self.app._generators[TestGenerator])
-        self.app.register_generator(TestGenerator)
-        self.assertEqual(generator_id, id(self.app._generators[TestGenerator]))
-
-        # test force re-registering
-        generator_id = id(self.app._generators[TestGenerator])
-        self.app.register_generator(TestGenerator, _force=True)
-        self.assertNotEqual(
-            generator_id, id(self.app._generators[TestGenerator]))
+        # test double registration is allowed
+        new_generator = TestGenerator()
+        self.app.add_generator(new_generator)
+        self.assertEqual(len(self.app._generators), 2)
+        self.assertIn(new_generator, self.app._generators)
 
     @mock.patch('holocron.app.mkdir')
     @mock.patch('holocron.app.iterfiles')
@@ -144,7 +128,7 @@ class TestHolocron(HolocronTestCase):
         mkdir.assert_called_with(self.app.conf['paths.output'])
 
         # check that generators was used
-        for _, generator in self.app._generators.items():
+        for generator in self.app._generators:
             self.assertEqual(generator.generate.call_count, 1)
 
         self.app.__class__.document_factory.assert_has_calls([
@@ -166,6 +150,9 @@ class TestHolocron(HolocronTestCase):
     @mock.patch('holocron.app.shutil.rmtree')
     @mock.patch('holocron.app.shutil.copytree')
     def test_copy_base_theme(self, mcopytree, mrmtree, _):
+        """
+        Tests that Holocron do copy default theme.
+        """
         output = os.path.join(self.app.conf['paths.output'], 'static')
         theme = os.path.join(
             os.path.dirname(holocron.__file__), 'theme', 'static')
@@ -179,6 +166,9 @@ class TestHolocron(HolocronTestCase):
     @mock.patch('holocron.app.shutil.rmtree')
     @mock.patch('holocron.app.shutil.copytree')
     def test_copy_user_theme(self, mcopytree, mrmtree, _):
+        """
+        Tests that Holocron do copy user theme.
+        """
         output = os.path.join(self.app.conf['paths.output'], 'static')
         theme = os.path.join(self.app.conf['paths.theme'], 'static')
 
@@ -191,34 +181,30 @@ class TestHolocron(HolocronTestCase):
 class TestHolocronDefaults(HolocronTestCase):
 
     def setUp(self):
-        """
-        Creates a default Holocron instance for each testcase.
-        """
         self.app = Holocron()
 
     def test_registered_converters(self):
         """
         Tests that default converters are registered.
         """
-        enabled_converters = set(self.app.conf['converters']['enabled'])
+        converters_cls = {type(conv) for conv in self.app._converters.values()}
 
-        registered_converters = set()
-        for _, converter in self.app._converters.items():
-            registered_converters.add(converter)
-
-        self.assertEqual(len(registered_converters), len(enabled_converters))
+        self.assertEqual(converters_cls, set([
+            converters.markdown.Markdown,
+        ]))
 
     def test_registered_generators(self):
         """
         Tests that default generators are registered.
         """
-        enabled_generators = set(self.app.conf['generators']['enabled'])
+        generators_cls = {type(gen) for gen in self.app._generators}
 
-        registered_generators = set()
-        for generator, _ in self.app._generators.items():
-            registered_generators.add(generator)
-
-        self.assertEqual(len(registered_generators), len(enabled_generators))
+        self.assertEqual(generators_cls, set([
+            generators.feed.Feed,
+            generators.index.Index,
+            generators.sitemap.Sitemap,
+            generators.tags.Tags,
+        ]))
 
 
 class TestCreateApp(HolocronTestCase):
@@ -248,25 +234,27 @@ class TestCreateApp(HolocronTestCase):
         """
         Tests that custom conf overrides default one.
         """
-        conf_raw = [
-            'sitename: MySite',
-            'author: User',
-        ]
-        app = self._create_app(conf_raw='\n'.join(conf_raw))
+        conf_raw = textwrap.dedent('''\
+            site:
+                name: MySite
+                author: User
+        ''')
+        app = self._create_app(conf_raw=conf_raw)
 
         self.assertIsNotNone(app)
-        self.assertEqual(app.conf['sitename'], 'MySite')
-        self.assertEqual(app.conf['author'], 'User')
+        self.assertEqual(app.conf['site.name'], 'MySite')
+        self.assertEqual(app.conf['site.author'], 'User')
 
     def test_illformed_conf(self):
         """
         Tests that in case of ill-formed conf we can't create app instance.
         """
-        conf_raw = [
-            'error',
-            'sitename: MySite',
-        ]
-        app = self._create_app(conf_raw='\n'.join(conf_raw))
+        conf_raw = textwrap.dedent('''\
+            error
+            site:
+                name: MySite
+        ''')
+        app = self._create_app(conf_raw=conf_raw)
 
         self.assertIsNone(app)
 

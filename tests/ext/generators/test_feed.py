@@ -27,7 +27,6 @@ class TestFeedGenerator(HolocronTestCase):
     """
 
     def setUp(self):
-
         self.feed = feed.Feed(Holocron(conf=Conf({
             'site': {
                 'title': 'MyTestSite',
@@ -43,7 +42,8 @@ class TestFeedGenerator(HolocronTestCase):
                 'output': 'path/to/output',
             },
 
-            'generators': {
+            'ext': {
+                'enabled': ['feed'],
 
                 'feed': {
                     'save_as': 'myfeed.xml',
@@ -204,9 +204,9 @@ class TestFeedGenerator(HolocronTestCase):
         """
         Feed function has to fucking work.
         """
-        #: here we require only one post to test its content correctness
-        #: we test posts in other test suites
-        self.feed.app.conf['generators.feed.posts_number'] = 1
+        # here we require only one post to test its content correctness
+        # we test posts in other test suites
+        self.feed._conf['posts_number'] = 1
 
         content = self._get_content([self.post_early, self.post_late])
         content = self._xml_to_dict(content)

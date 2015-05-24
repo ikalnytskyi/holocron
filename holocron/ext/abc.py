@@ -21,13 +21,15 @@ class Command(object, metaclass=abc.ABCMeta):
     They could be used to build application (generate html blog entries),
     serve the application at a local webserver or online, etc.
 
-    Usage example::
+    Example::
 
         from holocron.ext import abc
 
         class MyCoolCommand(abc.Command):
             def execute(self, app):
                 # perform some actions
+
+    TODO: revise the docstring
     """
 
     def set_arguments(self, parser):
@@ -51,14 +53,13 @@ class Command(object, metaclass=abc.ABCMeta):
 
 class Converter(object, metaclass=abc.ABCMeta):
     """
-    Abstract base class for 'Converter' extensions.
+    The 'Converter' interface.
 
     Holocron converters hierarchy originates here. In the best traditions
-    of the classical OOP, the class declares the converter interface, which
+    of the classical OOP, the class declares a converter interface, which
     has to be respected by all converters.
 
-    So in case you want to write your own converter, you probably write
-    something like that::
+    Example::
 
         from holocron.ext import abc
 
@@ -69,25 +70,7 @@ class Converter(object, metaclass=abc.ABCMeta):
                 # do conversion
                 return meta, html
 
-    It's important to note, that a converter in terms of extension is not
-    a converter in terms of application:
-
-    * in terms of extension, the converter is an extension class, which
-      registers a convert function in a given application instance;
-
-    * in terms of application, the converter is a convert function, that
-      can convert a given markuped text into HTML and extract some meta
-      information.
-
-    Converters receive a conf dictionary as a constructor argument that
-    is extracted from `converters` node of your YAML settings file.
-
-    :param conf: a :class:`~dooku.conf.Conf` with converters settings;
-                 it's a good practice to use a separate setting-node for
-                 each converter
     """
-    def __init__(self, conf):
-        self.conf = conf
 
     @property
     @abc.abstractmethod
@@ -112,12 +95,13 @@ class Converter(object, metaclass=abc.ABCMeta):
 
 class Generator(object, metaclass=abc.ABCMeta):
     """
-    Abstract base class for 'Generator' extensions.
+    The 'Generator' interface.
 
-    Generators are a special kind of Holocron extensions. They're designed to
-    generate helpful stuff based on input document collection (e.g. sitemap).
+    Generators are a special kind of Holocron extensions. They're designed
+    to generate additional stuff based on input document collection. Good
+    examples of generators are feed and sitemap.
 
-    Usage example::
+    Example::
 
         from holocron.ext import abc
 
@@ -125,10 +109,7 @@ class Generator(object, metaclass=abc.ABCMeta):
             def generate(self, documents):
                 # do some job based on input document collection
 
-    :param app: an application instance
     """
-    def __init__(self, app):
-        self.app = app
 
     @abc.abstractmethod
     def generate(self, documents):

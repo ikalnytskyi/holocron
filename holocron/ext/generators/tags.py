@@ -3,7 +3,7 @@
     holocron.ext.generators.tags
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    The package implements a Tags generator.
+    The module implements a Tags generator.
 
     :copyright: (c) 2015 by the Holocron Team, see AUTHORS for details.
     :license: 3-clause BSD, see LICENSE for details.
@@ -11,6 +11,8 @@
 
 import os
 from collections import defaultdict
+
+from dooku.conf import Conf
 
 from holocron.ext import abc
 from holocron.content import Post
@@ -21,52 +23,77 @@ class Tag(object):
     """
     Simple wrapper to provide useful methods for manipulating with tag.
     """
-    def __init__(self, tags_dir, tag):
-        self.name = tag
-        self.url = '/{path}/'.format(path=os.path.join(tags_dir, self.name))
+    def __init__(self, name, output):
+        self.name = name
+        self.url = '/{0}/'.format(
+            output.format(tag=name).lstrip('/').rstrip('/'))
 
 
 class Tags(abc.Generator):
     """
-    This class generates tag pages.
+    A tags generator.
+
+    This class is a generator extension that is designed to generate special
+    web pages - one page per tag - which list posts marked by some tag.
+    See the :class:`~holocron.ext.Generator` class for interface details.
+
+    The generator has several options::
+
+        ext:
+           tags:
+              template: document-list.html
+              output: tags/{tag}
+
+    where
+
+    * ``templates`` is a template name to be used for rendering tags page
+    * ``output`` is an output path for tags page
+
+    The class is actually both extension and generator in terms of Holocron
+    at one time. It means that this class will be discovered by Holocron as
+    extension, and this class register its instance as generator in the
+    application.
+
+    :param app: an application instance for which we're creating extension
     """
 
-    #: default template for tags pages
-    _template_name = 'document-list.html'
+    _default_conf = {
+        'template': 'document-list.html',
+        'output': 'tags/{tag}',
+    }
 
-    #: default filename for html output file
-    _save_as = 'index.html'
+    def __init__(self, app):
+        super(Tags, self).__init__()
+
+        self._conf = Conf(self._default_conf, app.conf.get('ext.tags', {}))
+        self._encoding = app.conf['encoding.output']
+        self._template = app.jinja_env.get_template(self._conf['template'])
+        self._save_as = os.path.join(
+            app.conf['paths.output'], self._conf['output'], 'index.html')
+
+        app.jinja_env.globals.update(show_tags=True)
+        app.add_generator(self)
 
     def generate(self, documents):
+        # we are interested only in 'post' documents because 'pages'
+        # usually are not marked with tags
         posts = (doc for doc in documents if isinstance(doc, Post))
 
-        #: output path directory for tags directory
-        output_path = self.app.conf['paths.output']
-        tags_dir = self.app.conf['generators.tags.output']
-
-        #: load template for rendering tag pages
-        template = self.app.jinja_env.get_template(self._template_name)
-
-        #: create a dictionnary of tags to corresponding posts
+        # map: tag -> [posts]
         tags = defaultdict(list)
 
         for post in posts:
-
             if hasattr(post, 'tags'):
                 tag_objects = []
                 for tag in post.tags:
-                    tag = Tag(tags_dir, tag)
-                    tags[tag.name].append(post)
-                    tag_objects.append(tag)
+                    tags[tag].append(post)
+                    tag_objects.append(Tag(tag, self._conf['output']))
 
                 post.tags = tag_objects
 
         for tag in tags:
-            path = os.path.join(output_path, tags_dir, tag)
-            mkdir(path)
+            save_as = self._save_as.format(tag=tag)
+            mkdir(os.path.dirname(save_as))
 
-            save_as = os.path.join(path, self._save_as)
-            encoding = self.app.conf['encoding.output']
-
-            with open(save_as, 'w', encoding=encoding) as f:
-                f.write(template.render(posts=tags[tag]))
+            with open(save_as, 'w', encoding=self._encoding) as f:
+                f.write(self._template.render(posts=tags[tag]))

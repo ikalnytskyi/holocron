@@ -3,7 +3,7 @@
     holocron.ext.converters.markdown
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    The package implements a Markdown converter.
+    The module implements a Markdown converter.
 
     :copyright: (c) 2014 by the Holocron Team, see AUTHORS for details.
     :license: 3-clause BSD, see LICENSE for details.
@@ -12,41 +12,54 @@
 import re
 import markdown
 
+from dooku.conf import Conf
+
 from holocron.ext import abc
 
 
 class Markdown(abc.Converter):
     """
-    A markdown converters.
+    A markdown converter.
 
     This class is a converter extension that is designed to convert some
     input markdown text into HTML, extracting some useful meta information.
     See the :class:`~holocron.ext.Converter` class for interface details.
 
     The converter uses `this markdown implementation`_, so it supports some
-    extension that extends markdown language. For activating markdown
-    extension, please specify its name in the following option::
+    extensions that extends markdown language. To activate them please
+    specify their names in the following option::
 
-        converters.markdown.extensions
+        ext:
+           markdown:
+              extensions: [ ... ]
 
-    The converter has a contract-based design, so we should always pass
-    the settings even if they are default.
+    The class is actually both extension and converter in terms of Holocron
+    at one time. It means that this class will be discovered by Holocron as
+    extension, and this class register its instance as converter in the
+    application.
 
     .. _this markdown implementation: http://pythonhosted.org/Markdown/
+
+    :param app: an application instance for which we're creating extension
     """
 
-    #: a list of supported files
     extensions = ['.md', '.mkd', '.mdown', '.markdown']
 
-    def __init__(self, *args, **kwargs):
-        super(Markdown, self).__init__(*args, **kwargs)
+    _default_conf = {
+        'extensions': [
+            'codehilite',   # use pygments to highlight code-blocks
+            'extra',        # enable extended features like tables
+        ],
+    }
 
-        #: create markdown instance with enabled extensions
-        self._markdown = markdown.Markdown(
-            extensions=self.conf['markdown.extensions'])
+    def __init__(self, app):
+        super(Markdown, self).__init__()
 
-        #: compile regex for extracting post title
+        self._conf = Conf(self._default_conf, app.conf.get('ext.markdown', {}))
+        self._markdown = markdown.Markdown(extensions=self._conf['extensions'])
         self._re_title = re.compile('<h1>(.*)</h1>(.*)', re.M | re.S)
+
+        app.add_converter(self)
 
     def to_html(self, text):
         html = self._markdown.convert(text)
@@ -56,14 +69,13 @@ class Markdown(abc.Converter):
         """
         Extracts some meta information from a given HTML.
 
-        It's important to note, that the method not only extracts a meta
-        information, but also modify an input HTML. For example, we need
-        to extract a post title (cut title between <h1>) and remove it
-        from an HTML, since the tittle will be used latter for printing
-        post title in templates.
+        We need to cut document's title from the HTML, because we want to
+        use it in different places and show it in own way. Please note that
+        the method *cut* the title, and there will be no title in the HTML
+        anymore.
 
-        :param html: extracts information from this HTML
-        :returns: a tuple of `(meta, html)`
+        :param html: extracts information from the HTML
+        :returns: a tuple of (meta, html)
         """
         meta = {}
 

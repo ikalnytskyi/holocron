@@ -141,7 +141,7 @@ class Page(Document):
     title = 'Untitled'
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super(Page, self).__init__(*args, **kwargs)
 
         # set default author (if none was specified in the document)
         self.author = self._app.conf['site.author']
@@ -216,7 +216,7 @@ class Post(Page):
     template = 'post.html'
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super(Post, self).__init__(*args, **kwargs)
 
         published = ''.join(self.short_source.split(os.sep)[:3])
         published = datetime.datetime.strptime(published, '%Y%m%d')
