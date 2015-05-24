@@ -89,7 +89,7 @@ class Holocron(object):
     #: Default settings.
     default_conf = {
         'site': {
-            'title': "Kenobi's Thought",
+            'title': "Kenobi's Thoughts",
             'author': 'Obi-Wan Kenobi',
             'url': 'http://obi-wan.jedi',
         },

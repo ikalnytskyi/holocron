@@ -32,3 +32,7 @@ theme:
    # counters:
    #    google_analytics: XX-XXXXXXXX-X
    #    yandex_metrika: XXXXXXX
+
+   # ribbon:
+   #    text:  Star On GitHub
+   #    link:  https://github.com/ikalnitsky/kalnitsky.org
