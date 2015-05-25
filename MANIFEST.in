@@ -1,9 +1,14 @@
-recursive-include holocron/themes *
-recursive-include holocron/example
-prune             holocron/example/_build
-
-recursive-include tests *
-recursive-exclude tests *.pyc *.pyo
-
 include README.rst LICENSE AUTHORS CHANGES
 include tox.ini
+
+recursive-include holocron/theme *
+recursive-include holocron/example *
+recursive-include docs *
+recursive-include tests *
+
+prune holocron/example/_build
+prune docs/_build
+
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
+recursive-exclude * .DS_Store

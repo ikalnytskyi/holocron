@@ -1,8 +1,8 @@
-=====================================
- Holocron: may the blog be with you!
-=====================================
+:orphan:
 
-|travis-ci|  |coveralls|
+======================
+ Welcome to Holocron!
+======================
 
 Holocron is an extendable static blog generator powered by the Force. Like
 others, it reads text files in various formats, renders them using templates
@@ -32,15 +32,16 @@ Here is an incomplete list of features:
 * Has SEO friendly URLs.
 * Provides a debug server to preview content.
 
-Check out Holocron's documentation for further information -
-https://holocron.readthedocs.org/.
 
+Table Of Contents
+~~~~~~~~~~~~~~~~~
 
-Why The Name Holocron?
-~~~~~~~~~~~~~~~~~~~~~~
+.. toctree::
+   :maxdepth: 2
 
-Holocron (*short for holographic chronicle*) is a device in which Jedi
-stored different data. In most cases, they used it as diary.
+   changes
+   authors
+   license
 
 
 .. Links
@@ -51,15 +52,3 @@ stored different data. In most cases, they used it as diary.
 .. _sitemap.xml: http://www.sitemaps.org/
 .. _Google Analytics: http://www.google.com/analytics/
 .. _Yandex.Metrika: https://metrica.yandex.com/
-
-.. Images
-
-.. |travis-ci| image::
-       https://travis-ci.org/ikalnitsky/holocron.svg?branch=master
-   :target: https://travis-ci.org/ikalnitsky/holocron
-   :alt: Travis CI: continuous integration status
-
-.. |coveralls| image::
-       https://coveralls.io/repos/ikalnitsky/holocron/badge.png?branch=master
-   :target: https://coveralls.io/r/ikalnitsky/holocron?branch=master
-   :alt: Coverall: code coverage status

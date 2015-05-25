@@ -3,7 +3,7 @@
     holocron
     ~~~~~~~~
 
-    Holocron is a simple, lightweight and extendable static blog generator.
+    Holocron is an extendable static blog generator powered by the Force.
 
     Like others, it reads text files in various formats, renders them using
     templates and produces a ready-to-publish static website which could be
@@ -17,5 +17,5 @@
     :license: 3-clause BSD, see LICENSE for details.
 """
 
-__version__ = '0.1.dev0'
+__version__ = '0.1'
 __license__ = '3-clause BSD'
