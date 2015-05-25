@@ -99,16 +99,16 @@ header.header nav a {
 
 footer.footer {
   border-top: 1px solid #e0e0e0;
+  padding: 0.5em 0em 3em;
   font-size: 0.8em;
-  line-height: 1.4em;
+  line-height: 1.5em;
   text-align: center;
   color: #777777;
 }
 
 footer.footer p {
-  margin: 0.7em 0;
+  margin: 0.5em 0;
 }
-
 
 /* --------------------------------------------------------------------
     posts / pages
