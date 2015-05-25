@@ -177,6 +177,18 @@ class Holocron(object):
         """
         self._generators.append(generator)
 
+    def add_theme_ctx(self, **kwargs):
+        """
+        Pass given keyword arguments to theme templates.
+        """
+        overwritten = set(kwargs.keys()) & set(self.jinja_env.globals.keys())
+        if overwritten:
+            logger.warning(
+                'the following theme context is going to be overwritten: %s',
+                ', '.join(overwritten))
+
+        self.jinja_env.globals.update(**kwargs)
+
     @cached_property
     def jinja_env(self):
         """

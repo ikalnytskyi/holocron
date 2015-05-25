@@ -94,8 +94,10 @@ class Feed(abc.Generator):
 
         self._appconf = app.conf
         self._conf = Conf(self._default_conf, app.conf.get('ext.feed', {}))
+        self._url = normalize_url(app.conf['site.url']) + self._conf['save_as']
 
         app.add_generator(self)
+        app.add_theme_ctx(feedurl=self._url)
 
     def generate(self, documents):
         posts_number = self._conf['posts_number']
@@ -112,7 +114,7 @@ class Feed(abc.Generator):
         posts = posts[:posts_number]
 
         credentials = {
-            'siteurl_self': normalize_url(self._appconf['site.url']) + save_as,
+            'siteurl_self': self._url,
             'siteurl_alt': normalize_url(self._appconf['site.url']),
             'site': self._appconf['site'],
             'date': datetime.datetime.utcnow().replace(microsecond=0), }

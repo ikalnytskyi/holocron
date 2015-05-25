@@ -71,8 +71,8 @@ class Tags(abc.Generator):
         self._save_as = os.path.join(
             app.conf['paths.output'], self._conf['output'], 'index.html')
 
-        app.jinja_env.globals.update(show_tags=True)
         app.add_generator(self)
+        app.add_theme_ctx(show_tags=True)
 
     def generate(self, documents):
         # we are interested only in 'post' documents because 'pages'
