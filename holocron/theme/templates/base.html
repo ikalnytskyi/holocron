@@ -54,4 +54,10 @@
   </footer>
   </div> <!-- /.footer-wrapper -->
 
+  {% if theme.ribbon %}
+  <div class="ribbon-wrapper">
+    <a href="{{ theme.ribbon.link }}" class="ribbon">{{ theme.ribbon.text }}</a>
+  </div>
+  {% endif %}
+
 {% include 'counters.html' %}
