@@ -19,9 +19,7 @@ body {
   border-top: 5px solid #2f5a8b;
   background-color: #fefefe;
   color: #3f3f3f;
-  font-family: 'PT Serif', 'Droid Serif', 'Georgia', serif;
-  font-size: 20px;
-  line-height: 1.65em;
+  font: 20px/32px 'PT Serif', Georgia, serif;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -100,8 +98,8 @@ header.header nav a {
 footer.footer {
   border-top: 1px solid #e0e0e0;
   padding: 0.5em 0em 3em;
-  font-size: 0.8em;
-  line-height: 1.5em;
+  font-size: 0.9em;
+  line-height: 1.6em;
   text-align: center;
   color: #777777;
 }
@@ -116,17 +114,18 @@ footer.footer p {
 
 #content {
   padding: 1em 0em;
+  text-align: justify;
 }
 
 #content header .meta {
   color: #777777;
   font-size: 0.85em;
   line-height: 1.4em;
-  padding: 0.5em 0em 0.5em 2em;
+  padding: 0.5em 0em 0.5em 1.5em;
 }
 
 #content p {
-  padding: 0.5em 0;
+  padding: 0.3em 0;
 }
 
 #content p:first-of-type {
@@ -201,17 +200,19 @@ footer.footer p {
 
 #content pre.code,
 #content .codehilite pre {
+  margin: 0.5em auto;
   border-top: 1px solid #e0e0e0;
   border-bottom: 1px solid #e0e0e0;
+  background: #fcfcfc;
   padding: 0.7em 1em;
-  font-size: 16px;
+  font-size: 17px;
   line-height: 1.2em;
-  font-family: 'PT Mono', monospace;
-  background: #fafafa;
+  font-family: 'Ubuntu Mono', 'PT Mono', 'Droid Sans Mono', monospace;
 }
 
 #content code {
-  font-family: monospace;
+  background: #f8f8f8;
+  font-family: 'Ubuntu Mono', 'PT Mono', 'Droid Sans Mono', monospace;
 }
 
 
@@ -245,7 +246,7 @@ footer.footer p {
 }
 .ribbon {
   color: #2f5a8b;
-  border: 1px dotted #2f5a8b;
+  border: 1px dashed #2f5a8b;
   background-color: #f0f0f8;
   text-decoration: none;
   white-space: nowrap;
@@ -281,6 +282,7 @@ footer.footer p {
   /* let's use much smaller padding for small displays */
   .header-wrapper, .footer-wrapper { padding: 0em 0.5em; }
   .content-wrapper { padding: 0em 1em; }
+
   /* do not show github banner */
   .ribbon { display: none; }
 }
