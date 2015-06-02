@@ -1,14 +1,8 @@
+sudo: false
 language: python
+
 python:
   - "3.4"
-
-branches:
-  only:
-    - master
-
-os:
-  - linux
-  - osx
 
 install:
   - pip install tox coveralls
