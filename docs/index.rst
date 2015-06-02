@@ -39,6 +39,8 @@ Table Of Contents
 .. toctree::
    :maxdepth: 2
 
+   quickstart
+
    changes
    authors
    license
