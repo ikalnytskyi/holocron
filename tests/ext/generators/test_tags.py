@@ -104,6 +104,11 @@ class TestTagsGenerator(HolocronTestCase):
             url='www.post_late.com',
             tags=['testtag2'])
 
+        self.post_malformed = mock.Mock(
+            spec=Post,
+            short_source='test',
+            tags='testtag')
+
         self.page = mock.Mock(spec=Page)
         self.static = mock.Mock(spec=Static)
 
@@ -231,3 +236,12 @@ class TestTagsGenerator(HolocronTestCase):
 
         err = 'Could not find link for #tag2.'
         self.assertIn('<a href="/mypath/tags/tag2/">#tag2</a>', content, err)
+
+    @mock.patch('holocron.ext.generators.tags.mkdir')
+    def test_malformed_tags_are_skipped(self, mock_mkdir):
+        """
+        Test if tags formatting is correct.
+        """
+        content = self._get_tags_content([self.post_malformed])
+
+        self.assertEqual(content, [])
