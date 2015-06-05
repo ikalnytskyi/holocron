@@ -10,6 +10,7 @@
 """
 
 import os
+import logging
 from collections import defaultdict
 
 from dooku.conf import Conf
@@ -17,6 +18,9 @@ from dooku.conf import Conf
 from holocron.ext import abc
 from holocron.content import Post
 from holocron.utils import mkdir
+
+
+logger = logging.getLogger(__name__)
 
 
 class Tag(object):
@@ -84,6 +88,13 @@ class Tags(abc.Generator):
 
         for post in posts:
             if hasattr(post, 'tags'):
+
+                if not isinstance(post.tags, (list, tuple)):
+                    logger.warning(
+                        'Tags must be wrapped with list or tuple in %s',
+                        post.short_source)
+                    continue
+
                 tag_objects = []
                 for tag in post.tags:
                     tags[tag].append(post)
