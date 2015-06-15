@@ -19,7 +19,7 @@ body {
   border-top: 5px solid #2f5a8b;
   background-color: #fefefe;
   color: #3f3f3f;
-  font: 20px/32px 'PT Serif', Georgia, serif;
+  font: 18px/28px 'PT Serif', Georgia, serif;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -64,8 +64,8 @@ header.header .logo {
 
 header.header .title {
   font-family: 'Times New Roman', Georgia, serif;
-  font-size: 1.6em;
-  line-height: 1.8em;
+  font-size: 1.8em;
+  line-height: 2em;
   display: block;
 }
 
@@ -83,7 +83,7 @@ header.header nav {
   border-top: 1px solid #e0e0e0;
   border-bottom: 1px solid #e0e0e0;
   padding: 0.4em 0em;
-  font-size: 0.8em;
+  font-size: 0.9em;
 }
 
 header.header nav a {
@@ -114,18 +114,18 @@ footer.footer p {
 
 #content {
   padding: 1em 0em;
-  text-align: justify;
 }
 
 #content header .meta {
   color: #777777;
-  font-size: 0.85em;
+  font-size: 0.9em;
   line-height: 1.4em;
   padding: 0.5em 0em 0.5em 1.5em;
 }
 
 #content p {
   padding: 0.3em 0;
+  text-align: justify;
 }
 
 #content p:first-of-type {
