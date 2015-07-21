@@ -12,10 +12,10 @@ with open('README.rst', 'r', encoding='utf-8') as f:
 
 
 setup(
-    name='Holocron',
+    name='holocron',
     version=holocron_version,
     license=holocron_license,
-    description='An extendible static blog generator powered by the Force. =/',
+    description='An extendable static blog generator powered by the Force. =/',
     long_description=LONG_DESCRIPTION,
     author='Igor Kalnitsky',
     author_email='igor@kalnitsky.org',
