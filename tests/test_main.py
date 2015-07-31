@@ -15,7 +15,7 @@ from unittest import mock
 from dooku.ext import ExtensionManager
 
 from holocron.app import Holocron
-from holocron.main import main
+from holocron.main import main, parse_command_line
 
 from tests import HolocronTestCase
 
@@ -106,3 +106,11 @@ class TestCli(HolocronTestCase):
         main(['cmd1'])
 
         sys_exit.assert_called_once_with(1)
+
+    @mock.patch('holocron.main.argparse.ArgumentParser.print_help')
+    @mock.patch('holocron.main.argparse.ArgumentParser.exit')
+    def test_just_parent_command(self, exit, help):
+        parse_command_line([], {})
+
+        help.assert_called_once_with()
+        exit.assert_called_once_with(1)
