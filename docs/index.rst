@@ -40,7 +40,7 @@ Table Of Contents
    :maxdepth: 2
 
    quickstart
-
+   configuration
    changes
    authors
    license
