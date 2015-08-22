@@ -8,7 +8,7 @@ Here you can see the list of changes between each Holocron release.
 Version 0.1.1
 ~~~~~~~~~~~~~
 
-(release date to be announced)
+Released on August 22, 2015.
 
 - ``tests`` package is no longer installed.
 - ``holocron.theme`` data is now installed by setuptools.
