@@ -98,7 +98,19 @@ def parse_command_line(args, commands):
         subparser = command_parser.add_parser(name)
         command.set_arguments(subparser)
 
-    return parser.parse_args(args)
+    # parse cli and form arguments object
+    arguments = parser.parse_args(args)
+
+    # if no commands are specified display help
+    if arguments.command is None:
+        parser.print_help()
+        parser.exit(1)
+
+    # this hack's used to bypass lack of user's config file when init invoked
+    if arguments.command in ('init', ):
+        arguments.conf = None
+
+    return arguments
 
 
 def main(args=sys.argv[1:]):
@@ -110,10 +122,6 @@ def main(args=sys.argv[1:]):
     # initial logger configuration - use custom format for records
     # and print records with WARNING level and higher.
     configure_logger(arguments.verbosity or logging.WARNING)
-
-    # this hack's used to bypass lack of user's config file when init invoked
-    if arguments.command in ('init', ):
-        arguments.conf = None
 
     # create app instance
     holocron = create_app(arguments.conf)
