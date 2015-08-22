@@ -10,6 +10,8 @@ Version 0.1.1
 
 (release date to be announced)
 
+- ``tests`` package is no longer installed.
+
 
 Version 0.1
 ~~~~~~~~~~~
