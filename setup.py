@@ -21,9 +21,10 @@ setup(
     author_email='igor@kalnitsky.org',
     url='http://github.com/ikalnitsky/holocron/',
 
-    packages=find_packages(exclude=['tests']),
+    packages=find_packages(exclude=['tests*']),
     test_suite='tests',
     platforms=['any'],
+    include_package_data=True,
     zip_safe=False,
 
     install_requires=[
