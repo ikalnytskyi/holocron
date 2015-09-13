@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+from io import open
 from setuptools import setup, find_packages
 
 from holocron import __version__ as holocron_version
