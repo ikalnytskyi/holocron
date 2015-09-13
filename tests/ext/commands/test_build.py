@@ -10,8 +10,8 @@
 """
 
 import argparse
-from unittest import mock
 
+import mock
 from dooku.conf import Conf
 
 from holocron.app import Holocron

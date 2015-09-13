@@ -12,7 +12,8 @@
 import os
 import copy
 import textwrap
-from unittest import mock
+
+import mock
 
 import holocron
 from holocron.app import Holocron, create_app

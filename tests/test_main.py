@@ -10,8 +10,8 @@
 """
 
 import logging
-from unittest import mock
 
+import mock
 from dooku.ext import ExtensionManager
 
 from holocron.app import Holocron

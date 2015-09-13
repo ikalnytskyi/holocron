@@ -10,10 +10,11 @@
 """
 
 from datetime import datetime
-from unittest import mock
 from xml.dom import minidom
 
+import mock
 from dooku.conf import Conf
+
 from holocron.ext.generators import sitemap
 from holocron.content import Page, Post, Static
 

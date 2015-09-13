@@ -9,7 +9,7 @@
     :license: 3-clause BSD, see LICENSE for details.
 """
 
-from unittest import mock
+import mock
 
 from holocron.utils import mkdir, normalize_url, iterfiles
 from tests import HolocronTestCase

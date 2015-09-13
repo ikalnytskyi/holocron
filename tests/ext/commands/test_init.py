@@ -10,7 +10,8 @@
 """
 
 import os
-from unittest import mock
+
+import mock
 
 from holocron.app import Holocron
 from holocron.ext.commands import init
