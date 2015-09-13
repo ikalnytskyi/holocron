@@ -10,10 +10,11 @@
 """
 
 import textwrap
-from unittest import mock
 from datetime import datetime
 
+import mock
 from dooku.conf import Conf
+
 from holocron.ext.generators.tags import Tags, Tag
 from holocron.content import Post, Page, Static
 from holocron.app import Holocron

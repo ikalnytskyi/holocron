@@ -11,9 +11,10 @@
 
 import os
 import datetime
-from unittest import mock
 
+import mock
 from dooku.conf import Conf
+
 from holocron import app, content
 from holocron.ext.converters import markdown
 

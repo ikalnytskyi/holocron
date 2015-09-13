@@ -9,10 +9,11 @@
     :license: 3-clause BSD, see LICENSE for details.
 """
 
-from unittest import mock
 from datetime import datetime
 
+import mock
 from dooku.conf import Conf
+
 from holocron.ext.generators import index
 from holocron.content import Post, Page, Static
 from holocron.app import Holocron

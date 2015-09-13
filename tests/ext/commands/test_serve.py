@@ -10,8 +10,8 @@
 """
 
 import os
-from unittest import mock
 
+import mock
 from dooku.conf import Conf
 
 from holocron.app import Holocron
@@ -167,7 +167,7 @@ class TestChangeWatcher(HolocronTestCase):
 
     def test_process(self):
         self.watcher.process('a')
-        self.fake_builder.rebuild.assert_called_one_with()
+        self.fake_builder.rebuild.assert_called_once_with()
 
     def test_process_watch_for(self):
         self.watcher = serve._ChangeWatcher(self.fake_builder, watch_for=['a'])
@@ -176,7 +176,7 @@ class TestChangeWatcher(HolocronTestCase):
         self.assertEqual(self.fake_builder.rebuild.call_count, 0)
 
         self.watcher.process('a')
-        self.fake_builder.rebuild.assert_called_one_with()
+        self.fake_builder.rebuild.assert_called_once_with()
 
     def test_process_ignore(self):
         self.watcher = serve._ChangeWatcher(self.fake_builder, ignore=['a'])
@@ -185,7 +185,7 @@ class TestChangeWatcher(HolocronTestCase):
         self.assertEqual(self.fake_builder.rebuild.call_count, 0)
 
         self.watcher.process('x')
-        self.fake_builder.rebuild.assert_called_one_with()
+        self.fake_builder.rebuild.assert_called_once_with()
 
     def test_process_watch_for_and_ignore(self):
         self.watcher = serve._ChangeWatcher(
@@ -195,7 +195,7 @@ class TestChangeWatcher(HolocronTestCase):
         self.assertEqual(self.fake_builder.rebuild.call_count, 0)
 
         self.watcher.process('b')
-        self.fake_builder.rebuild.assert_called_one_with()
+        self.fake_builder.rebuild.assert_called_once_with()
 
     def test_process_skips_output(self):
         self.watcher.process(os.path.abspath('path/output/doc.txt'))
@@ -206,7 +206,7 @@ class TestChangeWatcher(HolocronTestCase):
             self.fake_builder, recreate_app=True)
         self.watcher.process('a')
 
-        self.fake_builder.recreate_app.assert_called_one_with()
+        self.fake_builder.recreate_app.assert_called_once_with()
 
 
 class TestBuilder(HolocronTestCase):
