@@ -2,7 +2,7 @@
  Holocron: may the blog be with you!
 =====================================
 
-|travis-ci|  |coveralls|
+|pypi-version| |license| |travis-ci| |coveralls|
 
 Holocron is an extendable static blog generator powered by the Force. Like
 others, it reads text files in various formats, renders them using templates
@@ -43,6 +43,14 @@ Holocron (*short for holographic chronicle*) is a device in which Jedi
 stored different data. In most cases, they used it as diary.
 
 
+Links
+~~~~~
+
+* Documentation: https://holocron.readthedocs.org/
+* Source: https://github.com/ikalnitsky/holocron
+* Bugs: https://github.com/ikalnitsky/holocron/issues
+
+
 .. Links
 
 .. _Markdown: http://daringfireball.net/projects/markdown/
@@ -52,14 +60,16 @@ stored different data. In most cases, they used it as diary.
 .. _Google Analytics: http://www.google.com/analytics/
 .. _Yandex.Metrika: https://metrica.yandex.com/
 
-.. Images
+.. Badges
 
-.. |travis-ci| image::
-       https://travis-ci.org/ikalnitsky/holocron.svg?branch=master
+.. |pypi-version| image:: https://img.shields.io/pypi/v/holocron.svg
+   :target: https://pypi.python.org/pypi/holocron
+
+.. |license| image:: https://img.shields.io/pypi/l/holocron.svg
+   :target: https://pypi.python.org/pypi/holocron
+
+.. |travis-ci| image:: https://img.shields.io/travis/ikalnitsky/holocron/master.svg
    :target: https://travis-ci.org/ikalnitsky/holocron
-   :alt: Travis CI: continuous integration status
 
-.. |coveralls| image::
-       https://coveralls.io/repos/ikalnitsky/holocron/badge.png?branch=master
-   :target: https://coveralls.io/r/ikalnitsky/holocron?branch=master
-   :alt: Coverall: code coverage status
+.. |coveralls| image:: https://img.shields.io/coveralls/ikalnitsky/holocron.svg
+   :target: https://coveralls.io/r/ikalnitsky/holocron

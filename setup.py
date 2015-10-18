@@ -1,47 +1,56 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+import os
+
 from io import open
 from setuptools import setup, find_packages
 
-from holocron import __version__ as holocron_version
-from holocron import __license__ as holocron_license
+from holocron import __version__ as version
+from holocron import __license__ as license
 
 
-with open('README.rst', 'r', encoding='utf-8') as f:
-    LONG_DESCRIPTION = f.read()
+here = os.path.dirname(__file__)
+
+with open(os.path.join(here, 'README.rst'), 'r', encoding='utf-8') as f:
+    long_description = f.read()
 
 
 setup(
     name='holocron',
-    version=holocron_version,
-    license=holocron_license,
+    version=version,
+
     description='An extendable static blog generator powered by the Force. =/',
-    long_description=LONG_DESCRIPTION,
+    long_description=long_description,
+    license=license,
+    url='http://github.com/ikalnitsky/holocron/',
+    keywords='blog generator static markdown',
+
     author='Igor Kalnitsky',
     author_email='igor@kalnitsky.org',
-    url='http://github.com/ikalnitsky/holocron/',
 
-    packages=find_packages(exclude=['tests*']),
+    packages=find_packages(exclude=['docs', 'tests*']),
     test_suite='tests',
-    platforms=['any'],
     include_package_data=True,
     zip_safe=False,
 
     install_requires=[
-        'dooku >= 0.3.0',
-        'Jinja2 >= 2.7',
-        'PyYAML >= 3.11',
-        'Pygments >= 1.6',
-        'watchdog >= 0.8.0',
-        'Markdown >= 2.4',
+        'Jinja2 >= 2.7',        # core
+        'PyYAML >= 3.11',       # core
+        'dooku >= 0.3.0',       # core
+        'Pygments >= 1.6',      # core since required for various converters
+
+        'Markdown >= 2.4',      # deps of markdown converter
+        'watchdog >= 0.8.0',    # deps of serve command
     ],
+
     entry_points={
         'console_scripts': [
             'holocron = holocron.main:main',
         ],
         'holocron.ext': [
             'markdown = holocron.ext.converters.markdown:Markdown',
+
             'index = holocron.ext.generators.index:Index',
             'feed = holocron.ext.generators.feed:Feed',
             'sitemap = holocron.ext.generators.sitemap:Sitemap',
@@ -53,17 +62,22 @@ setup(
             'serve = holocron.ext.commands.serve:Serve',
         ],
     },
+
     classifiers=[
         'Environment :: Console',
-        'Intended Audience :: End Users/Desktop',
         'License :: OSI Approved :: BSD License',
         'Operating System :: OS Independent',
+
+        'Intended Audience :: End Users/Desktop',
+        'Intended Audience :: Information Technology',
+
+        'Topic :: Internet :: WWW/HTTP',
+        'Topic :: Terminals',
+
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: Implementation :: CPython',
-        'Topic :: Internet :: WWW/HTTP',
     ],
 )
