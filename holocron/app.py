@@ -108,7 +108,15 @@ class Holocron(object):
         'theme': {},
 
         'ext': {
-            'enabled': ['markdown', 'feed', 'index', 'sitemap', 'tags'],
+            'enabled': [
+                'markdown',
+                'restructuredtext',
+
+                'index',
+                'feed',
+                'sitemap',
+                'tags',
+            ],
         },
 
         'commands': {

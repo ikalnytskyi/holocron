@@ -31,9 +31,9 @@ class TestMarkdownConverter(HolocronTestCase):
             },
         }))
 
-    def test_markdown_simple_post(self):
+    def test_simple_post(self):
         """
-        Markdown function has to fucking work.
+        Markdown converter has to fucking work.
         """
         meta, html = self.conv.to_html(textwrap.dedent('''\
             # some title
@@ -44,7 +44,33 @@ class TestMarkdownConverter(HolocronTestCase):
         self.assertEqual(meta['title'], 'some title')
         self.assertEqual(html, '<p>some text with <strong>bold</strong></p>')
 
-    def test_markdown_without_title(self):
+    def test_post_with_sections(self):
+        """
+        Title must be gone, section must be converted into <h2>.
+        """
+        meta, html = self.conv.to_html(textwrap.dedent('''\
+            some title
+            ==========
+
+            some section 1
+            --------------
+
+            xxx
+
+            some section 2
+            --------------
+
+            yyy
+        '''))
+
+        self.assertEqual(meta['title'], 'some title')
+        self.assertRegexpMatches(html, (
+            '^<h2>some section 1</h2>\s*'
+            '<p>xxx</p>\s*'
+            '<h2>some section 2</h2>\s*'
+            '<p>yyy</p>$'))
+
+    def test_post_without_title(self):
         """
         Converter has to work even if there's no title in the document.
         """
@@ -55,7 +81,7 @@ class TestMarkdownConverter(HolocronTestCase):
         self.assertEqual(html, (
             '<p>some text with <strong>bold</strong> and <em>italic</em></p>'))
 
-    def test_markdown_codehilite_extension(self):
+    def test_codehilite_extension(self):
         """
         Converter has to use Pygments to highlight code blocks.
         """
@@ -74,9 +100,9 @@ class TestMarkdownConverter(HolocronTestCase):
                 lambda x: pass
         '''))
 
-        self.assertIn('codehilite', html)
+        self.assertRegexpMatches(html, '.*codehilite.*<pre>[\s\S]+</pre>.*')
 
-    def test_markdown_extra_code(self):
+    def test_extra_code(self):
         """
         Converter has to support GitHub's fence code syntax.
         """
@@ -94,9 +120,9 @@ class TestMarkdownConverter(HolocronTestCase):
             ```
         '''))
 
-        self.assertIn('codehilite', html)
+        self.assertRegexpMatches(html, '.*codehilite.*<pre>[\s\S]+</pre>.*')
 
-    def test_markdown_extra_tables(self):
+    def test_extra_tables(self):
         """
         Converter has to support tables syntax.
         """
@@ -121,3 +147,11 @@ class TestMarkdownConverter(HolocronTestCase):
 
         self.assertIn('<td>foo</td>', html)
         self.assertIn('<td>bar</td>', html)
+
+    def test_post_with_inline_code(self):
+        """
+        Converter has to use <code> for inline code.
+        """
+        _, html = self.conv.to_html('test ``code``\n')
+
+        self.assertEqual(html, '<p>test <code>code</code></p>')

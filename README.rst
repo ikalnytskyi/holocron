@@ -23,7 +23,7 @@ Features
 
 Here is an incomplete list of features:
 
-* Supports `Markdown`_ code syntax highlighting.
+* Supports `Markdown`_, `reStructuredText`_ & code syntax highlighting.
 * Provides simple & powerful plugin system.
 * Supports third-party themes via `Jinja2`_ templates.
 * Generates both `Atom feed`_ and `sitemap.xml`_.
@@ -54,6 +54,7 @@ Links
 .. Links
 
 .. _Markdown: http://daringfireball.net/projects/markdown/
+.. _reStructuredText: http://docutils.sourceforge.net/rst.html
 .. _Jinja2: http://jinja.pocoo.org
 .. _Atom feed: http://en.wikipedia.org/wiki/Atom_(standard)
 .. _sitemap.xml: http://www.sitemaps.org/

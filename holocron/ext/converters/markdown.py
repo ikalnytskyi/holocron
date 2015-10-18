@@ -53,8 +53,6 @@ class Markdown(abc.Converter):
     }
 
     def __init__(self, app):
-        super(Markdown, self).__init__()
-
         self._conf = Conf(self._default_conf, app.conf.get('ext.markdown', {}))
         self._markdown = markdown.Markdown(extensions=self._conf['extensions'])
         self._re_title = re.compile('<h1>(.*)</h1>(.*)', re.M | re.S)
@@ -84,4 +82,4 @@ class Markdown(abc.Converter):
         if match:
             meta['title'], html = match.groups()
 
-        return meta, html.lstrip()
+        return meta, html.strip()

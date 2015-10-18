@@ -94,11 +94,11 @@ type. Here's the key:
 
 **about.mdown**
   A sample page. Each file that could be parsed by one of enabled converters
-  (default: Markdown only) is considered as either Page or Post. Both Page
-  and Post documents preserve their relative paths to the content directory
-  and will be available under almost the same path (a file extension will be
-  stripped) in the output one. I.e. ``$content/a/b/page.mdown`` will be
-  available under the ``$host/a/b/page/`` url.
+  is considered as either Page or Post. Both Page and Post documents preserve
+  their relative paths to the content directory and will be available under
+  almost the same path (a file extension will be stripped) in the output
+  directory. I.e. ``$content/a/b/page.mdown`` will be available under the
+  ``$host/a/b/page/`` url.
 
 **2014/04/20/holocron.mdown**
   A sample post. Each file that could be parsed by one of enabled converters
@@ -115,7 +115,7 @@ type. Here's the key:
 What all that means? That means
 
 * If you want to add new page, just drop it anywhere in the content folder
-  in the supported format (default: Markdown only).
+  in the supported format (default: Markdown & reStructuredText).
 
 * If you want to add new post, just drop it anywhere in the content folder
   but use directory structure with date representation - ``YEAR/MONTH/DAY``.
