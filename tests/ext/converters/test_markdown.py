@@ -70,6 +70,46 @@ class TestMarkdownConverter(HolocronTestCase):
             '<h2>some section 2</h2>\s*'
             '<p>yyy</p>$'))
 
+    def test_two_titles(self):
+        """
+        Only first <h1> should be considered as title, other <h1> should
+        be kept as is.
+        """
+        meta, html = self.conv.to_html(textwrap.dedent('''\
+            some title
+            ==========
+
+            other title
+            ===========
+
+            xxx
+        '''))
+
+        self.assertEqual(meta['title'], 'some title')
+        self.assertRegexpMatches(html, (
+            '^<h1>other title</h1>\s*'
+            '<p>xxx</p>$'))
+
+    def test_no_title_in_the_middle(self):
+        """
+        Only <h1> on the beginning should be considered as title, <h1> in
+        the middle of content should be kept as is.
+        """
+        meta, html = self.conv.to_html(textwrap.dedent('''\
+            xxx
+
+            some title
+            ==========
+
+            yyy
+        '''))
+
+        self.assertNotIn('title', meta)
+        self.assertRegexpMatches(html, (
+            '^<p>xxx</p>\s*'
+            '<h1>some title</h1>\s*'
+            '<p>yyy</p>$'))
+
     def test_post_without_title(self):
         """
         Converter has to work even if there's no title in the document.

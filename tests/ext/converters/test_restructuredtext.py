@@ -98,3 +98,23 @@ class TestReStructuredTextConverter(HolocronTestCase):
         _, html = self.conv.to_html('test ``code``\n')
 
         self.assertEqual(html, '<p>test <code>code</code></p>')
+
+    def test_no_title_in_the_middle(self):
+        """
+        Only <h1> on the beginning should be considered as title, <h1> in
+        the middle of content should be kept as is.
+        """
+        meta, html = self.conv.to_html(textwrap.dedent('''\
+            xxx
+
+            some title
+            ==========
+
+            yyy
+        '''))
+
+        self.assertNotIn('title', meta)
+        self.assertRegexpMatches(html, (
+            '^<p>xxx</p>\s*'
+            '<h2>some title</h2>\s*'
+            '<p>yyy</p>$'))

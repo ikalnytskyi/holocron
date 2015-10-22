@@ -9,6 +9,7 @@ Here you can see the list of changes between each Holocron release.
 ==================
 
 - reStructuredText converter is added.
+- Fix Markdown title parser for multi-<h1> documents.
 
 
 0.1.1 (2015-08-22)
