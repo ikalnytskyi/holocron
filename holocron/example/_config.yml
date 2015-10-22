@@ -38,18 +38,20 @@ theme:
    #    google_analytics: XX-XXXXXXXX-X
    #    yandex_metrika: XXXXXXX
 
-   # ribbon:
-   #    text:  Star On GitHub
-   #    link:  https://github.com/ikalnitsky/kalnitsky.org
+   ribbon:
+      text:  Star On GitHub
+      link:  https://github.com/ikalnitsky/holocron
 
-   # copyright:  &copy; 19 BBY, Obi-Wan Kenobi
+   copyright: >
+      &copy; 19 BBY, Obi-Wan Kenobi
 
 # Settings for Holocron extensions: generators and converters.
 ext:
    enabled:                # exten-s run by Holocron, remove name to turn it off
       - markdown
-      - feed
+      - restructuredtext
       - index
+      - feed
       - sitemap
       - tags
 
@@ -59,6 +61,16 @@ ext:
       extensions:
          - codehilite      # adds code/syntax highlighting
          - extra           # enables tables, footnotes, etc
+
+   # reStructuredText is a converter that parses reStructuredText sources
+   # and generated html pages extracting some meta information. Currently
+   # it supports low-level docutils settings which are passed to docutils
+   # "As Is". They aren't useful for users, but mentioned for nerds. It's
+   # ok if you remove it from your own _config.yml.
+   restructuredtext:
+      docutils:
+         initial_header_level: 2      # start sections from <h2>
+         syntax_highlight: short      # short css classes for code blocks
 
    # Index extension is designed for generating an index page for your blog.
    # The index page is a page that hosts a list of your blog posts, and it's

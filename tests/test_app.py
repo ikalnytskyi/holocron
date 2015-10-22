@@ -192,6 +192,7 @@ class TestHolocronDefaults(HolocronTestCase):
 
         self.assertEqual(converters_cls, set([
             converters.markdown.Markdown,
+            converters.restructuredtext.ReStructuredText,
         ]))
 
     def test_registered_generators(self):

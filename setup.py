@@ -24,7 +24,7 @@ setup(
     long_description=long_description,
     license=license,
     url='http://github.com/ikalnitsky/holocron/',
-    keywords='blog generator static markdown',
+    keywords='blog generator static markdown restructuredtext',
 
     author='Igor Kalnitsky',
     author_email='igor@kalnitsky.org',
@@ -41,6 +41,7 @@ setup(
         'Pygments >= 1.6',      # core since required for various converters
 
         'Markdown >= 2.4',      # deps of markdown converter
+        'docutils >= 0.12',     # deps of restructuredtext converter
         'watchdog >= 0.8.0',    # deps of serve command
     ],
 
@@ -50,6 +51,8 @@ setup(
         ],
         'holocron.ext': [
             'markdown = holocron.ext.converters.markdown:Markdown',
+            'restructuredtext = ' \
+                'holocron.ext.converters.restructuredtext:ReStructuredText',
 
             'index = holocron.ext.generators.index:Index',
             'feed = holocron.ext.generators.feed:Feed',
