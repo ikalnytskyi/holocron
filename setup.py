@@ -35,15 +35,16 @@ setup(
     zip_safe=False,
 
     install_requires=[
-        'Jinja2 >= 2.7',        # core
-        'PyYAML >= 3.11',       # core
-        'dooku >= 0.3.0',       # core
-        'Pygments >= 1.6',      # core since required for various converters
+        'Jinja2   >= 2.7',      # core
+        'PyYAML   >= 3.11',     # core
+        'dooku    >= 0.3.0',    # core
+        'Pygments >= 2.0',      # core since required for various converters
 
         'Markdown >= 2.4',      # deps of markdown converter
         'docutils >= 0.12',     # deps of restructuredtext converter
         'watchdog >= 0.8.0',    # deps of serve command
     ],
+    test_require=['mock >= 1.1.0'],
 
     entry_points={
         'console_scripts': [
