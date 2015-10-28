@@ -44,7 +44,7 @@ setup(
         'docutils >= 0.12',     # deps of restructuredtext converter
         'watchdog >= 0.8.0',    # deps of serve command
     ],
-    test_require=['mock >= 1.1.0'],
+    tests_require=['mock >= 1.1.0'],
 
     entry_points={
         'console_scripts': [
