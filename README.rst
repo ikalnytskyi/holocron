@@ -2,7 +2,7 @@
  Holocron: may the blog be with you!
 =====================================
 
-|pypi-version| |license| |travis-ci| |coveralls|
+|pypi-version| |license| |travis-ci| |coveralls| |docs|
 
 Holocron is an extendable static blog generator powered by the Force. Like
 others, it reads text files in various formats, renders them using templates
@@ -19,7 +19,7 @@ Feel the Force? Then use Holocron!
 
 
 Features
-~~~~~~~~
+========
 
 Here is an incomplete list of features:
 
@@ -37,14 +37,14 @@ https://holocron.readthedocs.org/.
 
 
 Why The Name Holocron?
-~~~~~~~~~~~~~~~~~~~~~~
+======================
 
 Holocron (*short for holographic chronicle*) is a device in which Jedi
 stored different data. In most cases, they used it as diary.
 
 
 Links
-~~~~~
+=====
 
 * Documentation: https://holocron.readthedocs.org/
 * Source: https://github.com/ikalnitsky/holocron
@@ -74,3 +74,6 @@ Links
 
 .. |coveralls| image:: https://img.shields.io/coveralls/ikalnitsky/holocron.svg
    :target: https://coveralls.io/r/ikalnitsky/holocron
+
+.. |docs| image:: https://readthedocs.org/projects/pip/badge/
+   :target: https://holocron.readthedocs.org
