@@ -17,7 +17,7 @@ from dooku.conf import Conf
 from holocron.ext import abc
 
 
-class Markdown(abc.Converter):
+class Markdown(abc.Extension, abc.Converter):
     """
     A markdown converter.
 

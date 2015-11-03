@@ -13,6 +13,26 @@
 import abc
 
 
+class Extension(object, metaclass=abc.ABCMeta):
+    """
+    Abstract base class for Holocron extensions.
+
+    Holocron uses entry points based approach for extensions discovering.
+    Thus, entry points that are exported to ``holocron.ext`` namespace
+    will be considered as extensions, and Holocron will call them and pass
+    its instance as argument. Further, it will be up to extension to decide
+    what to do (it can register a converter, generator, etc).
+
+    .. versionadded:: 0.2.0
+
+    :param app: an application instance
+    """
+
+    @abc.abstractmethod
+    def __init__(self, app):
+        """Initialize extension."""
+
+
 class Command(object, metaclass=abc.ABCMeta):
     """
     Abstract base class for 'Command' extensions.

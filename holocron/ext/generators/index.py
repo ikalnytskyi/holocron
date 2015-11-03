@@ -17,7 +17,7 @@ from holocron.ext import abc
 from holocron.content import Post
 
 
-class Index(abc.Generator):
+class Index(abc.Extension, abc.Generator):
     """
     An index page generator.
 
@@ -49,11 +49,10 @@ class Index(abc.Generator):
     }
 
     def __init__(self, app):
-        super(Index, self).__init__()
-
         self._conf = Conf(self._default_conf, app.conf.get('ext.index', {}))
         self._encoding = app.conf['encoding.output']
         self._template = app.jinja_env.get_template(self._conf['template'])
+
         # An output filename. Why this? Because we want to see this page
         # by typing site url in a browser and http servers are usually
         # looking for this file if none was specified.

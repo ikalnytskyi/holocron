@@ -18,7 +18,7 @@ from dooku.conf import Conf
 from holocron.ext import abc
 
 
-class ReStructuredText(abc.Converter):
+class ReStructuredText(abc.Extension, abc.Converter):
     """
     A reStructuredText converter.
 
