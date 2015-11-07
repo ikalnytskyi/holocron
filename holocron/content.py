@@ -166,7 +166,7 @@ class Page(Document):
             match = self._re_extract_header.match(content)
             if match:
                 headers, content = match.groups()
-                headers = yaml.load(headers)
+                headers = yaml.safe_load(headers)
 
             # get converter for building a given document
             converter = self._app._converters[os.path.splitext(self.source)[1]]

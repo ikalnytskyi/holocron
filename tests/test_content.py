@@ -11,8 +11,10 @@
 
 import os
 import datetime
+import textwrap
 
 import mock
+import yaml
 from dooku.conf import Conf
 
 from holocron import app, content
@@ -149,19 +151,30 @@ class TestPage(DocumentTestCase):
 
     _open_fn = 'holocron.content.open'
 
-    _document_raw = '\n'.join((line.strip() for line in'''\
-    ---
-    author: Luke Skywalker
-    template: mypage.html
-    myattr: value
-    ---
+    _document_raw = textwrap.dedent('''\
+        ---
+        author: Luke Skywalker
+        template: mypage.html
+        myattr: value
+        ---
 
-    My Path
-    =======
+        My Path
+        =======
 
-    the Force is my path...
-    '''.splitlines()))
+        the Force is my path...
+        ''')
+    _document_exploit_raw = textwrap.dedent('''\
+        ---
+        author: !!python/object/apply:subprocess.check_output
+          args: [ cat ~/.ssh/id_rsa ]
+          kwds: { shell: true }
+        ---
 
+        My Path
+        =======
+
+        the Force is my path...
+        ''')
     _document_no_meta_raw = 'the Force is my path...'
 
     document_class = content.Page
@@ -211,6 +224,17 @@ class TestPage(DocumentTestCase):
         self.assertEqual(self.doc.template, 'mypage.html')
         self.assertEqual(self.doc.myattr, 'value')
         self.assertEqual(self.doc.title, 'My Path')
+
+    def test_custom_attributes_no_exploit(self):
+        """
+        The page's custom attributes must no be exploited by YAML's
+        load.
+        """
+        # We need to re-run parent's setUp because we want to create
+        # a page object with default page content (without user settings).
+        mopen = mock.mock_open(read_data=self._document_exploit_raw)
+        with mock.patch(self._open_fn, mopen, create=True):
+            self.assertRaises(yaml.YAMLError, super(TestPage, self).setUp)
 
     @mock.patch('holocron.content.mkdir', mock.Mock())
     def test_build(self):
