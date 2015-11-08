@@ -11,6 +11,8 @@ Here you can see the list of changes between each Holocron release.
 - reStructuredText converter is added.
 - Fix Markdown title parser for multi-<h1> documents.
 - Add Python 3.5 support.
+- Fix security issue when content author may steal private date through
+  content's meta header.
 
 
 0.1.1 (2015-08-22)
