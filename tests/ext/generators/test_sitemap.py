@@ -13,8 +13,8 @@ from datetime import datetime
 from xml.dom import minidom
 
 import mock
-from dooku.conf import Conf
 
+from holocron.app import Holocron
 from holocron.ext.generators import sitemap
 from holocron.content import Page, Post, Static
 
@@ -27,14 +27,20 @@ class TestSitemapGenerator(HolocronTestCase):
         """
         Prepares a sitemap instance with a fake config.
         """
-        self.sitemap = sitemap.Sitemap(mock.Mock(conf=Conf({
+        self.app = Holocron(conf={
             'encoding': {
                 'output': 'my-enc',
             },
+
             'paths': {
                 'output': 'path/to/output',
-            }
-        })))
+            },
+
+            'ext': {
+                'enabled': [],
+            },
+        })
+        self.sitemap = sitemap.Sitemap(self.app)
 
         self.open_fn = 'holocron.ext.generators.sitemap.open'
 

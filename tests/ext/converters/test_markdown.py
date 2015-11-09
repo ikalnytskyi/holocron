@@ -25,6 +25,7 @@ class TestMarkdownConverter(HolocronTestCase):
     def setUp(self):
         self.conv = markdown.Markdown(Holocron(conf={
             'ext': {
+                'enabled': [],
                 'markdown': {
                     'extensions': [],
                 },
@@ -127,6 +128,7 @@ class TestMarkdownConverter(HolocronTestCase):
         """
         self.conv = markdown.Markdown(Holocron(conf={
             'ext': {
+                'enabled': [],
                 'markdown': {
                     'extensions': ['codehilite'],
                 },
@@ -148,6 +150,7 @@ class TestMarkdownConverter(HolocronTestCase):
         """
         self.conv = markdown.Markdown(Holocron(conf={
             'ext': {
+                'enabled': [],
                 'markdown': {
                     'extensions': ['codehilite', 'extra'],
                 },
@@ -168,6 +171,7 @@ class TestMarkdownConverter(HolocronTestCase):
         """
         self.conv = markdown.Markdown(Holocron(conf={
             'ext': {
+                'enabled': [],
                 'markdown': {
                     'extensions': ['extra'],
                 },
