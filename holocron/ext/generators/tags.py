@@ -33,7 +33,7 @@ class Tag(object):
             output.format(tag=name).lstrip('/').rstrip('/'))
 
 
-class Tags(abc.Generator):
+class Tags(abc.Extension, abc.Generator):
     """
     A tags generator.
 
@@ -67,8 +67,6 @@ class Tags(abc.Generator):
     }
 
     def __init__(self, app):
-        super(Tags, self).__init__()
-
         self._conf = Conf(self._default_conf, app.conf.get('ext.tags', {}))
         self._encoding = app.conf['encoding.output']
         self._template = app.jinja_env.get_template(self._conf['template'])

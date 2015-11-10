@@ -21,7 +21,7 @@ from holocron.utils import normalize_url, mkdir
 from holocron.content import Post
 
 
-class Feed(abc.Generator):
+class Feed(abc.Extension, abc.Generator):
     """
     An Atom feed generator.
 
@@ -90,8 +90,6 @@ class Feed(abc.Generator):
     }
 
     def __init__(self, app):
-        super(Feed, self).__init__()
-
         self._appconf = app.conf
         self._conf = Conf(self._default_conf, app.conf.get('ext.feed', {}))
         self._url = normalize_url(app.conf['site.url']) + self._conf['save_as']

@@ -20,9 +20,6 @@ from holocron import __version__ as holocron_version
 from holocron.app import create_app
 
 
-logger = logging.getLogger(__name__)
-
-
 def configure_logger(level):
     """
     Configure a root logger to print records in pretty format.

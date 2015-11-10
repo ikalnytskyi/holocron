@@ -18,7 +18,7 @@ from holocron.content import Page, Post
 from holocron.ext import abc
 
 
-class Sitemap(abc.Generator):
+class Sitemap(abc.Extension, abc.Generator):
     """
     A sitemap generator.
 
@@ -55,8 +55,6 @@ class Sitemap(abc.Generator):
           </urlset>'''))
 
     def __init__(self, app):
-        super(Sitemap, self).__init__()
-
         self._encoding = app.conf['encoding.output']
         self._save_as = os.path.join(app.conf['paths.output'], self._save_as)
 
