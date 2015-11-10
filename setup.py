@@ -51,14 +51,13 @@ setup(
             'holocron = holocron.main:main',
         ],
         'holocron.ext': [
-            'markdown = holocron.ext.converters.markdown:Markdown',
-            'restructuredtext = ' \
-                'holocron.ext.converters.restructuredtext:ReStructuredText',
+            'markdown = holocron.ext:Markdown',
+            'restructuredtext = holocron.ext:ReStructuredText',
 
-            'index = holocron.ext.generators.index:Index',
-            'feed = holocron.ext.generators.feed:Feed',
-            'sitemap = holocron.ext.generators.sitemap:Sitemap',
-            'tags = holocron.ext.generators.tags:Tags',
+            'index = holocron.ext:Index',
+            'feed = holocron.ext:Feed',
+            'sitemap = holocron.ext:Sitemap',
+            'tags = holocron.ext:Tags',
         ],
         'holocron.ext.commands': [
             'init = holocron.ext.commands.init:Init',

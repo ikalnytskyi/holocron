@@ -1,7 +1,7 @@
 # coding: utf-8
 """
-    tests.ext.generators.test_feed
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    tests.ext.test_feed
+    ~~~~~~~~~~~~~~~~~~~
 
     Tests Feed generator.
 
@@ -16,7 +16,7 @@ import mock
 
 from holocron.app import Holocron
 from holocron.content import Post, Page, Static
-from holocron.ext.generators import feed
+from holocron.ext import Feed
 
 from tests import HolocronTestCase, FakeConverter
 
@@ -50,7 +50,7 @@ class TestFeedGenerator(HolocronTestCase):
                 },
             },
         })
-        self.feed = feed.Feed(self.app)
+        self.feed = Feed(self.app)
 
         self.date_early = datetime(2012, 2, 2)
         self.date_moderate = datetime(2013, 4, 1)
@@ -88,9 +88,9 @@ class TestFeedGenerator(HolocronTestCase):
         self.page = mock.Mock(spec=Page, url='www.page.com')
         self.static = mock.Mock(spec=Static, url='www.image.com')
 
-        self.open_fn = 'holocron.ext.generators.feed.open'
+        self.open_fn = 'holocron.ext.feed.open'
 
-    @mock.patch('holocron.ext.generators.feed.mkdir', mock.Mock())
+    @mock.patch('holocron.ext.feed.mkdir', mock.Mock())
     def _get_content(self, documents):
         """
         This helper method mocks the open function and returns the content
@@ -153,7 +153,7 @@ class TestFeedGenerator(HolocronTestCase):
 
         return content
 
-    @mock.patch('holocron.ext.generators.feed.mkdir', mock.Mock())
+    @mock.patch('holocron.ext.feed.mkdir', mock.Mock())
     def test_feed_filename_and_enc(self):
         """
         Feed function has to save feed xml file to a proper location and with

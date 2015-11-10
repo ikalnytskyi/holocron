@@ -1,7 +1,7 @@
 # coding: utf-8
 """
-    tests.ext.generators.test_tags
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    tests.ext.test_tags
+    ~~~~~~~~~~~~~~~~~~~
 
     Tests Tags generator.
 
@@ -16,7 +16,7 @@ import mock
 
 from holocron.app import Holocron
 from holocron.content import Post, Page, Static
-from holocron.ext.generators.tags import Tags, Tag
+from holocron.ext.tags import Tags, Tag
 
 from tests import HolocronTestCase, FakeConverter
 
@@ -113,9 +113,9 @@ class TestTagsGenerator(HolocronTestCase):
         self.page = mock.Mock(spec=Page)
         self.static = mock.Mock(spec=Static)
 
-        self.open_fn = 'holocron.ext.generators.tags.open'
+        self.open_fn = 'holocron.ext.tags.open'
 
-    @mock.patch('holocron.ext.generators.tags.mkdir', mock.Mock())
+    @mock.patch('holocron.ext.tags.mkdir', mock.Mock())
     def _get_content(self, documents):
         """
         This helper method mocks the open function and return the content
@@ -128,7 +128,7 @@ class TestTagsGenerator(HolocronTestCase):
             content, = mopen().write.call_args[0]
             return content
 
-    @mock.patch('holocron.ext.generators.tags.mkdir')
+    @mock.patch('holocron.ext.tags.mkdir')
     def _get_tags_content(self, documents, mock_mkdir):
         with mock.patch(self.open_fn, mock.mock_open(), create=True) as mopen:
             self.tags.generate(documents)
@@ -242,7 +242,7 @@ class TestTagsGenerator(HolocronTestCase):
         err = 'Could not find link for #tag2.'
         self.assertIn('<a href="/mypath/tags/tag2/">#tag2</a>', content, err)
 
-    @mock.patch('holocron.ext.generators.tags.mkdir')
+    @mock.patch('holocron.ext.tags.mkdir')
     def test_malformed_tags_are_skipped(self, mock_mkdir):
         """
         Test if tags formatting is correct.

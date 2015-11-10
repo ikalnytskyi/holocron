@@ -1,7 +1,7 @@
 # coding: utf-8
 """
-    holocron.ext.generators.tags
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    holocron.ext.tags
+    ~~~~~~~~~~~~~~~~~
 
     The module implements a Tags generator.
 

@@ -1,7 +1,7 @@
 # coding: utf-8
 """
-    holocron.ext.generators.index
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    holocron.ext.index
+    ~~~~~~~~~~~~~~~~~~
 
     This module implements an Index generator.
 
