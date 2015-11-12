@@ -12,7 +12,6 @@
 from datetime import datetime
 
 import mock
-from dooku.conf import Conf
 
 from holocron.ext.generators import index
 from holocron.content import Post, Page, Static
@@ -36,8 +35,7 @@ class TestIndexGenerator(HolocronTestCase):
         Creates generator object and number of posts which will be further used
         in test sets.
         """
-
-        self.index = index.Index(Holocron(conf=Conf({
+        self.app = Holocron(conf={
             'sitename': 'MyTestSite',
             'siteurl': 'www.mytest.com',
             'author': 'Tester',
@@ -49,7 +47,12 @@ class TestIndexGenerator(HolocronTestCase):
             'paths': {
                 'output': 'path/to/output',
             },
-        })))
+
+            'ext': {
+                'enabled': [],
+            },
+        })
+        self.index = index.Index(self.app)
 
         self.open_fn = 'holocron.ext.generators.index.open'
 

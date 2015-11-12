@@ -190,23 +190,23 @@ class TestHolocronDefaults(HolocronTestCase):
         """
         converters_cls = {type(conv) for conv in self.app._converters.values()}
 
-        self.assertEqual(converters_cls, set([
+        self.assertCountEqual(converters_cls, [
             converters.markdown.Markdown,
             converters.restructuredtext.ReStructuredText,
-        ]))
+        ])
 
     def test_registered_generators(self):
         """
         Tests that default generators are registered.
         """
-        generators_cls = {type(gen) for gen in self.app._generators}
+        generators_cls = [type(gen) for gen in self.app._generators]
 
-        self.assertEqual(generators_cls, set([
+        self.assertCountEqual(generators_cls, [
             generators.feed.Feed,
             generators.index.Index,
             generators.sitemap.Sitemap,
             generators.tags.Tags,
-        ]))
+        ])
 
 
 class TestCreateApp(HolocronTestCase):

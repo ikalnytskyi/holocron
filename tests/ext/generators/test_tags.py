@@ -13,13 +13,12 @@ import textwrap
 from datetime import datetime
 
 import mock
-from dooku.conf import Conf
 
-from holocron.ext.generators.tags import Tags, Tag
-from holocron.content import Post, Page, Static
 from holocron.app import Holocron
+from holocron.content import Post, Page, Static
+from holocron.ext.generators.tags import Tags, Tag
 
-from tests import HolocronTestCase
+from tests import HolocronTestCase, FakeConverter
 
 
 class TestTagObjects(HolocronTestCase):
@@ -61,7 +60,7 @@ class TestTagsGenerator(HolocronTestCase):
     h_year = '<h2>{0}</h2>'.format
 
     def setUp(self):
-        self.app = Holocron(conf=Conf({
+        self.app = Holocron(conf={
             'sitename': 'MyTestSite',
             'siteurl': 'www.mytest.com',
             'author': 'Tester',
@@ -75,11 +74,12 @@ class TestTagsGenerator(HolocronTestCase):
             },
 
             'ext': {
+                'enabled': [],
                 'tags': {
                     'output': 'mypath/tags/{tag}',
                 },
             },
-        }))
+        })
         self.tags = Tags(self.app)
 
         self.date_early = datetime(2012, 2, 2)
@@ -215,6 +215,10 @@ class TestTagsGenerator(HolocronTestCase):
         """
         Test that tags are actually get to the output.
         """
+        # since we're interested in rendered page, let's register
+        # a fake converter for that purpose
+        self.app.add_converter(FakeConverter())
+
         data = textwrap.dedent('''\
             ---
             tags: [tag1, tag2]
@@ -224,7 +228,7 @@ class TestTagsGenerator(HolocronTestCase):
 
         open_fn = 'holocron.content.open'
         with mock.patch(open_fn, mock.mock_open(read_data=data), create=True):
-            post = Post('2015/05/23/filename.mdown', self.app)
+            post = Post('2015/05/23/filename.fake', self.app)
 
         self._get_content([post])
 

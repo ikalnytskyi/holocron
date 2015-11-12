@@ -17,10 +17,10 @@ import mock
 import yaml
 from dooku.conf import Conf
 
-from holocron import app, content
-from holocron.ext.converters import markdown
+from holocron.app import Holocron
+from holocron import content
 
-from tests import HolocronTestCase
+from tests import HolocronTestCase, FakeConverter
 
 
 class DocumentTestCase(HolocronTestCase):
@@ -32,7 +32,7 @@ class DocumentTestCase(HolocronTestCase):
     _getctime = 662739000   # UTC: 1991/01/01 2:10pm
     _getmtime = 1420121400  # UTC: 2015/01/01 2:10pm
 
-    _fake_conf = Conf(app.Holocron.default_conf, {
+    _conf = Conf({
         'site': {
             'url': 'http://example.com',
         },
@@ -57,18 +57,17 @@ class DocumentTestCase(HolocronTestCase):
         Prepares a document instance with a fake config.
         """
         filename = os.path.join(
-            self._fake_conf['paths.content'], self.document_filename)
-        self._fake_app = mock.Mock(conf=self._fake_conf)
+            self._conf['paths.content'], self.document_filename)
 
-        self.doc = self.document_class(filename, mock.Mock(
-            _converters={
-                '.mdown': markdown.Markdown(self._fake_app), },
-            conf=self._fake_conf))
+        self.app = Holocron(self._conf)
+        self.app.add_converter(FakeConverter())
+
+        self.doc = self.document_class(filename, self.app)
 
 
 class TestDocument(DocumentTestCase):
     """
-    Tests for an abstract document base class.
+    Tests an abstract document base class.
     """
 
     class DocumentImpl(content.Document):
@@ -146,7 +145,7 @@ class TestDocument(DocumentTestCase):
 
 class TestPage(DocumentTestCase):
     """
-    Tests for a Page document.
+    Tests Page document.
     """
 
     _open_fn = 'holocron.content.open'
@@ -198,7 +197,7 @@ class TestPage(DocumentTestCase):
         with mock.patch(self._open_fn, mopen, create=True):
             super(TestPage, self).setUp()
 
-        self.assertEqual(self.doc.author, self._fake_conf['site.author'])
+        self.assertEqual(self.doc.author, self.app.conf['site.author'])
         self.assertEqual(self.doc.template, self.document_class.template)
         self.assertEqual(self.doc.title, self.document_class.title)
 
@@ -263,9 +262,12 @@ class TestPage(DocumentTestCase):
         """
         The page instance has to be rendered in the right place.
         """
+        self.app.jinja_env = mock.Mock()
         mopen = mock.mock_open(read_data=self._document_no_meta_raw)
         with mock.patch(self._open_fn, mopen, create=True):
             self.doc.build()
+
+        self.app.jinja_env.get_template.assert_called_once_with('mypage.html')
 
         self.assertEqual(
             mopen.call_args[0][0], './_output/about/cv/index.html')
@@ -275,7 +277,7 @@ class TestPage(DocumentTestCase):
 
 class TestPost(TestPage):
     """
-    Tests for a Post document.
+    Tests Post document.
     """
 
     document_class = content.Post
@@ -294,9 +296,12 @@ class TestPost(TestPage):
         """
         The post instance has to be rendered in the right place.
         """
+        self.app.jinja_env = mock.Mock()
         mopen = mock.mock_open(read_data=self._document_no_meta_raw)
         with mock.patch(self._open_fn, mopen, create=True):
             self.doc.build()
+
+        self.app.jinja_env.get_template.assert_called_once_with('mypage.html')
 
         self.assertEqual(
             mopen.call_args[0][0], './_output/2014/10/8/testpost/index.html')
@@ -315,7 +320,7 @@ class TestPost(TestPage):
 
 class TestStatic(DocumentTestCase):
     """
-    Tests for a Static document.
+    Tests Static document.
     """
 
     document_class = content.Static
@@ -331,7 +336,7 @@ class TestStatic(DocumentTestCase):
 
 class TestDocumentFactory(HolocronTestCase):
     """
-    Tests for the create_document functions.
+    Tests the create_document function.
     """
 
     @mock.patch('holocron.content.Page._parse_document', return_value={})
@@ -339,22 +344,19 @@ class TestDocumentFactory(HolocronTestCase):
     @mock.patch('holocron.content.os.path.getctime')
     @mock.patch('holocron.content.os.getcwd', return_value='cwd')
     def _create_document(self, filename, getcwd, getctime, getmtime, _):
-        fake_app = mock.Mock(
-            _converters={
-                '.mdown': mock.Mock(),
-            },
-            conf=Conf(app.Holocron.default_conf, {
-                'paths': {
-                    'content': './content',
-                }
-            }))
-        return content.create_document(filename, fake_app)
+        app = Holocron({
+            'paths': {
+                'content': './content',
+            }
+        })
+        app.add_converter(FakeConverter())
+        return content.create_document(filename, app)
 
     def test_create_post(self):
         """
         Tests that create_document creates a Post instance in right cases.
         """
-        document = self._create_document('content/2015/01/04/test.mdown')
+        document = self._create_document('content/2015/01/04/test.fake')
         self.assertIsInstance(document, content.Post)
 
     def test_create_page(self):
@@ -362,9 +364,10 @@ class TestDocumentFactory(HolocronTestCase):
         Tests that create_document creates a Page instance in right cases.
         """
         corner_cases = (
-            'content/test/test.mdown',
-            'content/2014/test.mdown',
-            'content/2014/01/test.mdown', )
+            'content/test/test.fake',
+            'content/2014/test.fake',
+            'content/2014/01/test.fake',
+        )
 
         for case in corner_cases:
             document = self._create_document(case)
@@ -378,7 +381,8 @@ class TestDocumentFactory(HolocronTestCase):
             'content/2015/01/04/test.png',
             'content/2015/01/test.png',
             'content/2015/test.png',
-            'content/test/test.png', )
+            'content/test/test.png',
+        )
 
         for case in corner_cases:
             document = self._create_document(case)

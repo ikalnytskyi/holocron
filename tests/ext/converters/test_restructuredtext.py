@@ -23,7 +23,11 @@ class TestReStructuredTextConverter(HolocronTestCase):
     """
 
     def setUp(self):
-        self.conv = restructuredtext.ReStructuredText(Holocron())
+        self.conv = restructuredtext.ReStructuredText(Holocron(conf={
+            'ext': {
+                'enabled': [],
+            },
+        }))
 
     def test_simple_post(self):
         """

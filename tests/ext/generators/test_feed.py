@@ -13,13 +13,12 @@ from datetime import datetime
 from xml.dom import minidom
 
 import mock
-from dooku.conf import Conf
 
-from holocron.ext.generators import feed
-from holocron.content import Post, Page, Static
 from holocron.app import Holocron
+from holocron.content import Post, Page, Static
+from holocron.ext.generators import feed
 
-from tests import HolocronTestCase
+from tests import HolocronTestCase, FakeConverter
 
 
 class TestFeedGenerator(HolocronTestCase):
@@ -28,7 +27,7 @@ class TestFeedGenerator(HolocronTestCase):
     """
 
     def setUp(self):
-        self.app = Holocron(conf=Conf({
+        self.app = Holocron(conf={
             'site': {
                 'title': 'MyTestSite',
                 'author': 'Tester',
@@ -44,14 +43,13 @@ class TestFeedGenerator(HolocronTestCase):
             },
 
             'ext': {
-                'enabled': ['feed', 'markdown'],
-
+                'enabled': [],
                 'feed': {
                     'save_as': 'myfeed.xml',
                     'posts_number': 3,
                 },
             },
-        }))
+        })
         self.feed = feed.Feed(self.app)
 
         self.date_early = datetime(2012, 2, 2)
@@ -287,9 +285,13 @@ class TestFeedGenerator(HolocronTestCase):
         """
         Test that html pages have the link to feed.
         """
+        # since we're interested in rendered page, let's register
+        # a fake converter for that purpose
+        self.app.add_converter(FakeConverter())
+
         open_fn = 'holocron.content.open'
         with mock.patch(open_fn, mock.mock_open(read_data=''), create=True):
-            page = Page('filename.mdown', self.app)
+            page = Page('filename.fake', self.app)
 
         with mock.patch(open_fn, mock.mock_open(), create=True) as mopen:
             page.build()
