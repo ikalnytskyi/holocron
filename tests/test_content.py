@@ -163,18 +163,6 @@ class TestPage(DocumentTestCase):
 
         the Force is my path...
         ''')
-    _document_exploit_raw = textwrap.dedent('''\
-        ---
-        author: !!python/object/apply:subprocess.check_output
-          args: [ cat ~/.ssh/id_rsa ]
-          kwds: { shell: true }
-        ---
-
-        My Path
-        =======
-
-        the Force is my path...
-        ''')
     _document_no_meta_raw = 'the Force is my path...'
 
     document_class = content.Page
@@ -230,11 +218,45 @@ class TestPage(DocumentTestCase):
         The page's custom attributes must no be exploited by YAML's
         load.
         """
+        document_raw = textwrap.dedent('''\
+            ---
+            author: !!python/object/apply:subprocess.check_output
+              args: [ cat ~/.ssh/id_rsa ]
+              kwds: { shell: true }
+            ---
+
+            My Path
+            =======
+
+            the Force is my path...''')
+
         # We need to re-run parent's setUp because we want to create
         # a page object with default page content (without user settings).
-        mopen = mock.mock_open(read_data=self._document_exploit_raw)
+        mopen = mock.mock_open(read_data=document_raw)
         with mock.patch(self._open_fn, mopen, create=True):
             self.assertRaises(yaml.YAMLError, super(TestPage, self).setUp)
+
+    def test_custom_attributes_parsing(self):
+        """
+        The YAML header should be parsed correctly, and only first two
+        ``---`` should be considered as YAML header.
+        """
+        document_raw = textwrap.dedent('''\
+            ---
+            author: C3PO
+            ---
+
+            some content
+
+            ---
+            tags: [R2D2]
+            ---''')
+
+        # We need to re-run parent's setUp because we want to create
+        # a page object with default page content (without user settings).
+        mopen = mock.mock_open(read_data=document_raw)
+        with mock.patch(self._open_fn, mopen, create=True):
+            super(TestPage, self).setUp()
 
     @mock.patch('holocron.content.mkdir', mock.Mock())
     def test_build(self):
