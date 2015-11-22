@@ -34,16 +34,16 @@ theme:
       - about: /about
       - feed:  /feed.xml
 
-   # counters:
-   #    google_analytics: XX-XXXXXXXX-X
-   #    yandex_metrika: XXXXXXX
-
    ribbon:
       text:  Star On GitHub
       link:  https://github.com/ikalnitsky/holocron
 
    copyright: >
       &copy; 19 BBY, Obi-Wan Kenobi
+
+   # counters:
+   #    google_analytics: XX-XXXXXXXX-X
+   #    yandex_metrika: XXXXXXX
 
 # Settings for Holocron extensions: generators and converters.
 ext:

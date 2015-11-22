@@ -1,6 +1,6 @@
 {#-
-    holocron/themes/default/templates/base.html
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    holocron/theme/templates/base.html
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     Base template for Holocron's default theme.
 
@@ -10,6 +10,7 @@
 
 <!doctype html>
 <head>
+{% block head -%}
   <meta charset="{{ encoding }}">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -20,7 +21,8 @@
   <link rel="alternate" type="application/atom+xml" href="{{ feedurl }}" title="{{ site.title }}">
   {%- endif %}
 
-  <title>{% block title %}{{ site.title }}{% endblock title %}</title>
+  <title>{% block title %}{{ site.title }}{% endblock %}</title>
+{%- endblock %}
 
 <body>
 
@@ -41,7 +43,7 @@
   <div id="content">
     {% block content %}
     {% endblock %}
-  </div>
+  </div> <!-- /#content -->
   </div> <!-- /.content-wrapper -->
 
   <div class="footer-wrapper">
@@ -52,8 +54,10 @@
 
   {% if theme.ribbon %}
   <div class="ribbon-wrapper">
-    <a href="{{ theme.ribbon.link }}" class="ribbon">{{ theme.ribbon.text }}</a>
-  </div>
+    <a href="{{ theme.ribbon.link }}" class="ribbon">
+      {{ theme.ribbon.text }}
+    </a>
+  </div> <!-- /.ribbon-wrapper -->
   {% endif %}
 
 {% include 'counters.html' %}
