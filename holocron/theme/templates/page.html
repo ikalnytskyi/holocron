@@ -24,6 +24,14 @@
   {%- if document.summary -%}
   <meta name="description" content="{{ summary }}">
   {%- endif %}
+
+  {% if 'twitter_cards.username' in theme and document.summary -%}
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@{{ theme['twitter_cards.username'] }}">
+  <meta name="twitter:title" content="{{ document.title }}">
+  <meta name="twitter:description" content="{{ summary }}">
+  {% endif %}
+
 {%- endblock %}
 
 {% block title -%}

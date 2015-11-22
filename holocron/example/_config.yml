@@ -40,6 +40,11 @@ theme:
 
    copyright: >
       &copy; 19 BBY, Obi-Wan Kenobi
+                                                      A
+   # Twitter Cards is a technology that allows you to *do* a rich
+   # preview of your content once link to your site is in tweet.
+   twitter_cards:
+      username: twitter
 
    # counters:
    #    google_analytics: XX-XXXXXXXX-X
