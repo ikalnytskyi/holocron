@@ -1,7 +1,7 @@
 # coding: utf-8
 """
-    tests.ext.generators.test_index
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    tests.ext.test_index
+    ~~~~~~~~~~~~~~~~~~~~
 
     Tests Index generator.
 
@@ -13,9 +13,9 @@ from datetime import datetime
 
 import mock
 
-from holocron.ext.generators import index
-from holocron.content import Post, Page, Static
 from holocron.app import Holocron
+from holocron.content import Post, Page, Static
+from holocron.ext import Index
 
 from tests import HolocronTestCase
 
@@ -52,9 +52,9 @@ class TestIndexGenerator(HolocronTestCase):
                 'enabled': [],
             },
         })
-        self.index = index.Index(self.app)
+        self.index = Index(self.app)
 
-        self.open_fn = 'holocron.ext.generators.index.open'
+        self.open_fn = 'holocron.ext.index.open'
 
         self.date_early = datetime(2012, 2, 2)
         self.date_late = datetime(2014, 6, 12)

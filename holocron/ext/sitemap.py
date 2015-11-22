@@ -1,7 +1,7 @@
 # coding: utf-8
 """
-    holocron.ext.generators.sitemap
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    holocron.ext.sitemap
+    ~~~~~~~~~~~~~~~~~~~~
 
     This module implements a Sitemap generator.
 

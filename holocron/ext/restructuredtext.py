@@ -1,7 +1,7 @@
 # coding: utf-8
 """
-    holocron.ext.converters.restructuredtext
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    holocron.ext.restructuredtext
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     The module implements a reStructuredText converter.
 

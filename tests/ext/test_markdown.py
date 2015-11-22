@@ -1,7 +1,7 @@
 # coding: utf-8
 """
-    tests.ext.converters.test_markdown
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    tests.ext.test_markdown
+    ~~~~~~~~~~~~~~~~~~~~~~~
 
     Tests Markdown converter.
 
@@ -12,7 +12,7 @@
 import textwrap
 
 from holocron.app import Holocron
-from holocron.ext.converters import markdown
+from holocron.ext import Markdown
 
 from tests import HolocronTestCase
 
@@ -23,7 +23,7 @@ class TestMarkdownConverter(HolocronTestCase):
     """
 
     def setUp(self):
-        self.conv = markdown.Markdown(Holocron(conf={
+        self.conv = Markdown(Holocron(conf={
             'ext': {
                 'enabled': [],
                 'markdown': {
@@ -126,7 +126,7 @@ class TestMarkdownConverter(HolocronTestCase):
         """
         Converter has to use Pygments to highlight code blocks.
         """
-        self.conv = markdown.Markdown(Holocron(conf={
+        self.conv = Markdown(Holocron(conf={
             'ext': {
                 'enabled': [],
                 'markdown': {
@@ -148,7 +148,7 @@ class TestMarkdownConverter(HolocronTestCase):
         """
         Converter has to support GitHub's fence code syntax.
         """
-        self.conv = markdown.Markdown(Holocron(conf={
+        self.conv = Markdown(Holocron(conf={
             'ext': {
                 'enabled': [],
                 'markdown': {
@@ -169,7 +169,7 @@ class TestMarkdownConverter(HolocronTestCase):
         """
         Converter has to support tables syntax.
         """
-        self.conv = markdown.Markdown(Holocron(conf={
+        self.conv = Markdown(Holocron(conf={
             'ext': {
                 'enabled': [],
                 'markdown': {

@@ -1,7 +1,7 @@
 # coding: utf-8
 """
-    tests.ext.converters.test_restructuredtext
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    tests.ext.test_restructuredtext
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     Tests reStructuredText converter.
 
@@ -12,7 +12,7 @@
 import textwrap
 
 from holocron.app import Holocron
-from holocron.ext.converters import restructuredtext
+from holocron.ext import ReStructuredText
 
 from tests import HolocronTestCase
 
@@ -23,7 +23,7 @@ class TestReStructuredTextConverter(HolocronTestCase):
     """
 
     def setUp(self):
-        self.conv = restructuredtext.ReStructuredText(Holocron(conf={
+        self.conv = ReStructuredText(Holocron(conf={
             'ext': {
                 'enabled': [],
             },

@@ -16,10 +16,9 @@ import textwrap
 import mock
 
 import holocron
+import holocron.ext
 from holocron.app import Holocron, create_app
 from holocron.ext import abc
-from holocron.ext import converters
-from holocron.ext import generators
 
 from tests import HolocronTestCase
 
@@ -191,8 +190,8 @@ class TestHolocronDefaults(HolocronTestCase):
         converters_cls = {type(conv) for conv in self.app._converters.values()}
 
         self.assertCountEqual(converters_cls, [
-            converters.markdown.Markdown,
-            converters.restructuredtext.ReStructuredText,
+            holocron.ext.Markdown,
+            holocron.ext.ReStructuredText,
         ])
 
     def test_registered_generators(self):
@@ -202,10 +201,10 @@ class TestHolocronDefaults(HolocronTestCase):
         generators_cls = [type(gen) for gen in self.app._generators]
 
         self.assertCountEqual(generators_cls, [
-            generators.feed.Feed,
-            generators.index.Index,
-            generators.sitemap.Sitemap,
-            generators.tags.Tags,
+            holocron.ext.Feed,
+            holocron.ext.Index,
+            holocron.ext.Sitemap,
+            holocron.ext.Tags,
         ])
 
 

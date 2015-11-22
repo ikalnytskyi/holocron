@@ -1,7 +1,7 @@
 # coding: utf-8
 """
-    tests.ext.generators.test_sitemap
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    tests.ext.test_sitemap
+    ~~~~~~~~~~~~~~~~~~~~~~
 
     Tests Sitemap generator.
 
@@ -15,8 +15,8 @@ from xml.dom import minidom
 import mock
 
 from holocron.app import Holocron
-from holocron.ext.generators import sitemap
 from holocron.content import Page, Post, Static
+from holocron.ext import Sitemap
 
 from tests import HolocronTestCase
 
@@ -40,9 +40,9 @@ class TestSitemapGenerator(HolocronTestCase):
                 'enabled': [],
             },
         })
-        self.sitemap = sitemap.Sitemap(self.app)
+        self.sitemap = Sitemap(self.app)
 
-        self.open_fn = 'holocron.ext.generators.sitemap.open'
+        self.open_fn = 'holocron.ext.sitemap.open'
 
         self.post_url = 'http://example.com/post/'
         self.page_url = 'http://example.com/page/'

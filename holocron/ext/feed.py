@@ -1,7 +1,7 @@
 # coding: utf-8
 """
-    holocron.ext.generators.feed
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    holocron.ext.feed
+    ~~~~~~~~~~~~~~~~~
 
     This module implements a Feed generator.
 

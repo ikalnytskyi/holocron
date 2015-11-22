@@ -1,7 +1,7 @@
 # coding: utf-8
 """
-    holocron.ext.converters.markdown
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    holocron.ext.markdown
+    ~~~~~~~~~~~~~~~~~~~~~
 
     The module implements a Markdown converter.
 
