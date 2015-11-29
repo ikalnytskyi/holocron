@@ -69,7 +69,7 @@ Links
 .. |license| image:: https://img.shields.io/pypi/l/holocron.svg
    :target: https://pypi.python.org/pypi/holocron
 
-.. |travis-ci| image:: https://img.shields.io/travis/ikalnitsky/holocron/master.svg
+.. |travis-ci| image:: https://img.shields.io/travis/ikalnitsky/holocron.svg
    :target: https://travis-ci.org/ikalnitsky/holocron
 
 .. |coveralls| image:: https://img.shields.io/coveralls/ikalnitsky/holocron.svg
