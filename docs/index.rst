@@ -1,8 +1,10 @@
-:orphan:
-
 ======================
  Welcome to Holocron!
 ======================
+
+.. image:: _static/logo.svg
+   :width: 200
+   :align: right
 
 Holocron is an extendable static blog generator powered by the Force. Like
 others, it reads text files in various formats, renders them using templates
@@ -19,7 +21,7 @@ Feel the Force? Then use Holocron!
 
 
 Features
-~~~~~~~~
+========
 
 Here is an incomplete list of features:
 
@@ -34,12 +36,13 @@ Here is an incomplete list of features:
 
 
 Table Of Contents
-~~~~~~~~~~~~~~~~~
+=================
 
 .. toctree::
    :maxdepth: 2
 
    quickstart
+   extensions
    configuration
    changes
    authors
