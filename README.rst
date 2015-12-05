@@ -36,6 +36,23 @@ Check out Holocron's documentation for further information -
 https://holocron.readthedocs.org/.
 
 
+Contribution
+============
+
+You can improve Holocron in many ways:
+
+* by `filing issues and/or feature requests
+  <https://github.com/ikalnitsky/holocron/issues>`_
+* by `fixing issues
+  <https://github.com/ikalnitsky/holocron/labels/bug>`_
+* by `doing enhancements (aka features)
+  <https://github.com/ikalnitsky/holocron/labels/enhancement>`_
+* by improving documentation
+
+Any feedback, any contribution is appreciated. Let's awaken the Force
+together!
+
+
 Why The Name Holocron?
 ======================
 
