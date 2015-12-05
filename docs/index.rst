@@ -17,7 +17,7 @@ Feel the Force? Then use Holocron!
 
 .. code:: bash
 
-    $ [sudo] pip install holocron
+    $ [sudo] pip3 install holocron
 
 
 Features

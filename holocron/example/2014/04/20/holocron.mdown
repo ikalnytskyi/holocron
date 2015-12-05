@@ -72,7 +72,7 @@ Holocron is written on Python and destributed as a Python package on PyPI.
 So you can easily install it via `pip` tool:
 
 ```bash
-$ [sudo] pip install holocron
+$ [sudo] pip3 install holocron
 ```
 
 Basic Usage
@@ -101,4 +101,4 @@ Links
 
 [repository]: https://github.com/ikalnitsky/holocron
 [issue tracker]: https://github.com/ikalnitsky/holocron/issues
-[documentation]: https://readthedocs.org
+[documentation]: https://holocron.readthedocs.org
