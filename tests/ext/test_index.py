@@ -25,10 +25,10 @@ class TestIndexGenerator(HolocronTestCase):
     Test index generator.
     """
     #: tag that preceds a group of posts with the same year
-    year_tag = '<h2>'
+    year_tag = '<span class="year">'
 
     #: generate html header with year that is used for grouping in templates
-    h_year = '<h2>{0}</h2>'.format
+    h_year = '<span class="year">{0}</span>'.format
 
     def setUp(self):
         """

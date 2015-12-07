@@ -57,7 +57,7 @@ class TestTagsGenerator(HolocronTestCase):
     Test tags generator.
     """
     #: generate html headers with years that is used for grouping in templates
-    h_year = '<h2>{0}</h2>'.format
+    h_year = '<span class="year">{0}</span>'.format
 
     def setUp(self):
         self.app = Holocron(conf={
