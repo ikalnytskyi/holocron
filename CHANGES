@@ -7,7 +7,15 @@ Here you can see the list of changes between each Holocron release.
 
 0.3.0 (unreleased)
 ==================
+
+- Added API for registering external themes. That means from now on themes
+  could be distributed as Holocron extensions via Python packaged.
+- Added User Theme extension that allows to setup external theme.
 - Fixed posts ordering on index and tags pages.
+- **DEPRECATED**: ``paths.theme`` option will be removed in favor of
+  ``ext.user-theme.path``
+- **DEPRECATED**: user theme won't be enabled by default, so please enable
+  it explicitly
 
 
 0.2.0 (2015-12-16)

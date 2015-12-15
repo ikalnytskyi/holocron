@@ -222,3 +222,35 @@ where
 
 * ``template`` -- a template to be used to render tags index pages
 * ``output`` -- an output directory for tags index page
+
+
+User Theme
+==========
+
+.. list-table::
+   :stub-columns: 1
+   :widths: 1 100
+
+   * - Integrated
+     - yes
+
+   * - Description
+     - Allows to setup external theme for content rendering.
+
+When enabled, the ``_theme`` folder in current working directory will be
+consumed as user theme. The path could be changed using the following
+option:
+
+.. code:: yaml
+
+    ext:
+      user-theme:
+        path: {here}/_themes/my-awesome-theme
+
+where
+
+* ``{here}`` -- a macros that will be replaced by the path to directory with
+  configuration file (i.e. ``_config.yml``)
+
+.. note:: User Theme extension supersedes the core functionality, as well
+          as ``paths.theme`` setting.

@@ -58,6 +58,8 @@ setup(
             'feed = holocron.ext:Feed',
             'sitemap = holocron.ext:Sitemap',
             'tags = holocron.ext:Tags',
+
+            'user-theme = holocron.ext:UserTheme',
         ],
         'holocron.ext.commands': [
             'init = holocron.ext.commands.init:Init',
