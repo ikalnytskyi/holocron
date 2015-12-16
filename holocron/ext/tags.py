@@ -67,9 +67,9 @@ class Tags(abc.Extension, abc.Generator):
     }
 
     def __init__(self, app):
+        self._app = app
         self._conf = Conf(self._default_conf, app.conf.get('ext.tags', {}))
         self._encoding = app.conf['encoding.output']
-        self._template = app.jinja_env.get_template(self._conf['template'])
         self._save_as = os.path.join(
             app.conf['paths.output'], self._conf['output'], 'index.html')
 
@@ -100,9 +100,11 @@ class Tags(abc.Extension, abc.Generator):
 
                 post.tags = tag_objects
 
+        template = self._app.jinja_env.get_template(self._conf['template'])
+
         for tag in tags:
             save_as = self._save_as.format(tag=tag)
             mkdir(os.path.dirname(save_as))
 
             with open(save_as, 'w', encoding=self._encoding) as f:
-                f.write(self._template.render(posts=tags[tag]))
+                f.write(template.render(posts=tags[tag]))

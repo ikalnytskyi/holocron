@@ -49,9 +49,9 @@ class Index(abc.Extension, abc.Generator):
     }
 
     def __init__(self, app):
+        self._app = app
         self._conf = Conf(self._default_conf, app.conf.get('ext.index', {}))
         self._encoding = app.conf['encoding.output']
-        self._template = app.jinja_env.get_template(self._conf['template'])
 
         # An output filename. Why this? Because we want to see this page
         # by typing site url in a browser and http servers are usually
@@ -65,5 +65,6 @@ class Index(abc.Extension, abc.Generator):
         # shown in a some sort of navigation bar
         posts = (doc for doc in documents if isinstance(doc, Post))
 
+        template = self._app.jinja_env.get_template(self._conf['template'])
         with open(self._save_as, 'w', encoding=self._encoding) as f:
-            f.write(self._template.render(posts=posts))
+            f.write(template.render(posts=posts))
