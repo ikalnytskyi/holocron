@@ -18,7 +18,7 @@
 {% for group in posts|groupby('published.year')|sort(attribute='grouper', reverse=True) %}
   <span class="year">{{ group.grouper }}</span>
 
-  {% for post in group.list %}
+  {% for post in group.list|sort(attribute='published', reverse=True) %}
   <div class="index-entry">
     <time datetime="{{ post.published.isoformat() }}">
       {{ post.published.strftime('%b %d, %Y') }}
