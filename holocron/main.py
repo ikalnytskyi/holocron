@@ -13,6 +13,7 @@
 import sys
 import logging
 import argparse
+import warnings
 
 from dooku.ext import ExtensionManager
 
@@ -119,6 +120,10 @@ def main(args=sys.argv[1:]):
     # initial logger configuration - use custom format for records
     # and print records with WARNING level and higher.
     configure_logger(arguments.verbosity or logging.WARNING)
+
+    # show deprecation warnings in order to be prepared for backward
+    # incompatible changes
+    warnings.filterwarnings('always', category=DeprecationWarning)
 
     # create app instance
     holocron = create_app(arguments.conf)

@@ -47,8 +47,8 @@ class Markdown(abc.Extension, abc.Converter):
 
     _default_conf = {
         'extensions': [
-            'codehilite',   # use pygments to highlight code-blocks
-            'extra',        # enable extended features like tables
+            'markdown.extensions.codehilite',  # highlight code blocks
+            'markdown.extensions.extra',       # extra features like tables
         ],
     }
 
