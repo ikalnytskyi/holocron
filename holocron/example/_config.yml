@@ -64,8 +64,8 @@ ext:
    # generates html pages extracting some meta information (author name, tags)
    markdown:
       extensions:
-         - codehilite      # adds code/syntax highlighting
-         - extra           # enables tables, footnotes, etc
+         - markdown.extensions.codehilite  # adds code/syntax highlighting
+         - markdown.extensions.extra       # enables tables, footnotes, etc
 
    # reStructuredText is a converter that parses reStructuredText sources
    # and generated html pages extracting some meta information. Currently

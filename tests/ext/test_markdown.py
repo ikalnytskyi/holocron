@@ -130,7 +130,7 @@ class TestMarkdownConverter(HolocronTestCase):
             'ext': {
                 'enabled': [],
                 'markdown': {
-                    'extensions': ['codehilite'],
+                    'extensions': ['markdown.extensions.codehilite'],
                 },
             },
         }))
@@ -152,7 +152,10 @@ class TestMarkdownConverter(HolocronTestCase):
             'ext': {
                 'enabled': [],
                 'markdown': {
-                    'extensions': ['codehilite', 'extra'],
+                    'extensions': [
+                        'markdown.extensions.codehilite',
+                        'markdown.extensions.extra',
+                    ],
                 },
             },
         }))
@@ -173,7 +176,7 @@ class TestMarkdownConverter(HolocronTestCase):
             'ext': {
                 'enabled': [],
                 'markdown': {
-                    'extensions': ['extra'],
+                    'extensions': ['markdown.extensions.extra'],
                 },
             },
         }))
