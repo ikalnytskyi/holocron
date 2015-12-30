@@ -12,6 +12,7 @@
 import os
 import copy
 import textwrap
+import warnings
 
 import mock
 
@@ -146,10 +147,8 @@ class TestHolocron(HolocronTestCase):
         # check that _copy_theme was called
         self.app._copy_theme.assert_called_once_with()
 
-    @mock.patch('holocron.app.shutil.os.path.exists', return_value=False)
-    @mock.patch('holocron.app.shutil.rmtree')
-    @mock.patch('holocron.app.shutil.copytree')
-    def test_copy_base_theme(self, mcopytree, mrmtree, _):
+    @mock.patch('holocron.app.copy_tree')
+    def test_copy_base_theme(self, mcopytree):
         """
         Tests that Holocron do copy default theme.
         """
@@ -159,23 +158,26 @@ class TestHolocron(HolocronTestCase):
 
         self.app._copy_theme()
 
-        mrmtree.assert_called_with(output, ignore_errors=True)
         mcopytree.assert_called_with(theme, output)
 
-    @mock.patch('holocron.app.shutil.os.path.exists', return_value=True)
-    @mock.patch('holocron.app.shutil.rmtree')
-    @mock.patch('holocron.app.shutil.copytree')
-    def test_copy_user_theme(self, mcopytree, mrmtree, _):
+    @mock.patch('holocron.app.copy_tree')
+    def test_copy_user_themes(self, mcopytree):
         """
         Tests that Holocron do copy user theme.
         """
         output = os.path.join(self.app.conf['paths.output'], 'static')
-        theme = os.path.join(self.app.conf['paths.theme'], 'static')
+        theme = os.path.join(
+            os.path.dirname(holocron.__file__), 'theme', 'static')
 
+        self.app.add_theme('theme1')
+        self.app.add_theme('theme2')
         self.app._copy_theme()
 
-        mrmtree.assert_called_with(output, ignore_errors=True)
-        mcopytree.assert_called_with(theme, output)
+        self.assertEqual(mcopytree.call_args_list, [
+            mock.call(theme, output),
+            mock.call(os.path.join('theme1', 'static'), output),
+            mock.call(os.path.join('theme2', 'static'), output),
+        ])
 
 
 class TestHolocronDefaults(HolocronTestCase):
@@ -207,8 +209,27 @@ class TestHolocronDefaults(HolocronTestCase):
             holocron.ext.Tags,
         ])
 
+    def test_registered_themes(self):
+        """
+        Tests that default theme is registered.
+        """
+        self.assertCountEqual(self.app._themes, [
+            os.path.join(os.path.dirname(holocron.__file__), 'theme'),
+        ])
+
 
 class TestCreateApp(HolocronTestCase):
+
+    def setUp(self):
+        # By its design 'warnings.warn' spawn a warning only once, and info
+        # whether it's spawned or not keeps in per-module registry. Since
+        # it's global by nature, it's shared between test cases and break
+        # them. Since Python 3.4 there's a versioned registry, so any
+        # changes to filters or calling to 'catch_warnings' context manager
+        # will reset it, but Holocron supports Python 3.3 too. So we use
+        # manual registry resetting as temporary solution.
+        import sys
+        getattr(sys.modules['holocron.app'], '__warningregistry__', {}).clear()
 
     def _create_app(self, conf_raw=None, side_effect=None):
         """
@@ -229,7 +250,7 @@ class TestCreateApp(HolocronTestCase):
         app = create_app()
 
         self.assertIsNotNone(app)
-        self.assertEqual(app.conf, Holocron.default_conf)
+        self.assertIsInstance(app, Holocron)
 
     def test_custom_conf(self):
         """
@@ -267,7 +288,7 @@ class TestCreateApp(HolocronTestCase):
         app = self._create_app(side_effect=FileNotFoundError)
 
         self.assertIsNotNone(app)
-        self.assertEqual(app.conf, Holocron.default_conf)
+        self.assertIsInstance(app, Holocron)
 
     def test_permissionerror(self):
         """
@@ -277,7 +298,7 @@ class TestCreateApp(HolocronTestCase):
         app = self._create_app(side_effect=PermissionError)
 
         self.assertIsNotNone(app)
-        self.assertEqual(app.conf, Holocron.default_conf)
+        self.assertIsInstance(app, Holocron)
 
     def test_isadirectoryerror(self):
         """
@@ -287,3 +308,141 @@ class TestCreateApp(HolocronTestCase):
         app = self._create_app(side_effect=IsADirectoryError)
 
         self.assertIsNone(app)
+
+    def test_deprecation_user_theme_is_enabled_default_conf(self):
+        """
+        Tests that 'user-theme' extension is enabled by default, and
+        deprecation warning is spawn.
+        """
+        warnings.simplefilter('always', DeprecationWarning)
+
+        with warnings.catch_warnings(record=True) as w:
+            app = create_app()
+
+            self.assertEqual(DeprecationWarning, w[0].category)
+            self.assertEqual(
+                "'user-theme' isn't found in the list of enabled extensions. "
+                "Since it'll be disabled by default in 0.4.0 release, please "
+                "enable it explicitly if you still want to use it.",
+                str(w[0].message))
+
+        expected_ext = Holocron.default_conf['ext']['enabled'] + ['user-theme']
+        self.assertCountEqual(expected_ext, app.conf['ext.enabled'])
+
+    def test_deprecation_user_theme_is_enabled_custom_conf(self):
+        """
+        Tests that 'user-theme' extension is enabled by default, and
+        deprecation warning is spawn.
+        """
+        warnings.simplefilter('always', DeprecationWarning)
+
+        with warnings.catch_warnings(record=True) as w:
+            app = self._create_app('''\
+                ext:
+                  enabled:
+                    - fake
+            ''')
+
+            self.assertEqual(DeprecationWarning, w[0].category)
+            self.assertEqual(
+                "'user-theme' isn't found in the list of enabled extensions. "
+                "Since it'll be disabled by default in 0.4.0 release, please "
+                "enable it explicitly if you still want to use it.",
+                str(w[0].message))
+
+        self.assertCountEqual(
+            ['fake', 'user-theme'], app.conf['ext.enabled'])
+
+    def test_deprecation_user_theme_is_fixed(self):
+        """
+        Tests that if 'user-theme' is explicitly enabled, the deprecation
+        warning isn't spawned.
+        """
+        warnings.simplefilter('always', DeprecationWarning)
+
+        with warnings.catch_warnings(record=True) as w:
+            app = self._create_app('''\
+                ext:
+                  enabled:
+                    - fake
+                    - user-theme
+            ''')
+
+            self.assertEqual(0, len(w))
+
+        self.assertCountEqual(
+            ['fake', 'user-theme'], app.conf['ext.enabled'])
+
+    def test_deprecation_paths_theme_is_used_for_user_theme(self):
+        """
+        Tests that 'paths.theme' option is deprecated, but temporary used
+        for 'ext.user-theme.path' and warnings is shown.
+        """
+        warnings.simplefilter('always', DeprecationWarning)
+
+        with warnings.catch_warnings(record=True) as w:
+            app = self._create_app('''\
+                paths:
+                  theme: path/to/external/theme
+
+                ext:
+                  enabled:
+                    - user-theme
+            ''')
+
+            self.assertEqual(DeprecationWarning, w[0].category)
+            self.assertEqual(
+                "'paths.theme' setting is deprecated in favor of "
+                "'ext.user-theme.path'. See details in the docs.",
+                str(w[0].message))
+
+        self.assertEqual(
+            'path/to/external/theme', app.conf['ext.user-theme.path'])
+
+    def test_deprecation_paths_theme_has_no_affect(self):
+        """
+        Tests that 'paths.theme' option is deprecated, but has no affect
+        if 'ext.user-theme.path' is specified.
+        """
+        warnings.simplefilter('always', DeprecationWarning)
+
+        with warnings.catch_warnings(record=True) as w:
+            app = self._create_app('''\
+                paths:
+                  theme: path/to/external/theme
+
+                ext:
+                  enabled:
+                    - user-theme
+                  user-theme:
+                    path: another/path/to/external/theme
+            ''')
+
+            self.assertEqual(DeprecationWarning, w[0].category)
+            self.assertEqual(
+                "'paths.theme' setting is deprecated in favor of "
+                "'ext.user-theme.path'. See details in the docs.",
+                str(w[0].message))
+
+        self.assertEqual(
+            'another/path/to/external/theme', app.conf['ext.user-theme.path'])
+
+    def test_deprecation_paths_theme_is_fixed(self):
+        """
+        Tests that 'paths.theme' option is deprecated, but has no affect
+        """
+        warnings.simplefilter('always', DeprecationWarning)
+
+        with warnings.catch_warnings(record=True) as w:
+            app = self._create_app('''\
+                ext:
+                  enabled:
+                    - user-theme
+                  user-theme:
+                    path: path/to/external/theme
+            ''')
+
+            self.assertEqual(0, len(w))
+
+        self.assertEqual(
+            'path/to/external/theme', app.conf['ext.user-theme.path'])

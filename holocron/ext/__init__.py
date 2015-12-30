@@ -18,6 +18,8 @@ from .feed import Feed
 from .sitemap import Sitemap
 from .tags import Tags
 
+from .user_theme import UserTheme
+
 
 __all__ = [
     'Markdown',
@@ -27,4 +29,6 @@ __all__ = [
     'Feed',
     'Sitemap',
     'Tags',
+
+    'UserTheme',
 ]

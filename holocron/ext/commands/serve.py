@@ -18,7 +18,6 @@ from http.server import HTTPServer, SimpleHTTPRequestHandler
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
-import holocron
 from holocron import app
 from holocron.ext import abc
 
@@ -179,16 +178,15 @@ class Serve(abc.Command):
             builder.shutdown()
 
     def _watch(self, app, arguments, builder):
-        # By default we're watching for events in both content and default
-        # theme directories.
+        # By default we're watching for events in content directory.
         watch_paths = [
             app.conf['paths.content'],
-            os.path.join(os.path.dirname(holocron.__file__), 'theme'),
         ]
 
-        # If user has his own theme - watch it too.
-        if os.path.exists(app.conf['paths.theme']):
-            watch_paths.append(app.conf['paths.theme'])
+        # But it'd be nice to watch themes directories either.
+        for theme in app._themes:
+            if os.path.exists(theme):
+                watch_paths.append(theme)
 
         observer = Observer()
         for path in watch_paths:

@@ -50,6 +50,9 @@ def configure_logger(level):
     logger.addHandler(stream_handler)
     logger.setLevel(level)
 
+    # capture warnings issued by 'warnings' module
+    logging.captureWarnings(True)
+
 
 def parse_command_line(args, commands):
     """

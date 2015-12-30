@@ -10,8 +10,13 @@
 """
 
 import os
-import shutil
 import logging
+import warnings
+
+# shutil.copytree doesn't fit our needs since it requires destination
+# directory to do not exist, while we need it to be existed in order
+# to collect static files from different themes
+from distutils.dir_util import copy_tree
 
 import yaml
 import jinja2
@@ -64,6 +69,30 @@ def create_app(confpath=None):
         logger.error('%s: %s', confpath, str(exc))
         return None
 
+    # we're going to change default behavior in 0.4.0, so let's show
+    # a warning that user theme won't be used without explicit setting
+    # in the config file
+    conf = Conf(conf or {})
+    if 'user-theme' not in conf.get('ext.enabled', []):
+        warnings.warn(
+            "'user-theme' isn't found in the list of enabled extensions. "
+            "Since it'll be disabled by default in 0.4.0 release, please "
+            "enable it explicitly if you still want to use it.",
+            DeprecationWarning)
+
+        if 'ext.enabled' not in conf:
+            conf['ext.enabled'] = list(Holocron.default_conf['ext']['enabled'])
+        conf['ext.enabled'].append('user-theme')
+
+    if 'paths.theme' in conf:
+        warnings.warn(
+            "'paths.theme' setting is deprecated in favor of "
+            "'ext.user-theme.path'. See details in the docs.",
+            DeprecationWarning)
+
+        if 'ext.user-theme.path' not in conf:
+            conf['ext.user-theme.path'] = conf['paths.theme']
+
     return Holocron(conf)
 
 
@@ -102,7 +131,6 @@ class Holocron(object):
         'paths': {
             'content': '.',
             'output': '_build',
-            'theme': '_theme',
         },
 
         'theme': {},
@@ -134,23 +162,46 @@ class Holocron(object):
 
         #: name -> extension instance
         #:
-        #: Keeps all registered extensions and is used for preventing them
+        #: Contains all registered extensions and is used for preventing them
         #: to be handled by garbage collector. Also I believe it might be
         #: useful for extension developers in future.
         self._extensions = {}
 
         #: file extension -> converter instance
         #:
-        #: Keeps all registered converters and is used for retrieving
+        #: Contains all registered converters and is used for retrieving
         #: converters for specific file types (by its extension).
         self._converters = {}
 
         #: generator instance, ...
         #:
-        #: Keeps all registered generators and is used for executing them.
+        #: Contains all registered generators and is used for executing them.
         self._generators = []
 
-        #: Discover and execute all found extensions.
+        #: theme path, ...
+        #:
+        #: Contains all registered themes. Initially it has only a default one.
+        #: Each further added theme will override the previous one, i.e.
+        #: it'll have higher priority for templates lookup and static
+        #: overwriting.
+        #:
+        #: .. versionadded:: 0.3.0
+        self._themes = [
+            os.path.join(os.path.dirname(__file__), 'theme'),
+        ]
+
+        #: key -> value
+        #:
+        #: Contains context values to be passed to theme renderer.
+        #:
+        #: .. versionadded:: 0.3.0
+        self._theme_ctx = {
+            'site': self.conf['site'],
+            'theme': self.conf['theme'],
+            'encoding': self.conf['encoding.output'],
+        }
+
+        # discover and execute all found extensions
         for name, ext in ExtensionManager(
             namespace='holocron.ext',
             names=self.conf['ext']['enabled'],
@@ -188,6 +239,8 @@ class Holocron(object):
     def add_theme_ctx(self, **kwargs):
         """
         Pass given keyword arguments to theme templates.
+
+        :param kwargs: key-value argumnets to be passed to theme templates
         """
         overwritten = set(kwargs.keys()) & set(self.jinja_env.globals.keys())
         if overwritten:
@@ -195,33 +248,41 @@ class Holocron(object):
                 'the following theme context is going to be overwritten: %s',
                 ', '.join(overwritten))
 
+        self._theme_ctx.update(**kwargs)
         self.jinja_env.globals.update(**kwargs)
+
+    def add_theme(self, theme_path):
+        """
+        Registers a given theme in the application instance.
+
+        :param theme_path: a path to theme to be registered
+        """
+        self._themes.append(theme_path)
+
+        # remove evaluated value, so next time we access 'jinja_env' it'll
+        # be re-evaluated and new themes will be taken into account
+        self.__dict__.pop('jinja_env', None)
 
     @cached_property
     def jinja_env(self):
         """
         Gets a Jinja2 environment based on Holocron's settings.
-        Calculates only once, since it's a cached property.
         """
-        # makes a default template loader
-        templates_path = os.path.join('theme', 'templates')
-        loader = jinja2.PackageLoader('holocron', templates_path)
+        # Themes are consumed in reverse order because jinja2.ChoiceLoader
+        # will stop looking for templates as soon as it finds one in current
+        # path. Since we want default theme to be low-prio, processing is
+        # started from user themes paths.
+        loaders = [
+            jinja2.FileSystemLoader(os.path.join(theme, 'templates'))
+            for theme in reversed(self._themes)
+        ]
 
-        # PrefixLoader provides a direct access to the default templates
-        loaders = [loader, jinja2.PrefixLoader({'!default': loader})]
-
-        # makes a user template loader
-        path = self.conf.get('paths.theme')
-        if path is not None:
-            path = os.path.join(path, 'templates')
-            loaders.insert(0, jinja2.FileSystemLoader(path))
+        # Let's make default theme always available for inheritance
+        # via '!default' prefix.
+        loaders.append(jinja2.PrefixLoader('!default', loaders[-1]))
 
         env = jinja2.Environment(loader=jinja2.ChoiceLoader(loaders))
-        env.globals.update(
-            # pass some useful conf options to the template engine
-            site=self.conf['site'],
-            theme=self.conf['theme'],
-            encoding=self.conf['encoding.output'])
+        env.globals.update(**self._theme_ctx)
         return env
 
     def _get_documents(self):
@@ -230,7 +291,6 @@ class Holocron(object):
         starting with underscore or dot and converts files into document
         objects.
         """
-
         documents_paths = list(
             iterfiles(self.conf['paths.content'], '[!_.]*', True))
 
@@ -267,17 +327,11 @@ class Holocron(object):
 
     def _copy_theme(self):
         """
-        Copy theme's static files to the output folder. If the user's statics
-        aren't exists then base statics will be copied.
+        Copy themes' static files to output directory. Each next copy
+        overwrites the previous one, that's why we're going to copy
+        base theme first.
         """
-        root = os.path.dirname(__file__)
-
-        base_static = os.path.join(root, 'theme', 'static')
-        user_static = os.path.join(self.conf['paths.theme'], 'static')
-
-        if not os.path.exists(user_static):
-            user_static = base_static
         out_static = os.path.join(self.conf['paths.output'], 'static')
 
-        shutil.rmtree(out_static, ignore_errors=True)
-        shutil.copytree(user_static, out_static)
+        for theme in self._themes:
+            copy_tree(os.path.join(theme, 'static'), out_static)

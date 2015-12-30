@@ -23,21 +23,27 @@ from tests import HolocronTestCase
 class TestServeCommand(HolocronTestCase):
 
     def setUp(self):
-        self.fake_app = mock.Mock(conf=Conf({
-            'paths': {
-                'content': 'path/content',
-                'theme': 'path/theme',
-                'output': 'path/output',
-            },
-
-            'commands': {
-                'serve': {
-                    'host': '192.168.1.1',
-                    'port': 42,
-                    'wakeup': 13,
+        self.fake_app = mock.Mock(
+            conf=Conf({
+                'paths': {
+                    'content': 'path/content',
+                    'output': 'path/output',
                 },
-            },
-        }), spec=Holocron)
+
+                'commands': {
+                    'serve': {
+                        'host': '192.168.1.1',
+                        'port': 42,
+                        'wakeup': 13,
+                    },
+                },
+            }),
+            _themes=[
+                'theme_a',
+                'theme_b',
+            ],
+            spec=Holocron)
+
         self.fake_arguments = mock.Mock(conf='blog/_config.yml')
         self.fake_builder = mock.Mock(_app=self.fake_app, spec=serve._Builder)
 
@@ -64,19 +70,23 @@ class TestServeCommand(HolocronTestCase):
         command._watch().start.assert_called_once_with()
         command._serve().serve_forever.assert_called_once_with()
 
+    @mock.patch('holocron.ext.commands.serve.os.path.exists',
+                side_effect=[
+                    True,   # theme_a
+                    True,   # theme_b
+                    False,  # blog/config.yml
+                ])
     @mock.patch('holocron.ext.commands.serve._ChangeWatcher')
     @mock.patch('holocron.ext.commands.serve.Observer')
-    def test_watch_for_content_and_theme(self, fake_observer, fake_watcher):
-        import holocron
-        theme_path = os.path.join(
-            os.path.abspath(os.path.dirname(holocron.__file__)), 'theme')
-
+    def test_watch_for_content_and_themes(
+            self, fake_observer, fake_watcher, _):
         command = serve.Serve()
         command._watch(self.fake_app, self.fake_arguments, self.fake_builder)
 
         fake_observer().schedule.assert_has_calls([
             mock.call(fake_watcher(), 'path/content', recursive=True),
-            mock.call(fake_watcher(), theme_path, recursive=True),
+            mock.call(fake_watcher(), 'theme_a', recursive=True),
+            mock.call(fake_watcher(), 'theme_b', recursive=True),
         ], any_order=True)
 
         fake_watcher.assert_has_calls([
@@ -89,30 +99,7 @@ class TestServeCommand(HolocronTestCase):
         ], any_order=True)
 
     @mock.patch('holocron.ext.commands.serve.os.path.exists',
-                side_effect=[True, False])
-    @mock.patch('holocron.ext.commands.serve._ChangeWatcher')
-    @mock.patch('holocron.ext.commands.serve.Observer')
-    def test_watch_for_user_theme(self, fake_observer, fake_watcher, _):
-        command = serve.Serve()
-        command._watch(self.fake_app, self.fake_arguments, self.fake_builder)
-
-        fake_observer().schedule.assert_any_call(
-            fake_watcher(), 'path/theme', recursive=True)
-
-        fake_watcher.assert_has_calls([
-            mock.call(
-                self.fake_builder, ignore=[
-                    os.path.abspath('blog/_config.yml')]),
-            mock.call(
-                self.fake_builder, ignore=[
-                    os.path.abspath('blog/_config.yml')]),
-            mock.call(
-                self.fake_builder, ignore=[
-                    os.path.abspath('blog/_config.yml')]),
-        ], any_order=True)
-
-    @mock.patch('holocron.ext.commands.serve.os.path.exists',
-                side_effect=[False, True])
+                return_value=True)
     @mock.patch('holocron.ext.commands.serve._ChangeWatcher')
     @mock.patch('holocron.ext.commands.serve.Observer')
     def test_watch_for_user_conf(self, fake_observer, fake_watcher, _):
