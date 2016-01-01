@@ -12,6 +12,7 @@ Here you can see the list of changes between each Holocron release.
   could be distributed as Holocron extensions via Python packaged.
 - Added User Theme extension that allows to setup external theme.
 - Fixed posts ordering on index and tags pages.
+- Fixed broken ribbon, so it’s clickable again.
 - **DEPRECATED**: ``paths.theme`` option will be removed in favor of
   ``ext.user-theme.path``
 - **DEPRECATED**: user theme won't be enabled by default, so please enable
