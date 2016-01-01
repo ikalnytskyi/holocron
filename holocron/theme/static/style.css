@@ -20,6 +20,7 @@ body {
   background-color: #fefefe;
   color: #3f3f3f;
   font: 18px/28px 'PT Serif', Georgia, serif;
+  overflow-x: hidden;
 
   /* prevent font scaling in landscape for iPhone */
   -webkit-text-size-adjust: 100%;
@@ -249,33 +250,25 @@ footer.footer p {
     github banner
    -------------------------------------------------------------------- */
 
-.ribbon-wrapper {
-  font-size: 14px;
-  width: 18em;
-  height: 18em;
-  position: absolute;
-  top: 0;
-  right: 0;
-  overflow: hidden;
-  z-index: -1;
-}
 .ribbon {
   color: #2f5a8b;
   border: 1px dashed #2f5a8b;
   background-color: #f0f0f8;
   text-decoration: none;
   white-space: nowrap;
+  font-size: 14px;
   font-weight: bold;
   text-transform: uppercase;
   text-align: center;
-
+  
   /* math magic for positioning :) */
   display: block;
-  position: relative;
+  position: absolute;
   top: 4em;
-  right: -2em;
-  width: 100%;
+  right: -6em;
+  width: 20em;
   padding: 0.4em 1em;
+
   -webkit-transform: rotate(45deg);
   -ms-transform: rotate(45deg);
   transform: rotate(45deg);
@@ -283,6 +276,7 @@ footer.footer p {
   -ms-transform-origin: 50% 50%;
   transform-origin: 50% 50%;
 }
+
 .ribbon:hover {
   background-color: #e8e8f8;
   text-decoration: none;
