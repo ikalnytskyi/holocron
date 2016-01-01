@@ -160,8 +160,9 @@ class TestHolocron(HolocronTestCase):
 
         mcopytree.assert_called_with(theme, output)
 
+    @mock.patch('holocron.app.os.path.exists', return_value=True)
     @mock.patch('holocron.app.copy_tree')
-    def test_copy_user_themes(self, mcopytree):
+    def test_copy_user_themes(self, mcopytree, _):
         """
         Tests that Holocron do copy user theme.
         """
@@ -177,6 +178,23 @@ class TestHolocron(HolocronTestCase):
             mock.call(theme, output),
             mock.call(os.path.join('theme1', 'static'), output),
             mock.call(os.path.join('theme2', 'static'), output),
+        ])
+
+    @mock.patch('holocron.app.os.path.exists', side_effect=[True, False])
+    @mock.patch('holocron.app.copy_tree')
+    def test_copy_user_themes_not_exist(self, mcopytree, _):
+        """
+        Tests that Holocron doesn't copy static if it's not exist.
+        """
+        output = os.path.join(self.app.conf['paths.output'], 'static')
+        theme = os.path.join(
+            os.path.dirname(holocron.__file__), 'theme', 'static')
+
+        self.app.add_theme('theme1')
+        self.app._copy_theme()
+
+        self.assertEqual(mcopytree.call_args_list, [
+            mock.call(theme, output),
         ])
 
 

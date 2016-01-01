@@ -334,4 +334,8 @@ class Holocron(object):
         out_static = os.path.join(self.conf['paths.output'], 'static')
 
         for theme in self._themes:
-            copy_tree(os.path.join(theme, 'static'), out_static)
+            static = os.path.join(theme, 'static')
+
+            # not all themes are mandatory to distribute static
+            if os.path.exists(static):
+                copy_tree(static, out_static)
