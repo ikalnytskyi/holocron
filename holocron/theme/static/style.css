@@ -15,16 +15,20 @@
     general
    -------------------------------------------------------------------- */
 
+html {
+  overflow-x: hidden;
+}
+
 body {
   border-top: 5px solid #2f5a8b;
   background-color: #fefefe;
   color: #3f3f3f;
   font: 18px/28px 'PT Serif', Georgia, serif;
+  position: relative;
   overflow-x: hidden;
 
   /* prevent font scaling in landscape for iPhone */
   -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
 }
 
 h1, h2, h3, h4, h5, h6 {
