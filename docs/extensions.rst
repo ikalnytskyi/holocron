@@ -223,6 +223,7 @@ where
 * ``template`` -- a template to be used to render tags index pages
 * ``output`` -- an output directory for tags index page
 
+.. _user-theme:
 
 User Theme
 ==========
