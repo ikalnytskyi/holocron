@@ -32,3 +32,13 @@ pygments_style = 'default'
 # html settings
 html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
+
+
+# Unfortunately, Sphinx doesn't support code highlighting for standard
+# reStructuredText `code` directive. So let's register 'code' directive
+# as alias for Sphinx's own implementation.
+#
+# https://github.com/sphinx-doc/sphinx/issues/2155
+from docutils.parsers.rst import directives
+from sphinx.directives.code import CodeBlock
+directives.register_directive('code', CodeBlock)
