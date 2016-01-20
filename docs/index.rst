@@ -42,8 +42,8 @@ Table Of Contents
    :maxdepth: 2
 
    quickstart
+   settings
    extensions
-   configuration
    changes
    authors
    license

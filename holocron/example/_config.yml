@@ -1,107 +1,28 @@
-# HOLOCRON CONFIGURATION FILE. PLEASE DO NOT FORGET TO CHANGE THE
-# SETTINGS BELOW FOR YOURSELF. ALL THE SETTINGS ARE COMMENTED FOR
-# EASY CHANGES.
 #
-# YOU CAN REMOVE UNNECESSARY SETTINGS FROM THIS FILE.
-# IN THIS CASE DEFAULT SETTINGS WILL BE USED.
+# HOLOCRON CONFIGURATION FILE.
+#
+# FOR MORE DETAILS AND OPTIONS, PLEASE VISIT THE SETTINGS DOCUMENTATION
+# PAGE - https://holocron.readthedocs.org/en/latest/settings.html
+#
 
-# General settings of a blog.
 site:
-   title:      Kenobi's Thoughts
-   author:     Obi-Wan Kenobi
-   url:        http://obi-wan.jedi
+  title: Kenobi's Thoughts
+  author: Obi-Wan Kenobi
+  url: http://obi-wan.jedi
 
-# Encoding setting for content and resulting html pages.
-encoding:
-   content:    utf-8
-   output:     utf-8
-
-
-# Paths to various input / output stuff.
-# {here} macro is replaced with a path to config's folder.
-paths:
-   content:    {here}/           # path to the directory with content
-   output:     {here}/_build     # path where to put output files
-   theme:      {here}/_theme     # path to theme files (templates and statics)
-                                 # if empty -> default theme will be used
-
-
-# The place where you can customize your theme. The default one
-# supports only these settings, but third party ones may contain
-# more, so don't forget to check it out.
 theme:
-   navigation: !!pairs
-      - about: /about
-      - feed:  /feed.xml
+  navigation: !!pairs
+    - about: /about
+    - feed: /feed.xml
 
-   ribbon:
-      text:  Star On GitHub
-      link:  https://github.com/ikalnitsky/holocron
+  copyright: >
+    &copy; 19 BBY, Obi-Wan Kenobi
 
-   copyright: >
-      &copy; 19 BBY, Obi-Wan Kenobi
-                                                      A
-   # Twitter Cards is a technology that allows you to *do* a rich
-   # preview of your content once link to your site is in tweet.
-   twitter_cards:
-      username: twitter
-
-   # counters:
-   #    google_analytics: XX-XXXXXXXX-X
-   #    yandex_metrika: XXXXXXX
-
-# Settings for Holocron extensions: generators and converters.
 ext:
-   enabled:                # exten-s run by Holocron, remove name to turn it off
-      - markdown
-      - restructuredtext
-      - index
-      - feed
-      - sitemap
-      - tags
-
-   # Markdown extension is a converter that parses markdown sources and
-   # generates html pages extracting some meta information (author name, tags)
-   markdown:
-      extensions:
-         - markdown.extensions.codehilite  # adds code/syntax highlighting
-         - markdown.extensions.extra       # enables tables, footnotes, etc
-
-   # reStructuredText is a converter that parses reStructuredText sources
-   # and generated html pages extracting some meta information. Currently
-   # it supports low-level docutils settings which are passed to docutils
-   # "As Is". They aren't useful for users, but mentioned for nerds. It's
-   # ok if you remove it from your own _config.yml.
-   restructuredtext:
-      docutils:
-         initial_header_level: 2      # start sections from <h2>
-         syntax_highlight: short      # short css classes for code blocks
-
-   # Index extension is designed for generating an index page for your blog.
-   # The index page is a page that hosts a list of your blog posts, and it's
-   # usually a land page for your users - available at the root of your blog.
-   index:
-      template:      document-list.html   # template name of the index page
-
-   # Feed extension generates an blog feed in Atom format (RFC 4287).
-   feed:
-      save_as:       feed.xml             # Atom feed filename
-      posts_number:  5                    # number of latest posts in the feed
-
-   # Tags generator will extract tags from your posts and create "tag pages".
-   # Tag page contains list of posts which contain certain tag.
-   tags:
-      template:      document-list.html   # template name for rendering tags page
-      output:        tags/                # output directory for tags pages
-
-# Commands are essantially subcommands for holocron command (e.g. holocron init)
-# Some subcommands have settings and could be configurable.
-commands:
-
-   # Serve command allows you to configure where you want to host
-   # your blog for previewing and how often will it look for changes.
-   serve:
-      host:    127.0.0.1   # local host address
-      port:    5000        # port number of the host
-      wakeup:  1           # time in seconds used to set how often
-                           # content changes will be tracked
+  enabled:
+    - markdown
+    - restructuredtext
+    - index
+    - feed
+    - sitemap
+    - tags
