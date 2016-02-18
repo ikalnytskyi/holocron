@@ -1,0 +1,82 @@
+==============
+ Contributing
+==============
+
+.. important::
+
+   Thank you for considering contribution to Holocron. Any contribution
+   is greatly appreciated!
+
+There are many ways to contribute to the project. Here are some of them:
+
+* Tell the world about Holocron using social networks and/or blogs.
+* Report bugs and propose features.
+* Submit bugfixes and enhancements.
+* Develop amazing extensions or beautiful themes.
+* Improve documentation quality.
+
+Any feedback, any contribution is appreciated. Let's awaken the Force
+together!
+
+
+Reporting Bugs
+==============
+
+.. warning::
+
+   Bug reports are hugely important! Before you raise one, though, please
+   check `Issue Tracker`_, both open and closed, to confirm that a bug
+   hasn’t been reported before. Duplicate bug reports are a huge drain on
+   the time of other contributors, and should be avoided as much as possible.
+
+Each time you are about to report a bug please provide as much information
+as possible, but keep focusing on things that matters. Usually it'd be
+enough to specify the following things:
+
+* Steps to reproduce.
+* Expected behaviour.
+* Actual behaviour.
+* Holocron version.
+* Python version.
+* Operating System.
+
+Since `Issue Tracker`_ is used not only to track bugs, please do not
+forget to attach ``bug`` tag to your report.
+
+
+Proposing Features
+==================
+
+The best way to propose a feature is to file an issue at `Issue Tracker`_
+with ``enhancement`` tag. If you want to have a quick feedback on proposal
+write it as clear as possible.
+
+
+Submitting Patches
+==================
+
+There are two ways to submit a patch. The first one is by sending a pull
+request. It's the preferred way and is recommended for general usage. If
+by some reason you don't have a GitHub account, there's another option -
+to send a patch via email to project maintainers.
+
+Before you send a patch, please make sure that:
+
+* Your changes are covered by tests.
+* ``tox`` run reports success.
+
+
+Developing Extensions
+=====================
+
+Holocron provides a flexible extension system for developers. If you're
+a frontend web developer and you have a beautiful site template, please
+do not pass by and create a Holocron theme.
+
+On the other hand, if you miss some converter or generator - you can
+develop an additional one for Holocron, and share it with others.
+
+Please visit project documentation for details.
+
+
+.. _Issue Tracker: https://github.com/ikalnitsky/holocron/issues
