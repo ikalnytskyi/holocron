@@ -252,6 +252,3 @@ where
 
 * ``{here}`` -- a macros that will be replaced by the path to directory with
   configuration file (i.e. ``_config.yml``)
-
-.. note:: User Theme extension supersedes the core functionality, as well
-          as ``paths.theme`` setting.

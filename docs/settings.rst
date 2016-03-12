@@ -68,21 +68,14 @@ Example:
     paths:
       content:  {here}/
       output:   {here}/_build
-      theme:    {here}/_theme
 
 where
 
 * ``content`` -- a path where to search for posts, pages, etc
 * ``output`` -- a path where to put produced HTMls
-* ``theme`` -- a path where to look for user theme
 
 The section supports the ``{here}`` macro which would be resolved into
 a path to directory with your ``_config.yml``.
-
-.. deprecated:: 0.3.0
-
-    The ``theme`` option is deprecated in favor of ``user-theme`` extension.
-    Please check out :ref:`user-theme` docs for details.
 
 
 Theme
