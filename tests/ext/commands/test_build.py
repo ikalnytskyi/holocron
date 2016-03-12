@@ -1,4 +1,3 @@
-# coding: utf-8
 """
     tests.ext.commands.test_build
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
