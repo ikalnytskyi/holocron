@@ -10,7 +10,6 @@
 
 import os
 import logging
-import warnings
 
 # shutil.copytree doesn't fit our needs since it requires destination
 # directory to do not exist, while we need it to be existed in order
@@ -67,30 +66,6 @@ def create_app(confpath=None):
         # application instance.
         logger.error('%s: %s', confpath, str(exc))
         return None
-
-    # we're going to change default behavior in 0.4.0, so let's show
-    # a warning that user theme won't be used without explicit setting
-    # in the config file
-    conf = Conf(conf or {})
-    if 'user-theme' not in conf.get('ext.enabled', []):
-        warnings.warn(
-            "'user-theme' isn't found in the list of enabled extensions. "
-            "Since it'll be disabled by default in 0.4.0 release, please "
-            "enable it explicitly if you still want to use it.",
-            DeprecationWarning)
-
-        if 'ext.enabled' not in conf:
-            conf['ext.enabled'] = list(Holocron.default_conf['ext']['enabled'])
-        conf['ext.enabled'].append('user-theme')
-
-    if 'paths.theme' in conf:
-        warnings.warn(
-            "'paths.theme' setting is deprecated in favor of "
-            "'ext.user-theme.path'. See details in the docs.",
-            DeprecationWarning)
-
-        if 'ext.user-theme.path' not in conf:
-            conf['ext.user-theme.path'] = conf['paths.theme']
 
     return Holocron(conf)
 
