@@ -1,4 +1,3 @@
-# coding: utf-8
 """
     Sphinx configuration file for building Holocron's documentation.
 """
@@ -30,9 +29,12 @@ exclude_patterns = ['_build']
 pygments_style = 'default'
 
 # html settings
-html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 
+if not os.environ.get('READTHEDOCS') == 'True':
+    import sphinx_rtd_theme
+    html_theme = 'sphinx_rtd_theme'
+    html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
 # Unfortunately, Sphinx doesn't support code highlighting for standard
 # reStructuredText `code` directive. So let's register 'code' directive
