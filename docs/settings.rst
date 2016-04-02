@@ -126,7 +126,7 @@ where
 * ``ribbon`` -- a ribbon label that appears on top right corner, and that
   leads on some page you want to promote (e.g. twitter, github, etc).
 
-* ``tiwtter_cards`` --  `Twitter Cards`_ is a technology for showing
+* ``twitter_cards`` --  `Twitter Cards`_ is a technology for showing
   rich snippets in tweets if someone posts a link to your site.
 
   .. _Twitter Cards: https://dev.twitter.com/cards/overview
