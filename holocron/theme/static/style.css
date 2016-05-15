@@ -112,6 +112,11 @@ footer.footer {
   color: #777777;
 }
 
+footer.footer a {
+  color: #606060;
+  text-decoration: underline;
+}
+
 footer.footer p {
   margin: 0.5em 0;
 }
