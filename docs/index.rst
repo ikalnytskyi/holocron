@@ -45,6 +45,7 @@ Table Of Contents
    settings
    extensions
    contributing
+   faq
    changes
    authors
    license
