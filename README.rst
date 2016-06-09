@@ -36,13 +36,6 @@ Check out Holocron's documentation for further information -
 https://holocron.readthedocs.org/.
 
 
-Why The Name Holocron?
-======================
-
-Holocron (*short for holographic chronicle*) is a device in which Jedi
-stored different data. In most cases, they used it as diary.
-
-
 Links
 =====
 
