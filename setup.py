@@ -23,10 +23,10 @@ setup(
     description='An extendable static blog generator powered by the Force. =/',
     long_description=long_description,
     license=license,
-    url='http://github.com/ikalnitsky/holocron/',
+    url='http://github.com/ikalnytskyi/holocron/',
     keywords='blog generator static markdown restructuredtext',
 
-    author='Igor Kalnitsky',
+    author='Ihor Kalnytskyi',
     author_email='igor@kalnitsky.org',
 
     packages=find_packages(exclude=['docs', 'tests*']),
