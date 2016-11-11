@@ -99,6 +99,6 @@ Links
 - use [issue tracker] to report bugs and suggest features
 - learn holcron by reading [documentation]
 
-[repository]: https://github.com/ikalnitsky/holocron
-[issue tracker]: https://github.com/ikalnitsky/holocron/issues
+[repository]: https://github.com/ikalnytskyi/holocron
+[issue tracker]: https://github.com/ikalnytskyi/holocron/issues
 [documentation]: https://holocron.readthedocs.org

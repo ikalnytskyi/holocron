@@ -40,8 +40,8 @@ Links
 =====
 
 * Documentation: https://holocron.readthedocs.org/
-* Source: https://github.com/ikalnitsky/holocron
-* Bugs: https://github.com/ikalnitsky/holocron/issues
+* Source: https://github.com/ikalnytskyi/holocron
+* Bugs: https://github.com/ikalnytskyi/holocron/issues
 
 
 .. Links
@@ -62,11 +62,11 @@ Links
 .. |license| image:: https://img.shields.io/pypi/l/holocron.svg
    :target: https://pypi.python.org/pypi/holocron
 
-.. |travis-ci| image:: https://img.shields.io/travis/ikalnitsky/holocron.svg
-   :target: https://travis-ci.org/ikalnitsky/holocron
+.. |travis-ci| image:: https://img.shields.io/travis/ikalnytskyi/holocron.svg
+   :target: https://travis-ci.org/ikalnytskyi/holocron
 
-.. |coveralls| image:: https://img.shields.io/coveralls/ikalnitsky/holocron.svg
-   :target: https://coveralls.io/r/ikalnitsky/holocron
+.. |coveralls| image:: https://img.shields.io/coveralls/ikalnytskyi/holocron.svg
+   :target: https://coveralls.io/r/ikalnytskyi/holocron
 
 .. |docs| image:: https://readthedocs.org/projects/pip/badge/
    :target: https://holocron.readthedocs.org

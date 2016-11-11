@@ -104,7 +104,7 @@ Example:
 
       ribbon:
         text:  Star On GitHub
-        link:  https://github.com/ikalnitsky/holocron
+        link:  https://github.com/ikalnytskyi/holocron
 
       twitter_cards:
         username: twitter
