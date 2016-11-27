@@ -44,7 +44,7 @@ class Tags(abc.Extension, abc.Generator):
 
         ext:
            tags:
-              template: document-list.html
+              template: document-list.j2
               output: tags/{tag}
 
     where
@@ -61,7 +61,7 @@ class Tags(abc.Extension, abc.Generator):
     """
 
     _default_conf = {
-        'template': 'document-list.html',
+        'template': 'document-list.j2',
         'output': 'tags/{tag}',
     }
 

@@ -134,7 +134,7 @@ class Page(Document):
     _re_extract_header = re.compile('(---\s*\n.*?\n)---\s*\n(.*)', re.M | re.S)
 
     #: A default template for page documents.
-    template = 'page.html'
+    template = 'page.j2'
 
     #: A default title for page documents.
     title = 'Untitled'
@@ -212,7 +212,7 @@ class Post(Page):
 
     #: We're using a separate template, since unlike a page we need to show
     #: post's author, published date and a list of tags.
-    template = 'post.html'
+    template = 'post.j2'
 
     def __init__(self, *args, **kwargs):
         super(Post, self).__init__(*args, **kwargs)

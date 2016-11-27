@@ -8,6 +8,8 @@ Here you can see the list of changes between each Holocron release.
 0.4.0 (unreleased)
 ==================
 
+- Changed Jinja2 templates extension from ``.html`` to ``.j2``.
+
 
 0.3.0 (2016-03-12)
 ==================

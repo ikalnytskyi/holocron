@@ -1,6 +1,6 @@
 {#-
-    holocron/themes/default/templates/page.html
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    holocron/themes/default/templates/page.j2
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     Default template for rendering Holocron pages.
 
@@ -8,7 +8,7 @@
     :license: 3-clause BSD, see LICENSE for details.
 -#}
 
-{% extends "base.html" %}
+{% extends "base.j2" %}
 
 {% if document.summary %}
   {% set summary = document.summary.replace('\n', ' ').strip() %}

@@ -17,12 +17,12 @@ How To Create Stylized Post / Page?
 
 Holocron supports a YAML front matter for posts and pages where you can
 specify the ``template`` attribute. The example below renders a blog post
-using the ``yoda.html`` template.
+using the ``yoda.j2`` template.
 
 .. code:: markdown
 
    ---
-   template: yoda.html
+   template: yoda.j2
    ---
 
    some content
