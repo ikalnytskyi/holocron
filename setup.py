@@ -45,6 +45,7 @@ setup(
         'watchdog >= 0.8.0',    # deps of serve command
     ],
     tests_require=['mock >= 1.1.0'],
+    python_requires='>=3.3',
 
     entry_points={
         'console_scripts': [
