@@ -191,7 +191,7 @@ option:
 
     ext:
       index:
-        template: document-list.j2
+        template: index.j2
 
 
 Tags
@@ -215,7 +215,7 @@ in posts. The extension supports the following settings:
 
     ext:
       tags:
-        template: document-list.j2
+        template: index.j2
         output: tags/{tag}
 
 where

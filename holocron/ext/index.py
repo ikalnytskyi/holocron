@@ -29,7 +29,7 @@ class Index(abc.Extension, abc.Generator):
 
         ext:
            index:
-              template: document-list.j2
+              template: index.j2
 
     where
 
@@ -44,7 +44,7 @@ class Index(abc.Extension, abc.Generator):
     """
 
     _default_conf = {
-        'template': 'document-list.j2',
+        'template': 'index.j2',
     }
 
     def __init__(self, app):
