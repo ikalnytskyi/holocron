@@ -10,6 +10,7 @@ Here you can see the list of changes between each Holocron release.
 
 - Changed Jinja2 templates extension from ``.html`` to ``.j2``.
 - Renamed ``document-list.j2`` template to ``index.j2``.
+- Added Python 3.6 support.
 
 
 0.3.0 (2016-03-12)

@@ -131,7 +131,8 @@ class Page(Document):
     """
 
     #: A regex for splitting page header and page content.
-    _re_extract_header = re.compile('(---\s*\n.*?\n)---\s*\n(.*)', re.M | re.S)
+    _re_extract_header = re.compile(
+        r'(---\s*\n.*?\n)---\s*\n(.*)', re.M | re.S)
 
     #: A default template for page documents.
     template = 'page.j2'
