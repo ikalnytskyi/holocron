@@ -23,7 +23,7 @@ from dooku.conf import Conf
 from dooku.decorator import cached_property
 from dooku.ext import ExtensionManager
 
-from .content import create_document
+from .content import create_document, make_document
 from .utils import iterfiles, mkdir
 
 
@@ -293,7 +293,7 @@ class Holocron(object):
 
         # build all documents found
         for document in documents:
-            document.build()
+            make_document(document, self)
 
         self._copy_theme()
 

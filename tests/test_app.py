@@ -103,9 +103,10 @@ class TestHolocron(HolocronTestCase):
         self.assertEqual(len(self.app._generators), 2)
         self.assertIn(new_generator, self.app._generators)
 
+    @mock.patch('holocron.app.make_document')
     @mock.patch('holocron.app.mkdir')
     @mock.patch('holocron.app.iterfiles')
-    def test_run(self, iterfiles, mkdir):
+    def test_run(self, iterfiles, mkdir, make_document):
         """
         Tests build process.
         """
@@ -135,12 +136,14 @@ class TestHolocron(HolocronTestCase):
             mock.call('doc_a', self.app),
             mock.call('doc_b', self.app),
             mock.call('doc_c', self.app),
-            # check that document instances were built
-            mock.call().build(),
-            mock.call().build(),
-            mock.call().build(),
         ])
         self.assertEqual(self.app.__class__.document_factory.call_count, 3)
+
+        make_document.assert_has_calls([
+            mock.call(self.app.document_factory(), self.app),
+            mock.call(self.app.document_factory(), self.app),
+            mock.call(self.app.document_factory(), self.app),
+        ])
 
         # check that _copy_theme was called
         self.app._copy_theme.assert_called_once_with()

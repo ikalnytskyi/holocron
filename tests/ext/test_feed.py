@@ -14,7 +14,7 @@ from xml.dom import minidom
 import mock
 
 from holocron.app import Holocron
-from holocron.content import Post, Page, Static
+from holocron.content import Post, Page, Static, make_document
 from holocron.ext import Feed
 
 from tests import HolocronTestCase, FakeConverter
@@ -289,11 +289,8 @@ class TestFeedGenerator(HolocronTestCase):
         self.app.add_converter(FakeConverter())
 
         open_fn = 'holocron.content.open'
-        with mock.patch(open_fn, mock.mock_open(read_data=''), create=True):
-            page = Page('filename.fake', self.app)
-
         with mock.patch(open_fn, mock.mock_open(), create=True) as mopen:
-            page.build()
+            make_document(Page('filename.fake', self.app), self.app)
             content = mopen().write.call_args[0][0]
 
         err = 'could not find link to feed in html header'

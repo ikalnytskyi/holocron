@@ -36,7 +36,7 @@ class DocumentTestCase(HolocronTestCase):
             'url': 'http://example.com',
         },
         'encoding': {
-            'content': 'cont-enc',
+            'content': 'utf-8',
             'output': 'out-enc',
         },
         'paths': {
@@ -47,6 +47,7 @@ class DocumentTestCase(HolocronTestCase):
 
     document_class = None       # a document constructor
     document_filename = None    # a document filename, relative to the content
+    document_content = b''      # a content to init document with
 
     @mock.patch('holocron.content.os.path.getmtime', return_value=_getmtime)
     @mock.patch('holocron.content.os.path.getctime', return_value=_getctime)
@@ -60,8 +61,8 @@ class DocumentTestCase(HolocronTestCase):
 
         self.app = Holocron(self._conf)
         self.app.add_converter(FakeConverter())
-
-        self.doc = self.document_class(filename, self.app)
+        self.doc = self.document_class(
+            filename, self.app, self.document_content)
 
 
 class TestDocument(DocumentTestCase):
@@ -71,9 +72,6 @@ class TestDocument(DocumentTestCase):
 
     class DocumentImpl(content.Document):
         url = '/url/to/doc'
-
-        def build(self):
-            return 42
 
     document_class = DocumentImpl
     document_filename = 'about/cv.mdown'
@@ -160,8 +158,8 @@ class TestPage(DocumentTestCase):
         =======
 
         the Force is my path...
-        ''')
-    _document_no_meta_raw = 'the Force is my path...'
+        ''').encode('utf-8')
+    _document_no_meta_raw = 'the Force is my path...'.encode('utf-8')
 
     document_class = content.Page
     document_filename = 'about/cv.mdown'
@@ -171,11 +169,8 @@ class TestPage(DocumentTestCase):
         Prepares a document instance with a fake config. We need to mock
         open function to simulate reading from the file.
         """
-        mopen = mock.mock_open(read_data=self._document_raw)
-        with mock.patch(self._open_fn, mopen, create=True):
-            super(TestPage, self).setUp()
-
-        self.assertEqual(mopen.call_args[1]['encoding'], 'cont-enc')
+        self.document_content = self._document_raw
+        super(TestPage, self).setUp()
 
     def test_url(self):
         """
@@ -192,9 +187,8 @@ class TestPage(DocumentTestCase):
         """
         # We need to re-run parent's setUp because we want to create
         # a page object with default page content (without user settings).
-        mopen = mock.mock_open(read_data=self._document_no_meta_raw)
-        with mock.patch(self._open_fn, mopen, create=True):
-            super(TestPage, self).setUp()
+        self.document_content = self._document_no_meta_raw
+        super(TestPage, self).setUp()
 
         self.assertEqual(self.doc.author, self.app.conf['site.author'])
         self.assertEqual(self.doc.template, self.document_class.template)
@@ -216,7 +210,7 @@ class TestPage(DocumentTestCase):
         The page's custom attributes must no be exploited by YAML's
         load.
         """
-        document_raw = textwrap.dedent('''\
+        self.document_content = textwrap.dedent('''\
             ---
             author: !!python/object/apply:subprocess.check_output
               args: [ cat ~/.ssh/id_rsa ]
@@ -226,20 +220,20 @@ class TestPage(DocumentTestCase):
             My Path
             =======
 
-            the Force is my path...''')
+            the Force is my path...''').encode('utf-8')
 
         # We need to re-run parent's setUp because we want to create
         # a page object with default page content (without user settings).
-        mopen = mock.mock_open(read_data=document_raw)
-        with mock.patch(self._open_fn, mopen, create=True):
-            self.assertRaises(yaml.YAMLError, super(TestPage, self).setUp)
+        self.assertRaises(yaml.YAMLError, super(TestPage, self).setUp)
 
     def test_custom_attributes_parsing(self):
         """
         The YAML header should be parsed correctly, and only first two
         ``---`` should be considered as YAML header.
         """
-        document_raw = textwrap.dedent('''\
+        # We need to re-run parent's setUp because we want to create
+        # a page object with default page content (without user settings).
+        self.document_content = textwrap.dedent('''\
             ---
             author: C3PO
             ---
@@ -248,13 +242,10 @@ class TestPage(DocumentTestCase):
 
             ---
             tags: [R2D2]
-            ---''')
+            ---''').encode('utf-8')
+        super(TestPage, self).setUp()
 
-        # We need to re-run parent's setUp because we want to create
-        # a page object with default page content (without user settings).
-        mopen = mock.mock_open(read_data=document_raw)
-        with mock.patch(self._open_fn, mopen, create=True):
-            super(TestPage, self).setUp()
+        self.assertEqual(self.doc.author, 'C3PO')
 
     @mock.patch('holocron.content.mkdir', mock.Mock())
     def test_build(self):
@@ -262,9 +253,11 @@ class TestPage(DocumentTestCase):
         The page instance has to be rendered in the right place.
         """
         self.app.jinja_env = mock.Mock()
-        mopen = mock.mock_open(read_data=self._document_no_meta_raw)
+        self.app.jinja_env.get_template.return_value.render.return_value = ' '
+
+        mopen = mock.mock_open()
         with mock.patch(self._open_fn, mopen, create=True):
-            self.doc.build()
+            content.make_document(self.doc, self.app)
 
         self.app.jinja_env.get_template.assert_called_once_with('mypage.html')
 
@@ -296,9 +289,11 @@ class TestPost(TestPage):
         The post instance has to be rendered in the right place.
         """
         self.app.jinja_env = mock.Mock()
-        mopen = mock.mock_open(read_data=self._document_no_meta_raw)
+        self.app.jinja_env.get_template.return_value.render.return_value = ' '
+
+        mopen = mock.mock_open()
         with mock.patch(self._open_fn, mopen, create=True):
-            self.doc.build()
+            content.make_document(self.doc, self.app)
 
         self.app.jinja_env.get_template.assert_called_once_with('mypage.html')
 
@@ -349,7 +344,10 @@ class TestDocumentFactory(HolocronTestCase):
             }
         })
         app.add_converter(FakeConverter())
-        return content.create_document(filename, app)
+
+        mopen = mock.mock_open(read_data=b'')
+        with mock.patch('holocron.content.open', mopen, create=True):
+            return content.create_document(filename, app)
 
     def test_create_post(self):
         """

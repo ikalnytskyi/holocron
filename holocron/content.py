@@ -11,7 +11,6 @@
 import os
 import re
 import abc
-import shutil
 import logging
 import datetime
 
@@ -46,6 +45,9 @@ def create_document(filename, app):
     #: regex pattern for separating posts from pages
     _post_pattern = re.compile(r'^\d{2,4}/\d{1,2}/\d{1,2}')
 
+    with open(filename, 'rb') as f:
+        content = f.read()
+
     # let's assume that if we have a converter for a given file
     # then it's either a post or a page
     _, ext = os.path.splitext(filename)
@@ -55,9 +57,37 @@ def create_document(filename, app):
         content_path = os.path.abspath(app.conf['paths.content'])
         document_path = os.path.abspath(filename)[len(content_path) + 1:]
         if _post_pattern.search(document_path):
-            return Post(filename, app)
-        return Page(filename, app)
-    return Static(filename, app)
+            return Post(filename, app, content)
+        return Page(filename, app, content)
+    return Static(filename, app, content)
+
+
+def make_document(document, app):
+    # This function is intermediate step required to incrementally implement
+    # processors pipeline.
+
+    if isinstance(document, Page):
+        destination = os.path.join(
+            app.conf['paths.output'],
+            os.path.splitext(document.short_source)[0],
+            'index.html')
+
+        template = app.jinja_env.get_template(document.template)
+        document.content = template.render(document=document)
+    else:
+        destination = os.path.join(
+            app.conf['paths.output'],
+            document.short_source)
+
+    mkdir(os.path.dirname(destination))
+
+    if isinstance(document.content, str):
+        output = open(destination, 'wt', encoding=app.conf['encoding.output'])
+    else:
+        output = open(destination, 'wb')
+
+    with output:
+        output.write(document.content)
 
 
 class Document(metaclass=abc.ABCMeta):
@@ -70,13 +100,16 @@ class Document(metaclass=abc.ABCMeta):
     :param app: a reference to the application it's attached to
     """
 
-    def __init__(self, filename, app):
+    def __init__(self, filename, app, content=b''):
         logger.info(
             '%s: creating %s', filename, self.__class__.__name__.lower())
         self._app = app
 
         #: an absolute path to the source document
         self.source = os.path.abspath(filename)
+
+        #: bytes or string with file content
+        self.content = content
 
         #: a path to the source document relative to the content folder
         self.short_source = self.source[
@@ -94,12 +127,6 @@ class Document(metaclass=abc.ABCMeta):
 
         #: an absolute url to the built document
         self.abs_url = self._app.conf['site.url'] + self.url
-
-    @abc.abstractmethod
-    def build(self):
-        """
-        Builds a current document object.
-        """
 
     @property
     @abc.abstractmethod
@@ -157,37 +184,25 @@ class Page(Document):
 
         :returns: a dictionary with parsed information
         """
-        encoding = self._app.conf['encoding.content']
-        with open(self.source, encoding=encoding) as f:
-            headers = {}
-            content = f.read()
+        headers = {}
+        content = self.content.decode(self._app.conf['encoding.content'])
 
-            # parse yaml header if exists
-            match = self._re_extract_header.match(content)
-            if match:
-                headers, content = match.groups()
-                headers = yaml.safe_load(headers)
+        # parse yaml header if exists
+        match = self._re_extract_header.match(content)
+        if match:
+            headers, content = match.groups()
+            headers = yaml.safe_load(headers)
 
-            # get converter for building a given document
-            converter = self._app._converters[os.path.splitext(self.source)[1]]
-            # convert markup to html, extracting some meta
-            metadata, html = converter.to_html(content)
-            metadata['content'] = html
-            # override extracted meta information with document's headers
-            metadata.update(headers)
+        # get converter for building a given document
+        converter = self._app._converters[os.path.splitext(self.source)[1]]
+
+        # convert markup to html, extracting some meta
+        metadata, html = converter.to_html(content)
+        metadata['content'] = html
+
+        # override extracted meta information with document's headers
+        metadata.update(headers)
         return metadata
-
-    def build(self):
-        filename, _ = os.path.splitext(self.short_source)
-        destination = os.path.join(
-            self._app.conf['paths.output'], filename, 'index.html')
-        mkdir(os.path.dirname(destination))
-
-        template = self._app.jinja_env.get_template(self.template)
-        encoding = self._app.conf['encoding.output']
-
-        with open(destination, 'w', encoding=encoding) as f:
-            f.write(template.render(document=self))
 
     @cached_property
     def url(self):
@@ -245,10 +260,3 @@ class Static(Document):
         # There is only one note: the path to this file should be relative
         # to the content/output directory.
         return '/' + self.short_source
-
-    def build(self):
-        destination = os.path.join(
-            self._app.conf['paths.output'], self.short_source)
-
-        mkdir(os.path.dirname(destination))
-        shutil.copy(self.source, destination)

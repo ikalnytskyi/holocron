@@ -14,7 +14,7 @@ from datetime import datetime
 import mock
 
 from holocron.app import Holocron
-from holocron.content import Post, Page, Static
+from holocron.content import Post, Page, Static, make_document
 from holocron.ext.tags import Tags, Tag
 
 from tests import HolocronTestCase, FakeConverter
@@ -223,16 +223,16 @@ class TestTagsGenerator(HolocronTestCase):
             tags: [tag1, tag2]
             ---
 
-            some text''')
+            some text
+        ''').encode(self.app.conf['encoding.content'])
 
-        open_fn = 'holocron.content.open'
-        with mock.patch(open_fn, mock.mock_open(read_data=data), create=True):
-            post = Post('2015/05/23/filename.fake', self.app)
+        post = Post('2015/05/23/filename.fake', self.app, data)
 
         self._get_content([post])
 
+        open_fn = 'holocron.content.open'
         with mock.patch(open_fn, mock.mock_open(), create=True) as mopen:
-            post.build()
+            make_document(post, self.app)
             content = mopen().write.call_args[0][0]
 
         err = 'Could not find link for #tag1.'
