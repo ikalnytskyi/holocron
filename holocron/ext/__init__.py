@@ -9,7 +9,6 @@
     :license: 3-clause BSD, see LICENSE for details.
 """
 
-from .markdown import Markdown
 from .restructuredtext import ReStructuredText
 
 from .index import Index
@@ -21,7 +20,6 @@ from .user_theme import UserTheme
 
 
 __all__ = [
-    'Markdown',
     'ReStructuredText',
 
     'Index',

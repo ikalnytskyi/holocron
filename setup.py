@@ -52,7 +52,6 @@ setup(
             'holocron = holocron.main:main',
         ],
         'holocron.ext': [
-            'markdown = holocron.ext:Markdown',
             'restructuredtext = holocron.ext:ReStructuredText',
 
             'index = holocron.ext:Index',
@@ -65,6 +64,7 @@ setup(
         'holocron.ext.processors': [
             'frontmatter = holocron.ext.processors.frontmatter:process',
             'prettyuri = holocron.ext.processors.prettyuri:process',
+            'markdown = holocron.ext.processors.markdown:process',
         ],
         'holocron.ext.commands': [
             'init = holocron.ext.commands.init:Init',

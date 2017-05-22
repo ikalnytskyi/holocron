@@ -245,7 +245,6 @@ class TestHolocronDefaults(HolocronTestCase):
         converters_cls = {type(conv) for conv in self.app._converters.values()}
 
         self.assertCountEqual(converters_cls, [
-            holocron.ext.Markdown,
             holocron.ext.ReStructuredText,
         ])
 
@@ -285,22 +284,6 @@ class TestHolocronDefaults(HolocronTestCase):
         app.add_converter(TestConverter())
 
         self.assertEqual(app.conf['processors'], [
-            {
-                'name': 'frontmatter',
-                'when': [{
-                    'operator': 'match',
-                    'attribute': 'source',
-                    'pattern': '.*\\.(md|mkd|mdown|markdown)$'
-                }]
-            },
-            {
-                'name': 'markdown',
-                'when': [{
-                    'operator': 'match',
-                    'attribute': 'source',
-                    'pattern': r'.*\.(md|mkd|mdown|markdown)$'
-                }]
-            },
             {
                 'name': 'frontmatter',
                 'when': [{
@@ -534,6 +517,7 @@ class TestCreateApp(HolocronTestCase):
                      'operator': 'match',
                      'pattern': r'.*\.(md|mkd|mdown|markdown)$'},
                 ],
+                'extensions': ['markdown.extensions.smarty'],
             },
             {
                 'name': 'prettyuri',

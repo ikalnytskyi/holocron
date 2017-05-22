@@ -76,6 +76,35 @@ def create_app(confpath=None):
         app.add_processor(name, ext)
 
     if conf and 'processors' not in conf and app.conf.get('ext.enabled'):
+        # If Markdown converter was previously used we need to repeat its
+        # behaviour by means of processors.
+        if 'markdown' in app.conf.get('ext.enabled', []):
+            when = [{
+                'operator': 'match',
+                'attribute': 'source',
+                'pattern': r'.*\.(md|mkd|mdown|markdown)$',
+            }]
+
+            app.conf['processors'].extend([
+                {
+                    'name': 'frontmatter',
+                    'when': when,
+                },
+                {
+                    'name': 'markdown',
+                    'when': when,
+                },
+            ])
+
+            if 'ext.markdown.extensions' in app.conf:
+                app.conf['processors'][-1]['extensions'] = \
+                    app.conf['ext.markdown.extensions']
+
+            # Converters are still used to distinguish convertible document
+            # from regular one. We still temporary need this workaround.
+            for ext in ['.md', '.mkd', '.mdown', '.markdown']:
+                app._converters[ext] = None
+
         # Holocron behaviour has been changed in v0.4.0, and documents
         # preserve its path in output directory. In other words, some
         # 'a.mdown' will be rendered as 'a.html' instead of 'a/index.html'.
