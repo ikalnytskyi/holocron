@@ -10,6 +10,7 @@
 
 import os
 import logging
+import warnings
 
 # shutil.copytree doesn't fit our needs since it requires destination
 # directory to do not exist, while we need it to be existed in order
@@ -239,6 +240,13 @@ class Holocron(object):
 
         :param generator: a generator to be registered
         """
+        warnings.warn(
+            (
+                'Generators are deprecated and will be removed in '
+                'Holocron v0.5.0. Please use processors instead.'
+            ),
+            DeprecationWarning)
+
         self._generators.append(generator)
 
     def add_theme_ctx(self, **kwargs):
