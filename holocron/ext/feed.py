@@ -65,7 +65,7 @@ class Feed(abc.Extension, abc.Generator):
 
             {% for doc in documents %}
             <entry>
-              <title>{{ doc.title }}</title>
+              <title>{{ doc.title | default('Untitled') }}</title>
               <link href="{{ doc.abs_url }}" rel="alternate" />
               <id>{{ doc.abs_url }}</id>
 

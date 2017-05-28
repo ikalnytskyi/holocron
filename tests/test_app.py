@@ -47,6 +47,10 @@ class TestHolocron(HolocronTestCase):
         conf['sitename'] = 'Luke Skywalker'
         conf['paths']['content'] = 'path/to/content'
 
+        # Processors are injected automatically by adopting converters, so
+        # in the sake of sanity let's do not test it here.
+        app.conf['processors'] = []
+
         self.assertEqual(app.conf, conf)
 
     def test_add_processor(self):
@@ -227,7 +231,10 @@ class TestHolocronDefaults(HolocronTestCase):
         """
         app = create_app()
 
-        self.assertEqual(set(app._processors), set([]))
+        self.assertEqual(set(app._processors), set([
+            'markdown',
+            'restructuredtext',
+        ]))
 
     def test_registered_converters(self):
         """
@@ -260,6 +267,68 @@ class TestHolocronDefaults(HolocronTestCase):
         self.assertCountEqual(self.app._themes, [
             os.path.join(os.path.dirname(holocron.__file__), 'theme'),
         ])
+
+    def test_converters_are_processors(self):
+        """
+        Tests that Holocron 0.4.0 converts converters into processors.
+        """
+        app = create_app()
+
+        class TestConverter(abc.Converter):
+            extensions = ['.tst', '.test']
+
+            def to_html(self, text):
+                return {'key': 'value'}, 'processed:' + text
+
+        app.add_converter(TestConverter())
+
+        self.assertEqual(app.conf['processors'], [
+            {
+                'name': 'markdown',
+                'when': [{
+                    'operator': 'match',
+                    'attribute': 'source',
+                    'pattern': r'.*\.(md|mkd|mdown|markdown)$'
+                }]
+            },
+            {
+                'name': 'restructuredtext',
+                'when': [{
+                    'operator': 'match',
+                    'attribute': 'source',
+                    'pattern': r'.*\.(rst|rest)$'
+                }],
+            },
+            {
+                'name': 'testconverter',
+                'when': [{
+                    'operator': 'match',
+                    'attribute': 'source',
+                    'pattern': r'.*\.(tst|test)$',
+                }],
+            },
+        ])
+
+        document = mock.Mock(source='2.tst', content='text:2')
+        del document.key
+
+        processor_options = copy.deepcopy(app.conf['processors'][-1])
+        documents = app._processors[processor_options.pop('name')](
+            app,
+            [
+                mock.Mock(source='1.rst', content='text:1'),
+                document,
+            ],
+            **processor_options)
+
+        self.assertEqual(len(documents), 2)
+
+        self.assertEqual(documents[0].source, '1.rst')
+        self.assertEqual(documents[0].content, 'text:1')
+
+        self.assertEqual(documents[1].source, '2.tst')
+        self.assertEqual(documents[1].content, 'processed:text:2')
+        self.assertEqual(documents[1].key, 'value')
 
 
 class TestCreateApp(HolocronTestCase):
@@ -352,3 +421,74 @@ class TestCreateApp(HolocronTestCase):
         app = self._create_app(side_effect=IsADirectoryError)
 
         self.assertIsNone(app)
+
+    def test_registered_processors(self):
+        """
+        Tests that default processors are registered.
+        """
+        app = create_app()
+
+        self.assertEqual(set(app._processors), set([
+            'markdown',
+            'restructuredtext'
+        ]))
+
+    def test_deprecated_settings_default(self):
+        """
+        Tests that deprecated settings under 'ext.*' are converted into
+        processors settings.
+        """
+        app = self._create_app(conf_raw=textwrap.dedent('''\
+            ext:
+              enabled:
+                - markdown
+        '''))
+
+        self.assertEqual(app.conf['processors'], [
+            {
+                'name': 'markdown',
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': r'.*\.(md|mkd|mdown|markdown)$'},
+                ],
+            },
+        ])
+
+    def test_deprecated_settings_custom(self):
+        """
+        Tests that deprecated settings under 'ext.*' are converted into
+        processors settings.
+        """
+        app = self._create_app(conf_raw=textwrap.dedent('''\
+            ext:
+              enabled:
+                - markdown
+
+              markdown:
+                extensions:
+                  - markdown.extensions.smarty
+        '''))
+
+        self.assertEqual(app.conf['processors'], [
+            {
+                'name': 'markdown',
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': r'.*\.(md|mkd|mdown|markdown)$'},
+                ],
+            },
+        ])
+
+    def test_deprecated_settings_custom_turn_off(self):
+        """
+        Tests that deprecated settings under 'ext.*' are converted into
+        processors settings.
+        """
+        app = self._create_app(conf_raw=textwrap.dedent('''\
+            ext:
+              enabled: []
+        '''))
+
+        self.assertEqual(app.conf['processors'], [])

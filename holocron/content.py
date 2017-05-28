@@ -164,9 +164,6 @@ class Page(Document):
     #: A default template for page documents.
     template = 'page.j2'
 
-    #: A default title for page documents.
-    title = 'Untitled'
-
     def __init__(self, *args, **kwargs):
         super(Page, self).__init__(*args, **kwargs)
 
@@ -184,24 +181,16 @@ class Page(Document):
 
         :returns: a dictionary with parsed information
         """
-        headers = {}
+        metadata = {}
         content = self.content.decode(self._app.conf['encoding.content'])
 
         # parse yaml header if exists
         match = self._re_extract_header.match(content)
         if match:
-            headers, content = match.groups()
-            headers = yaml.safe_load(headers)
+            metadata, content = match.groups()
+            metadata = yaml.safe_load(metadata)
 
-        # get converter for building a given document
-        converter = self._app._converters[os.path.splitext(self.source)[1]]
-
-        # convert markup to html, extracting some meta
-        metadata, html = converter.to_html(content)
-        metadata['content'] = html
-
-        # override extracted meta information with document's headers
-        metadata.update(headers)
+        metadata['content'] = content
         return metadata
 
     @cached_property

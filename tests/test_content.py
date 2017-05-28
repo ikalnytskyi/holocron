@@ -192,7 +192,6 @@ class TestPage(DocumentTestCase):
 
         self.assertEqual(self.doc.author, self.app.conf['site.author'])
         self.assertEqual(self.doc.template, self.document_class.template)
-        self.assertEqual(self.doc.title, self.document_class.title)
 
     def test_custom_attributes(self):
         """
@@ -203,7 +202,6 @@ class TestPage(DocumentTestCase):
         self.assertEqual(self.doc.author, 'Luke Skywalker')
         self.assertEqual(self.doc.template, 'mypage.html')
         self.assertEqual(self.doc.myattr, 'value')
-        self.assertEqual(self.doc.title, 'My Path')
 
     def test_custom_attributes_no_exploit(self):
         """

@@ -25,6 +25,7 @@ from dooku.decorator import cached_property
 from dooku.ext import ExtensionManager
 
 from .content import create_document, make_document
+from .ext.processors._misc import iterdocuments
 from .utils import iterfiles, mkdir
 
 
@@ -225,6 +226,15 @@ class Holocron(object):
         :param converter: a converter to be registered
         :param _force: allows to override already registered converters
         """
+        warnings.warn(
+            (
+                'Converters are deprecated and will be removed in '
+                'Holocron v0.5.0. Please use processors instead.'
+            ),
+            DeprecationWarning)
+
+        # We use converters to distinguish convertible documents from
+        # static ones, so let's keep using it for a while.
         for ext in converter.extensions:
             if ext in self._converters and not _force:
                 logger.warning(
@@ -233,6 +243,40 @@ class Holocron(object):
                 continue
 
             self._converters[ext] = converter
+
+        def process(app, documents, **options):
+            when = options.pop('when', None)
+
+            for document in iterdocuments(documents, when):
+                meta, document.content = converter.to_html(document.content)
+
+                for key, value in meta.items():
+                    if not hasattr(document, key):
+                        setattr(document, key, value)
+            return documents
+
+        # Converters are used to be executed on document parsing, and since
+        # we dropped that code the only way to get them executed is to
+        # register them as processors.
+        self.add_processor(type(converter).__name__.lower(), process)
+
+        when = [{
+            'operator': 'match',
+            'attribute': 'source',
+            'pattern': r'.*\.(%s)$' % '|'.join(
+                # since converter's extensions list contains extensions
+                # started with dot, we need to strip it as it has another
+                # meaning in regular expression world
+                (ext.lstrip('.') for ext in converter.extensions)
+            ),
+        }]
+
+        self.conf['processors'].extend([
+            {
+                'name': type(converter).__name__.lower(),
+                'when': when,
+            },
+        ])
 
     def add_generator(self, generator):
         """
