@@ -49,6 +49,23 @@ class TestHolocron(HolocronTestCase):
 
         self.assertEqual(app.conf, conf)
 
+    def test_add_processor(self):
+        """
+        Tests processor registration process.
+        """
+        def process(documents, **options):
+            return documents
+
+        self.assertEqual(len(self.app._processors), 0)
+        self.app.add_processor('test', process)
+        self.assertEqual(len(self.app._processors), 1)
+        self.assertIs(self.app._processors['test'], process)
+
+        # registration under the same name is not allowed
+        self.app.add_processor('test', lambda: 0)
+        self.assertEqual(len(self.app._processors), 1)
+        self.assertIs(self.app._processors['test'], process)
+
     def test_add_converter(self):
         """
         Tests converter registration process.
@@ -203,6 +220,14 @@ class TestHolocronDefaults(HolocronTestCase):
 
     def setUp(self):
         self.app = Holocron()
+
+    def test_registered_processors(self):
+        """
+        Tests that default processors are registered.
+        """
+        app = create_app()
+
+        self.assertEqual(set(app._processors), set([]))
 
     def test_registered_converters(self):
         """

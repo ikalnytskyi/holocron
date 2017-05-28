@@ -62,6 +62,8 @@ setup(
 
             'user-theme = holocron.ext:UserTheme',
         ],
+        'holocron.ext.processors': [
+        ],
         'holocron.ext.commands': [
             'init = holocron.ext.commands.init:Init',
             'build = holocron.ext.commands.build:Build',

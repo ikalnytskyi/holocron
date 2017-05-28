@@ -67,7 +67,10 @@ def create_app(confpath=None):
         logger.error('%s: %s', confpath, str(exc))
         return None
 
-    return Holocron(conf)
+    app = Holocron(conf)
+    for name, ext in ExtensionManager(namespace='holocron.ext.processors'):
+        app.add_processor(name, ext)
+    return app
 
 
 class Holocron(object):
@@ -108,6 +111,8 @@ class Holocron(object):
         },
 
         'theme': {},
+
+        'processors': [],
 
         'ext': {
             'enabled': [
@@ -152,6 +157,17 @@ class Holocron(object):
         #: Contains all registered generators and is used for executing them.
         self._generators = []
 
+        #: processor name -> processor function
+        #:
+        #: Processors are stateless functions that receive a list of documents
+        #: and return a list of documents. Each output of one processor goes
+        #: as input to next one. This property is intended to keep track of
+        #: known processors, the one that could be used by application
+        #: instance.
+        #:
+        #: .. versionadded:: 0.4.0
+        self._processors = {}
+
         #: theme path, ...
         #:
         #: Contains all registered themes. Initially it has only a default one.
@@ -185,6 +201,21 @@ class Holocron(object):
                     '%s extension skipped: already registered', name)
                 continue
             self._extensions[name] = ext(self)
+
+    def add_processor(self, name, processor):
+        """Register a given processor in the application instance.
+
+        Application instance comes with no registered processors by default.
+        The usual place where they are registered is create_app function.
+
+        :param name: a name to be used to call the processor
+        :param processor: a process function to be registered
+        """
+        if name in self._processors:
+            logger.warning('%s processor skipped: already registered', name)
+            return
+
+        self._processors[name] = processor
 
     def add_converter(self, converter, _force=False):
         """
@@ -286,6 +317,10 @@ class Holocron(object):
         """
         mkdir(self.conf['paths.output'])
         documents = self._get_documents()
+
+        for idx, processor in enumerate(self.conf['processors']):
+            processfn = self._processors[processor.pop('name')]
+            documents = processfn(self, documents, **processor)
 
         # use generators to generate additional stuff
         for generator in self._generators:
