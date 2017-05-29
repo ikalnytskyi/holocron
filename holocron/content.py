@@ -14,8 +14,6 @@ import abc
 import logging
 import datetime
 
-import yaml
-
 from dooku.datetime import UTC, Local
 from dooku.decorator import cached_property
 
@@ -157,41 +155,14 @@ class Page(Document):
 
     """
 
-    #: A regex for splitting page header and page content.
-    _re_extract_header = re.compile(
-        r'(---\s*\n.*?\n)---\s*\n(.*)', re.M | re.S)
-
     #: A default template for page documents.
     template = 'page.j2'
 
     def __init__(self, *args, **kwargs):
         super(Page, self).__init__(*args, **kwargs)
 
-        # set default author (if none was specified in the document)
         self.author = self._app.conf['site.author']
-
-        # set extracted information and override default one
-        meta = self._parse_document()
-        for key, value in meta.items():
-            setattr(self, key, value)
-
-    def _parse_document(self):
-        """
-        Parses a given document and returns result
-
-        :returns: a dictionary with parsed information
-        """
-        metadata = {}
-        content = self.content.decode(self._app.conf['encoding.content'])
-
-        # parse yaml header if exists
-        match = self._re_extract_header.match(content)
-        if match:
-            metadata, content = match.groups()
-            metadata = yaml.safe_load(metadata)
-
-        metadata['content'] = content
-        return metadata
+        self.content = self.content.decode(self._app.conf['encoding.content'])
 
     @cached_property
     def url(self):

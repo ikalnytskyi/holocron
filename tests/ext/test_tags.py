@@ -8,7 +8,6 @@
     :license: 3-clause BSD, see LICENSE for details.
 """
 
-import textwrap
 from datetime import datetime
 
 import mock
@@ -218,15 +217,8 @@ class TestTagsGenerator(HolocronTestCase):
         # a fake converter for that purpose
         self.app.add_converter(FakeConverter())
 
-        data = textwrap.dedent('''\
-            ---
-            tags: [tag1, tag2]
-            ---
-
-            some text
-        ''').encode(self.app.conf['encoding.content'])
-
-        post = Post('2015/05/23/filename.fake', self.app, data)
+        post = Post('2015/05/23/filename.fake', self.app, b'some text')
+        setattr(post, 'tags', ['tag1', 'tag2'])
 
         self._get_content([post])
 

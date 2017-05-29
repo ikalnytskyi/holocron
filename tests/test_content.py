@@ -10,10 +10,8 @@
 
 import os
 import datetime
-import textwrap
 
 import mock
-import yaml
 from dooku.conf import Conf
 
 from holocron.app import Holocron
@@ -147,20 +145,6 @@ class TestPage(DocumentTestCase):
 
     _open_fn = 'holocron.content.open'
 
-    _document_raw = textwrap.dedent('''\
-        ---
-        author: Luke Skywalker
-        template: mypage.html
-        myattr: value
-        ---
-
-        My Path
-        =======
-
-        the Force is my path...
-        ''').encode('utf-8')
-    _document_no_meta_raw = 'the Force is my path...'.encode('utf-8')
-
     document_class = content.Page
     document_filename = 'about/cv.mdown'
 
@@ -169,7 +153,6 @@ class TestPage(DocumentTestCase):
         Prepares a document instance with a fake config. We need to mock
         open function to simulate reading from the file.
         """
-        self.document_content = self._document_raw
         super(TestPage, self).setUp()
 
     def test_url(self):
@@ -185,65 +168,8 @@ class TestPage(DocumentTestCase):
         The page instance has to has a set of default attributes with
         valid values.
         """
-        # We need to re-run parent's setUp because we want to create
-        # a page object with default page content (without user settings).
-        self.document_content = self._document_no_meta_raw
-        super(TestPage, self).setUp()
-
         self.assertEqual(self.doc.author, self.app.conf['site.author'])
         self.assertEqual(self.doc.template, self.document_class.template)
-
-    def test_custom_attributes(self):
-        """
-        The page instance has to has both default and custom attributes.
-        Moreover, the default attributes should be overriden by custom
-        ones.
-        """
-        self.assertEqual(self.doc.author, 'Luke Skywalker')
-        self.assertEqual(self.doc.template, 'mypage.html')
-        self.assertEqual(self.doc.myattr, 'value')
-
-    def test_custom_attributes_no_exploit(self):
-        """
-        The page's custom attributes must no be exploited by YAML's
-        load.
-        """
-        self.document_content = textwrap.dedent('''\
-            ---
-            author: !!python/object/apply:subprocess.check_output
-              args: [ cat ~/.ssh/id_rsa ]
-              kwds: { shell: true }
-            ---
-
-            My Path
-            =======
-
-            the Force is my path...''').encode('utf-8')
-
-        # We need to re-run parent's setUp because we want to create
-        # a page object with default page content (without user settings).
-        self.assertRaises(yaml.YAMLError, super(TestPage, self).setUp)
-
-    def test_custom_attributes_parsing(self):
-        """
-        The YAML header should be parsed correctly, and only first two
-        ``---`` should be considered as YAML header.
-        """
-        # We need to re-run parent's setUp because we want to create
-        # a page object with default page content (without user settings).
-        self.document_content = textwrap.dedent('''\
-            ---
-            author: C3PO
-            ---
-
-            some content
-
-            ---
-            tags: [R2D2]
-            ---''').encode('utf-8')
-        super(TestPage, self).setUp()
-
-        self.assertEqual(self.doc.author, 'C3PO')
 
     @mock.patch('holocron.content.mkdir', mock.Mock())
     def test_build(self):
@@ -257,7 +183,7 @@ class TestPage(DocumentTestCase):
         with mock.patch(self._open_fn, mopen, create=True):
             content.make_document(self.doc, self.app)
 
-        self.app.jinja_env.get_template.assert_called_once_with('mypage.html')
+        self.app.jinja_env.get_template.assert_called_once_with('page.j2')
 
         self.assertEqual(
             mopen.call_args[0][0], './_output/about/cv/index.html')
@@ -293,7 +219,7 @@ class TestPost(TestPage):
         with mock.patch(self._open_fn, mopen, create=True):
             content.make_document(self.doc, self.app)
 
-        self.app.jinja_env.get_template.assert_called_once_with('mypage.html')
+        self.app.jinja_env.get_template.assert_called_once_with('post.j2')
 
         self.assertEqual(
             mopen.call_args[0][0], './_output/2014/10/8/testpost/index.html')
@@ -331,11 +257,10 @@ class TestDocumentFactory(HolocronTestCase):
     Tests the create_document function.
     """
 
-    @mock.patch('holocron.content.Page._parse_document', return_value={})
     @mock.patch('holocron.content.os.path.getmtime')
     @mock.patch('holocron.content.os.path.getctime')
     @mock.patch('holocron.content.os.getcwd', return_value='cwd')
-    def _create_document(self, filename, getcwd, getctime, getmtime, _):
+    def _create_document(self, filename, getcwd, getctime, getmtime):
         app = Holocron({
             'paths': {
                 'content': './content',

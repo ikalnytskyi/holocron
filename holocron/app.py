@@ -272,6 +272,14 @@ class Holocron(object):
         }]
 
         self.conf['processors'].extend([
+            # YAML front matter parsing is not a part of the core anymore,
+            # so we need to add it to the pipe unconditionally for backward
+            # compatibility reasons. New design assumes explicit using
+            # in processors pipeline.
+            {
+                'name': 'frontmatter',
+                'when': when,
+            },
             {
                 'name': type(converter).__name__.lower(),
                 'when': when,

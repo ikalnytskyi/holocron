@@ -232,6 +232,7 @@ class TestHolocronDefaults(HolocronTestCase):
         app = create_app()
 
         self.assertEqual(set(app._processors), set([
+            'frontmatter',
             'markdown',
             'restructuredtext',
         ]))
@@ -284,6 +285,14 @@ class TestHolocronDefaults(HolocronTestCase):
 
         self.assertEqual(app.conf['processors'], [
             {
+                'name': 'frontmatter',
+                'when': [{
+                    'operator': 'match',
+                    'attribute': 'source',
+                    'pattern': '.*\\.(md|mkd|mdown|markdown)$'
+                }]
+            },
+            {
                 'name': 'markdown',
                 'when': [{
                     'operator': 'match',
@@ -292,11 +301,27 @@ class TestHolocronDefaults(HolocronTestCase):
                 }]
             },
             {
+                'name': 'frontmatter',
+                'when': [{
+                    'operator': 'match',
+                    'attribute': 'source',
+                    'pattern': '.*\\.(rst|rest)$'
+                }],
+            },
+            {
                 'name': 'restructuredtext',
                 'when': [{
                     'operator': 'match',
                     'attribute': 'source',
                     'pattern': r'.*\.(rst|rest)$'
+                }],
+            },
+            {
+                'name': 'frontmatter',
+                'when': [{
+                    'operator': 'match',
+                    'attribute': 'source',
+                    'pattern': '.*\\.(tst|test)$'
                 }],
             },
             {
@@ -429,6 +454,7 @@ class TestCreateApp(HolocronTestCase):
         app = create_app()
 
         self.assertEqual(set(app._processors), set([
+            'frontmatter',
             'markdown',
             'restructuredtext'
         ]))
@@ -445,6 +471,14 @@ class TestCreateApp(HolocronTestCase):
         '''))
 
         self.assertEqual(app.conf['processors'], [
+            {
+                'name': 'frontmatter',
+                'when': [
+                    {'operator': 'match',
+                     'attribute': 'source',
+                     'pattern': r'.*\.(md|mkd|mdown|markdown)$'},
+                ],
+            },
             {
                 'name': 'markdown',
                 'when': [
@@ -471,6 +505,14 @@ class TestCreateApp(HolocronTestCase):
         '''))
 
         self.assertEqual(app.conf['processors'], [
+            {
+                'name': 'frontmatter',
+                'when': [
+                    {'operator': 'match',
+                     'attribute': 'source',
+                     'pattern': r'.*\.(md|mkd|mdown|markdown)$'},
+                ],
+            },
             {
                 'name': 'markdown',
                 'when': [
