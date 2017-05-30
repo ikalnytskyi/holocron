@@ -13,7 +13,7 @@ from datetime import datetime
 import mock
 
 from holocron.app import Holocron
-from holocron.content import Post, Page, Static, make_document
+from holocron.content import Post, Page, Document, make_document
 from holocron.ext.tags import Tags, Tag
 
 from tests import HolocronTestCase, FakeConverter
@@ -109,7 +109,7 @@ class TestTagsGenerator(HolocronTestCase):
             tags='testtag')
 
         self.page = mock.Mock(spec=Page)
-        self.static = mock.Mock(spec=Static)
+        self.static = mock.Mock(spec=Document)
 
         self.open_fn = 'holocron.ext.tags.open'
 
@@ -218,6 +218,7 @@ class TestTagsGenerator(HolocronTestCase):
         self.app.add_converter(FakeConverter())
 
         post = Post('2015/05/23/filename.fake', self.app, b'some text')
+        setattr(post, 'published', datetime.now())
         setattr(post, 'tags', ['tag1', 'tag2'])
 
         self._get_content([post])

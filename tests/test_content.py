@@ -68,10 +68,7 @@ class TestDocument(DocumentTestCase):
     Tests an abstract document base class.
     """
 
-    class DocumentImpl(content.Document):
-        url = '/url/to/doc'
-
-    document_class = DocumentImpl
+    document_class = content.Document
     document_filename = 'about/cv.mdown'
 
     def test_source(self):
@@ -131,11 +128,18 @@ class TestDocument(DocumentTestCase):
 
         self.assertEqual(self.doc.updated, self.doc.updated_local)
 
+    def test_url(self):
+        """
+        The url property has to be the same as a path relative to the
+        content folder.
+        """
+        self.assertEqual(self.doc.url, '/about/cv.mdown')
+
     def test_abs_url(self):
         """
         The abs_url property has to be an absolute url to the resource.
         """
-        self.assertEqual(self.doc.abs_url, 'http://example.com/url/to/doc')
+        self.assertEqual(self.doc.abs_url, 'http://example.com/about/cv.mdown')
 
 
 class TestPage(DocumentTestCase):
@@ -197,15 +201,6 @@ class TestPost(TestPage):
     """
 
     document_class = content.Post
-    document_filename = '2014/10/8/testpost.mdown'
-
-    def test_url(self):
-        """
-        The url property has to be the same as a path relative to the
-        content folder, but without file extensions and with trailing
-        slash.
-        """
-        self.assertEqual(self.doc.url, '/2014/10/8/testpost/')
 
     @mock.patch('holocron.content.mkdir', mock.Mock())
     def test_build(self):
@@ -222,34 +217,9 @@ class TestPost(TestPage):
         self.app.jinja_env.get_template.assert_called_once_with('post.j2')
 
         self.assertEqual(
-            mopen.call_args[0][0], './_output/2014/10/8/testpost/index.html')
+            mopen.call_args[0][0], './_output/about/cv/index.html')
 
         self.assertEqual(mopen.call_args[1]['encoding'], 'out-enc')
-
-    def test_published(self):
-        """
-        The published attribute has to contain the date, which is formed from
-        the path to the post document file.
-        """
-        self.assertEqual(self.doc.published.year, 2014)
-        self.assertEqual(self.doc.published.month,  10)
-        self.assertEqual(self.doc.published.day,     8)
-
-
-class TestStatic(DocumentTestCase):
-    """
-    Tests Static document.
-    """
-
-    document_class = content.Static
-    document_filename = 'about/me.png'
-
-    def test_url(self):
-        """
-        The url property has to be the same as a path relative to the
-        content folder.
-        """
-        self.assertEqual(self.doc.url, '/about/me.png')
 
 
 class TestDocumentFactory(HolocronTestCase):
@@ -279,6 +249,10 @@ class TestDocumentFactory(HolocronTestCase):
         document = self._create_document('content/2015/01/04/test.fake')
         self.assertIsInstance(document, content.Post)
 
+        self.assertEqual(document.published.year, 2015)
+        self.assertEqual(document.published.month,   1)
+        self.assertEqual(document.published.day,     4)
+
     def test_create_page(self):
         """
         Tests that create_document creates a Page instance in right cases.
@@ -293,7 +267,7 @@ class TestDocumentFactory(HolocronTestCase):
             document = self._create_document(case)
             self.assertIsInstance(document, content.Page)
 
-    def test_create_static(self):
+    def test_create_document(self):
         """
         Tests that create_document creates a Static instance in right cases.
         """
@@ -306,4 +280,4 @@ class TestDocumentFactory(HolocronTestCase):
 
         for case in corner_cases:
             document = self._create_document(case)
-            self.assertIsInstance(document, content.Static)
+            self.assertIsInstance(document, content.Document)

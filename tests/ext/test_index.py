@@ -13,7 +13,7 @@ from datetime import datetime
 import mock
 
 from holocron.app import Holocron
-from holocron.content import Post, Page, Static
+from holocron.content import Post, Page, Document
 from holocron.ext import Index
 
 from tests import HolocronTestCase
@@ -71,7 +71,7 @@ class TestIndexGenerator(HolocronTestCase):
             spec=Post, published=self.date_late, url='www.post_late.com')
 
         self.page = mock.Mock(spec=Page)
-        self.static = mock.Mock(spec=Static)
+        self.static = mock.Mock(spec=Document)
 
     def _get_content(self, documents):
         """

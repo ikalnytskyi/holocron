@@ -14,7 +14,7 @@ from xml.dom import minidom
 import mock
 
 from holocron.app import Holocron
-from holocron.content import Post, Page, Static, make_document
+from holocron.content import Post, Page, Document, make_document
 from holocron.ext import Feed
 
 from tests import HolocronTestCase, FakeConverter
@@ -85,7 +85,7 @@ class TestFeedGenerator(HolocronTestCase):
         self.early_id = '<id>http://www.post_early.com</id>'
 
         self.page = mock.Mock(spec=Page, url='www.page.com')
-        self.static = mock.Mock(spec=Static, url='www.image.com')
+        self.static = mock.Mock(spec=Document, url='www.image.com')
 
         self.open_fn = 'holocron.ext.feed.open'
 

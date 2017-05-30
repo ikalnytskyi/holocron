@@ -10,12 +10,10 @@
 
 import os
 import re
-import abc
 import logging
 import datetime
 
 from dooku.datetime import UTC, Local
-from dooku.decorator import cached_property
 
 from .utils import mkdir
 
@@ -55,9 +53,19 @@ def create_document(filename, app):
         content_path = os.path.abspath(app.conf['paths.content'])
         document_path = os.path.abspath(filename)[len(content_path) + 1:]
         if _post_pattern.search(document_path):
-            return Post(filename, app, content)
+            post = Post(filename, app, content)
+
+            # Temporary solution to make documents as abstract as possible.
+            # As we move towards, this is going to be removed.
+            published = ''.join(
+                _post_pattern.search(document_path).group(0).split(os.sep)[:3])
+            published = datetime.datetime.strptime(published, '%Y%m%d')
+            post.published = published.replace(tzinfo=Local)
+
+            return post
+
         return Page(filename, app, content)
-    return Static(filename, app, content)
+    return Document(filename, app, content)
 
 
 def make_document(document, app):
@@ -88,7 +96,7 @@ def make_document(document, app):
         output.write(document.content)
 
 
-class Document(metaclass=abc.ABCMeta):
+class Document:
     """
     An abstract base class for Holocron documents.
 
@@ -123,15 +131,11 @@ class Document(metaclass=abc.ABCMeta):
             os.path.getmtime(self.source), UTC)
         self.updated_local = self.updated.astimezone(Local)
 
+        #: an absolute url withour host
+        self.url = '/' + self.short_source
+
         #: an absolute url to the built document
         self.abs_url = self._app.conf['site.url'] + self.url
-
-    @property
-    @abc.abstractmethod
-    def url(self):
-        """
-        Returns a URL to the resource this object represents.
-        """
 
 
 class Page(Document):
@@ -163,11 +167,7 @@ class Page(Document):
 
         self.author = self._app.conf['site.author']
         self.content = self.content.decode(self._app.conf['encoding.content'])
-
-    @cached_property
-    def url(self):
-        filename, _ = os.path.splitext(self.short_source)
-        return '/' + filename + '/'
+        self.url = '/' + os.path.splitext(self.short_source)[0] + '/'
 
 
 class Post(Page):
@@ -189,34 +189,3 @@ class Post(Page):
     #: We're using a separate template, since unlike a page we need to show
     #: post's author, published date and a list of tags.
     template = 'post.j2'
-
-    def __init__(self, *args, **kwargs):
-        super(Post, self).__init__(*args, **kwargs)
-
-        published = ''.join(self.short_source.split(os.sep)[:3])
-        published = datetime.datetime.strptime(published, '%Y%m%d')
-
-        self.published = published.replace(tzinfo=Local)
-
-
-class Static(Document):
-    """
-    A Static document implementation and representation.
-
-    Just copy "As Is" from the content directory to the output directory.
-    Here's an example of building basics:
-
-      ===================  ===================  ===================
-          Content Dir           Output Dir              URL
-      ===================  ===================  ===================
-         /about/me.png        /about/me.png        /about/me.png
-      ===================  ===================  ===================
-
-    """
-
-    @cached_property
-    def url(self):
-        # A URL to the static document is the same as a path to this file.
-        # There is only one note: the path to this file should be relative
-        # to the content/output directory.
-        return '/' + self.short_source

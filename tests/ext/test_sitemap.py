@@ -14,7 +14,7 @@ from xml.dom import minidom
 import mock
 
 from holocron.app import Holocron
-from holocron.content import Page, Post, Static
+from holocron.content import Page, Post, Document
 from holocron.ext import Sitemap
 
 from tests import HolocronTestCase
@@ -53,7 +53,7 @@ class TestSitemapGenerator(HolocronTestCase):
             spec=Post, abs_url=self.post_url, updated_local=self.post_date)
         self.page = mock.Mock(
             spec=Page, abs_url=self.page_url, updated_local=self.page_date)
-        self.static = mock.Mock(spec=Static)
+        self.static = mock.Mock(spec=Document)
 
     def _get_output_content(self, documents):
         """
