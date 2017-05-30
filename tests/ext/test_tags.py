@@ -105,7 +105,7 @@ class TestTagsGenerator(HolocronTestCase):
 
         self.post_malformed = mock.Mock(
             spec=Post,
-            short_source='test',
+            source='test',
             tags='testtag')
 
         self.page = mock.Mock(spec=Page)

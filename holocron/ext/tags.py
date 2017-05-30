@@ -89,7 +89,7 @@ class Tags(abc.Extension, abc.Generator):
                 if not isinstance(post.tags, (list, tuple)):
                     logger.warning(
                         'Tags must be wrapped with list or tuple in %s',
-                        post.short_source)
+                        post.source)
                     continue
 
                 tag_objects = []

@@ -11,6 +11,7 @@
 import os
 import datetime
 
+import pytest
 import mock
 from dooku.conf import Conf
 
@@ -20,14 +21,23 @@ from holocron import content
 from tests import HolocronTestCase, FakeConverter
 
 
+@pytest.fixture(autouse=True)
+def fake_fs(monkeypatch):
+    monkeypatch.setattr('holocron.content.os.getcwd', lambda: 'cwd')
+
+    # UTC: 1991/01/01 2:10pm
+    monkeypatch.setattr(
+        'holocron.content.os.path.getmtime', lambda _: 1420121400)
+
+    # UTC: 2015/01/01 2:10pm
+    monkeypatch.setattr(
+        'holocron.content.os.path.getctime', lambda _: 662739000)
+
+
 class DocumentTestCase(HolocronTestCase):
     """
     A testcase helper that prepares a document instance.
     """
-
-    _getcwd = 'cwd'         # fake current working dir, used by abspath
-    _getctime = 662739000   # UTC: 1991/01/01 2:10pm
-    _getmtime = 1420121400  # UTC: 2015/01/01 2:10pm
 
     _conf = Conf({
         'site': {
@@ -47,10 +57,7 @@ class DocumentTestCase(HolocronTestCase):
     document_filename = None    # a document filename, relative to the content
     document_content = b''      # a content to init document with
 
-    @mock.patch('holocron.content.os.path.getmtime', return_value=_getmtime)
-    @mock.patch('holocron.content.os.path.getctime', return_value=_getctime)
-    @mock.patch('holocron.content.os.getcwd', return_value=_getcwd)
-    def setUp(self, getcwd, getctime, getmtime):
+    def setUp(self):
         """
         Prepares a document instance with a fake config.
         """
@@ -76,13 +83,6 @@ class TestDocument(DocumentTestCase):
         The source property has to be an absolute path to the document.
         """
         self.assertEqual(self.doc.source, 'cwd/content/about/cv.mdown')
-
-    def test_short_source(self):
-        """
-        The short_source property has to be a path to the document relative
-        to the content directory.
-        """
-        self.assertEqual(self.doc.short_source, 'about/cv.mdown')
 
     def test_created(self):
         """
@@ -190,7 +190,7 @@ class TestPage(DocumentTestCase):
         self.app.jinja_env.get_template.assert_called_once_with('page.j2')
 
         self.assertEqual(
-            mopen.call_args[0][0], './_output/about/cv/index.html')
+            mopen.call_args[0][0], 'cwd/_output/about/cv/index.html')
 
         self.assertEqual(mopen.call_args[1]['encoding'], 'out-enc')
 
@@ -217,7 +217,7 @@ class TestPost(TestPage):
         self.app.jinja_env.get_template.assert_called_once_with('post.j2')
 
         self.assertEqual(
-            mopen.call_args[0][0], './_output/about/cv/index.html')
+            mopen.call_args[0][0], 'cwd/_output/about/cv/index.html')
 
         self.assertEqual(mopen.call_args[1]['encoding'], 'out-enc')
 
@@ -227,10 +227,7 @@ class TestDocumentFactory(HolocronTestCase):
     Tests the create_document function.
     """
 
-    @mock.patch('holocron.content.os.path.getmtime')
-    @mock.patch('holocron.content.os.path.getctime')
-    @mock.patch('holocron.content.os.getcwd', return_value='cwd')
-    def _create_document(self, filename, getcwd, getctime, getmtime):
+    def _create_document(self, filename):
         app = Holocron({
             'paths': {
                 'content': './content',

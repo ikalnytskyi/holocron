@@ -73,24 +73,16 @@ def make_document(document, app):
     # processors pipeline.
 
     if isinstance(document, Page):
-        destination = os.path.join(
-            app.conf['paths.output'],
-            os.path.splitext(document.short_source)[0],
-            'index.html')
-
         template = app.jinja_env.get_template(document.template)
         document.content = template.render(document=document)
-    else:
-        destination = os.path.join(
-            app.conf['paths.output'],
-            document.short_source)
 
-    mkdir(os.path.dirname(destination))
+    mkdir(os.path.dirname(document.destination))
 
     if isinstance(document.content, str):
-        output = open(destination, 'wt', encoding=app.conf['encoding.output'])
+        output = open(
+            document.destination, 'wt', encoding=app.conf['encoding.output'])
     else:
-        output = open(destination, 'wb')
+        output = open(document.destination, 'wb')
 
     with output:
         output.write(document.content)
@@ -117,9 +109,11 @@ class Document:
         #: bytes or string with file content
         self.content = content
 
-        #: a path to the source document relative to the content folder
-        self.short_source = self.source[
-            len(os.path.abspath(self._app.conf['paths.content'])) + 1:]
+        #: an absolute destination path
+        self.destination = os.path.join(
+            os.path.abspath(app.conf['paths.output']),
+            self.source[
+                len(os.path.abspath(self._app.conf['paths.content'])) + 1:])
 
         #: a created date in UTC as :class:`datetime.datetime` object
         self.created = datetime.datetime.fromtimestamp(
@@ -131,11 +125,23 @@ class Document:
             os.path.getmtime(self.source), UTC)
         self.updated_local = self.updated.astimezone(Local)
 
-        #: an absolute url withour host
-        self.url = '/' + self.short_source
+    @property
+    def url(self):
+        destination = self.destination[
+            len(os.path.abspath(self._app.conf['paths.output'])) + 1:]
 
-        #: an absolute url to the built document
-        self.abs_url = self._app.conf['site.url'] + self.url
+        # Most modern HTTP servers implicitly serve these files when
+        # someone requested URL that points to directory. It's a
+        # common practice to do not end URLs with those filenames as
+        # they are assumed by default.
+        if os.path.basename(destination) in ('index.html', 'index.htm'):
+            destination = os.path.dirname(destination) + '/'
+
+        return '/' + destination
+
+    @property
+    def abs_url(self):
+        return self._app.conf['site.url'] + self.url
 
 
 class Page(Document):
@@ -165,9 +171,16 @@ class Page(Document):
     def __init__(self, *args, **kwargs):
         super(Page, self).__init__(*args, **kwargs)
 
+        self.destination = os.path.join(
+            os.path.abspath(self._app.conf['paths.output']),
+            os.path.splitext(
+                self.source[
+                    len(os.path.abspath(self._app.conf['paths.content'])) + 1:
+                ])[0],
+            'index.html')
+
         self.author = self._app.conf['site.author']
         self.content = self.content.decode(self._app.conf['encoding.content'])
-        self.url = '/' + os.path.splitext(self.short_source)[0] + '/'
 
 
 class Post(Page):
