@@ -11,6 +11,7 @@
 import os
 import logging
 import warnings
+import textwrap
 
 # shutil.copytree doesn't fit our needs since it requires destination
 # directory to do not exist, while we need it to be existed in order
@@ -70,8 +71,42 @@ def create_app(confpath=None):
         return None
 
     app = Holocron(conf)
+
     for name, ext in ExtensionManager(namespace='holocron.ext.processors'):
         app.add_processor(name, ext)
+
+    if conf and 'processors' not in conf and app.conf.get('ext.enabled'):
+        # Holocron behaviour has been changed in v0.4.0, and documents
+        # preserve its path in output directory. In other words, some
+        # 'a.mdown' will be rendered as 'a.html' instead of 'a/index.html'.
+        # In order to do not break the world, let's inject the processor
+        # that keeps old behaviour in-place.
+        app.conf['processors'].append(
+            {
+                'name': 'prettyuri',
+                'when': [{
+                    'operator': 'match',
+                    'attribute': 'source',
+                    'pattern': r'.*\.(%s)$' % '|'.join(
+                        # since converter's extensions list contains extensions
+                        # started with dot, we need to strip it as it has
+                        # another meaning in regular expression world
+                        (ext.lstrip('.') for ext in sorted(app._converters))
+                    ),
+                }],
+            },
+        )
+
+        warnings.warn(
+            (
+                "Extension settings (ext.*) are deprecated in favor of "
+                "processors pipeline. Use the following pipeline "
+                "configuration to match your previous behaviour.\n"
+                "\n%s\n" % textwrap.indent(
+                    yaml.dump(app.conf['processors']), '  ')
+            ),
+            DeprecationWarning)
+
     return app
 
 
@@ -249,10 +284,13 @@ class Holocron(object):
 
             for document in iterdocuments(documents, when):
                 meta, document.content = converter.to_html(document.content)
+                document.destination = \
+                    os.path.splitext(document.destination)[0] + '.html'
 
                 for key, value in meta.items():
                     if not hasattr(document, key):
                         setattr(document, key, value)
+
             return documents
 
         # Converters are used to be executed on document parsing, and since

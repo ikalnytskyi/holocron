@@ -171,14 +171,6 @@ class Page(Document):
     def __init__(self, *args, **kwargs):
         super(Page, self).__init__(*args, **kwargs)
 
-        self.destination = os.path.join(
-            os.path.abspath(self._app.conf['paths.output']),
-            os.path.splitext(
-                self.source[
-                    len(os.path.abspath(self._app.conf['paths.content'])) + 1:
-                ])[0],
-            'index.html')
-
         self.author = self._app.conf['site.author']
         self.content = self.content.decode(self._app.conf['encoding.content'])
 

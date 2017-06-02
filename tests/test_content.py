@@ -159,14 +159,6 @@ class TestPage(DocumentTestCase):
         """
         super(TestPage, self).setUp()
 
-    def test_url(self):
-        """
-        The url property has to be the same as a path relative to the
-        content folder, but without file extensions and with trailing
-        slash.
-        """
-        self.assertEqual(self.doc.url, '/about/cv/')
-
     def test_default_attributes(self):
         """
         The page instance has to has a set of default attributes with
@@ -190,7 +182,7 @@ class TestPage(DocumentTestCase):
         self.app.jinja_env.get_template.assert_called_once_with('page.j2')
 
         self.assertEqual(
-            mopen.call_args[0][0], 'cwd/_output/about/cv/index.html')
+            mopen.call_args[0][0], 'cwd/_output/about/cv.mdown')
 
         self.assertEqual(mopen.call_args[1]['encoding'], 'out-enc')
 
@@ -217,7 +209,7 @@ class TestPost(TestPage):
         self.app.jinja_env.get_template.assert_called_once_with('post.j2')
 
         self.assertEqual(
-            mopen.call_args[0][0], 'cwd/_output/about/cv/index.html')
+            mopen.call_args[0][0], 'cwd/_output/about/cv.mdown')
 
         self.assertEqual(mopen.call_args[1]['encoding'], 'out-enc')
 

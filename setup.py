@@ -64,6 +64,7 @@ setup(
         ],
         'holocron.ext.processors': [
             'frontmatter = holocron.ext.processors.frontmatter:process',
+            'prettyuri = holocron.ext.processors.prettyuri:process',
         ],
         'holocron.ext.commands': [
             'init = holocron.ext.commands.init:Init',

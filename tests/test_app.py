@@ -235,6 +235,7 @@ class TestHolocronDefaults(HolocronTestCase):
             'frontmatter',
             'markdown',
             'restructuredtext',
+            'prettyuri',
         ]))
 
     def test_registered_converters(self):
@@ -334,14 +335,16 @@ class TestHolocronDefaults(HolocronTestCase):
             },
         ])
 
-        document = mock.Mock(source='2.tst', content='text:2')
+        document = mock.Mock(
+            source='2.tst', content='text:2', destination='2.rst')
         del document.key
 
         processor_options = copy.deepcopy(app.conf['processors'][-1])
         documents = app._processors[processor_options.pop('name')](
             app,
             [
-                mock.Mock(source='1.rst', content='text:1'),
+                mock.Mock(
+                    source='1.rst', content='text:1', destination='1.rst'),
                 document,
             ],
             **processor_options)
@@ -349,9 +352,11 @@ class TestHolocronDefaults(HolocronTestCase):
         self.assertEqual(len(documents), 2)
 
         self.assertEqual(documents[0].source, '1.rst')
+        self.assertEqual(documents[0].destination, '1.rst')
         self.assertEqual(documents[0].content, 'text:1')
 
         self.assertEqual(documents[1].source, '2.tst')
+        self.assertEqual(documents[1].destination, '2.html')
         self.assertEqual(documents[1].content, 'processed:text:2')
         self.assertEqual(documents[1].key, 'value')
 
@@ -456,7 +461,8 @@ class TestCreateApp(HolocronTestCase):
         self.assertEqual(set(app._processors), set([
             'frontmatter',
             'markdown',
-            'restructuredtext'
+            'restructuredtext',
+            'prettyuri',
         ]))
 
     def test_deprecated_settings_default(self):
@@ -485,6 +491,14 @@ class TestCreateApp(HolocronTestCase):
                     {'attribute': 'source',
                      'operator': 'match',
                      'pattern': r'.*\.(md|mkd|mdown|markdown)$'},
+                ],
+            },
+            {
+                'name': 'prettyuri',
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': r'.*\.(markdown|md|mdown|mkd)$'},
                 ],
             },
         ])
@@ -519,6 +533,14 @@ class TestCreateApp(HolocronTestCase):
                     {'attribute': 'source',
                      'operator': 'match',
                      'pattern': r'.*\.(md|mkd|mdown|markdown)$'},
+                ],
+            },
+            {
+                'name': 'prettyuri',
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': r'.*\.(markdown|md|mdown|mkd)$'},
                 ],
             },
         ])
