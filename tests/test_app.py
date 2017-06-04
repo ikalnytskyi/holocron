@@ -244,9 +244,7 @@ class TestHolocronDefaults(HolocronTestCase):
         """
         converters_cls = {type(conv) for conv in self.app._converters.values()}
 
-        self.assertCountEqual(converters_cls, [
-            holocron.ext.ReStructuredText,
-        ])
+        self.assertCountEqual(converters_cls, [])
 
     def test_registered_generators(self):
         """
@@ -284,22 +282,6 @@ class TestHolocronDefaults(HolocronTestCase):
         app.add_converter(TestConverter())
 
         self.assertEqual(app.conf['processors'], [
-            {
-                'name': 'frontmatter',
-                'when': [{
-                    'operator': 'match',
-                    'attribute': 'source',
-                    'pattern': '.*\\.(rst|rest)$'
-                }],
-            },
-            {
-                'name': 'restructuredtext',
-                'when': [{
-                    'operator': 'match',
-                    'attribute': 'source',
-                    'pattern': r'.*\.(rst|rest)$'
-                }],
-            },
             {
                 'name': 'frontmatter',
                 'when': [{
@@ -457,6 +439,7 @@ class TestCreateApp(HolocronTestCase):
             ext:
               enabled:
                 - markdown
+                - restructuredtext
         '''))
 
         self.assertEqual(app.conf['processors'], [
@@ -477,11 +460,27 @@ class TestCreateApp(HolocronTestCase):
                 ],
             },
             {
+                'name': 'frontmatter',
+                'when': [
+                    {'operator': 'match',
+                     'attribute': 'source',
+                     'pattern': r'.*\.(rst|rest)$'},
+                ],
+            },
+            {
+                'name': 'restructuredtext',
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': r'.*\.(rst|rest)$'},
+                ],
+            },
+            {
                 'name': 'prettyuri',
                 'when': [
                     {'attribute': 'source',
                      'operator': 'match',
-                     'pattern': r'.*\.(markdown|md|mdown|mkd)$'},
+                     'pattern': r'.*\.(markdown|md|mdown|mkd|rest|rst)$'},
                 ],
             },
         ])
@@ -495,10 +494,15 @@ class TestCreateApp(HolocronTestCase):
             ext:
               enabled:
                 - markdown
+                - restructuredtext
 
               markdown:
                 extensions:
                   - markdown.extensions.smarty
+
+              restructuredtext:
+                docutils:
+                  syntax_highlight: short
         '''))
 
         self.assertEqual(app.conf['processors'], [
@@ -520,11 +524,28 @@ class TestCreateApp(HolocronTestCase):
                 'extensions': ['markdown.extensions.smarty'],
             },
             {
+                'name': 'frontmatter',
+                'when': [
+                    {'operator': 'match',
+                     'attribute': 'source',
+                     'pattern': r'.*\.(rst|rest)$'},
+                ],
+            },
+            {
+                'name': 'restructuredtext',
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': r'.*\.(rst|rest)$'},
+                ],
+                'docutils': {'syntax_highlight': 'short'},
+            },
+            {
                 'name': 'prettyuri',
                 'when': [
                     {'attribute': 'source',
                      'operator': 'match',
-                     'pattern': r'.*\.(markdown|md|mdown|mkd)$'},
+                     'pattern': r'.*\.(markdown|md|mdown|mkd|rest|rst)$'},
                 ],
             },
         ])

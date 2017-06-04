@@ -105,6 +105,35 @@ def create_app(confpath=None):
             for ext in ['.md', '.mkd', '.mdown', '.markdown']:
                 app._converters[ext] = None
 
+        # If reStructuredText converter was previously used we need to repeat
+        # its behaviour by means of processors.
+        if 'restructuredtext' in app.conf.get('ext.enabled', []):
+            when = [{
+                'operator': 'match',
+                'attribute': 'source',
+                'pattern': r'.*\.(rst|rest)$',
+            }]
+
+            app.conf['processors'].extend([
+                {
+                    'name': 'frontmatter',
+                    'when': when,
+                },
+                {
+                    'name': 'restructuredtext',
+                    'when': when,
+                },
+            ])
+
+            if 'ext.restructuredtext.docutils' in app.conf:
+                app.conf['processors'][-1]['docutils'] = \
+                    app.conf['ext.restructuredtext.docutils']
+
+            # Converters are still used to distinguish convertible document
+            # from regular one. We still temporary need this workaround.
+            for ext in ['.rst', '.rest']:
+                app._converters[ext] = None
+
         # Holocron behaviour has been changed in v0.4.0, and documents
         # preserve its path in output directory. In other words, some
         # 'a.mdown' will be rendered as 'a.html' instead of 'a/index.html'.
