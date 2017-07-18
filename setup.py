@@ -60,6 +60,7 @@ setup(
             'user-theme = holocron.ext:UserTheme',
         ],
         'holocron.ext.processors': [
+            'source = holocron.ext.processors.source:process',
             'frontmatter = holocron.ext.processors.frontmatter:process',
             'prettyuri = holocron.ext.processors.prettyuri:process',
             'markdown = holocron.ext.processors.markdown:process',

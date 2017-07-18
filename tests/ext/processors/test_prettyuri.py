@@ -9,14 +9,10 @@ from holocron import app, content
 from holocron.ext.processors import prettyuri
 
 
-# We are forced to prepare documents this way as long as they smart.
-# Fortunately, it's a temporary measure as we are going towards plain
-# documents represented as dictionaries.
-@mock.patch('holocron.content.os.path.getmtime', return_value=1420121400)
-@mock.patch('holocron.content.os.path.getctime', return_value=662739000)
-@mock.patch('holocron.content.os.getcwd', return_value='cwd')
-def _get_document(_, __, ___, cls=content.Page, path='memory://'):
-    return cls(path, app.Holocron({}))
+def _get_document(cls=content.Page, **kwargs):
+    document = cls(app.Holocron({}))
+    document.update(kwargs)
+    return document
 
 
 @pytest.fixture(scope='function')
@@ -30,10 +26,10 @@ def test_document(testapp):
     documents = prettyuri.process(
         testapp,
         [
-            _get_document(path='about/cv.mdown'),
+            _get_document(destination='about/cv.html'),
         ])
 
-    assert documents[0].destination == 'cwd/_build/about/cv/index.html'
+    assert documents[0].destination == 'about/cv/index.html'
 
 
 @pytest.mark.parametrize('index', [
@@ -43,13 +39,10 @@ def test_document(testapp):
 def test_document_index(testapp, index):
     """Prettyuri processor has to ignore index documents."""
 
-    document = _get_document(path='about/cv.mdown')
-    document.destination = os.path.join('about', 'cv', index)
-
     documents = prettyuri.process(
         testapp,
         [
-            document,
+            _get_document(destination=os.path.join('about', 'cv', index)),
         ])
 
     assert documents[0].destination == os.path.join('about', 'cv', index)
@@ -61,10 +54,10 @@ def test_documents(testapp):
     documents = prettyuri.process(
         testapp,
         [
-            _get_document(path='0.txt'),
-            _get_document(path='1.md'),
-            _get_document(path='2'),
-            _get_document(path='3.markdown'),
+            _get_document(source='0.txt', destination='0.txt'),
+            _get_document(source='1.md', destination='1/index.html'),
+            _get_document(source='2', destination='2.html'),
+            _get_document(source='3.markdown', destination='3.html'),
         ],
         when=[
             {
@@ -74,7 +67,7 @@ def test_documents(testapp):
             },
         ])
 
-    assert documents[0].destination == 'cwd/_build/0.txt'
-    assert documents[1].destination == 'cwd/_build/1/index.html'
-    assert documents[2].destination == 'cwd/_build/2'
-    assert documents[3].destination == 'cwd/_build/3/index.html'
+    assert documents[0].destination == '0.txt'
+    assert documents[1].destination == '1/index.html'
+    assert documents[2].destination == '2.html'
+    assert documents[3].destination == '3/index.html'

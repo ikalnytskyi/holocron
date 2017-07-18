@@ -9,29 +9,6 @@
 """
 
 import os
-from fnmatch import fnmatch
-
-
-def iterfiles(path, pattern=None, exclude_folders=False):
-    """
-    Iterate over all files in the `path` dir which satisfy a given `pattern`.
-
-    :param path: a path to find in
-    :param pattern: a pattern which all the files should satisfy
-    :param exclude_folders: exclude folders from the search if it isn't
-                            satisfy a pattern
-    """
-    for root, dirnames, filenames in os.walk(path, topdown=True):
-        # skip not satisfied directories
-        if exclude_folders and pattern is not None:
-            dirnames[:] = [d for d in dirnames if fnmatch(d, pattern)]
-
-        # yield satisfied files
-        for filename in filenames:
-            if pattern is not None and not fnmatch(filename, pattern):
-                continue
-
-            yield os.path.join(root, filename)
 
 
 def mkdir(path):

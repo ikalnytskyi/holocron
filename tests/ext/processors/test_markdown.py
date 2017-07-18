@@ -10,14 +10,11 @@ from holocron import app, content
 from holocron.ext.processors import markdown
 
 
-# We are forced to prepare documents this way as long as they smart.
-# Fortunately, it's a temporary measure as we are going towards plain
-# documents represented as dictionaries.
-@mock.patch('holocron.content.os.path.getmtime', return_value=1420121400)
-@mock.patch('holocron.content.os.path.getctime', return_value=662739000)
-@mock.patch('holocron.content.os.getcwd', return_value='cwd')
-def _get_document(content, _, __, ___, cls=content.Page, path='memory://'):
-    return cls(path, app.Holocron({}), content.encode('utf-8'))
+def _get_document(cls=content.Page, **kwargs):
+    document = cls(app.Holocron({}))
+    document['destination'] = 'about/cv.md'
+    document.update(kwargs)
+    return document
 
 
 @pytest.fixture(scope='function')
@@ -31,11 +28,12 @@ def test_document(testapp):
     documents = markdown.process(
         testapp,
         [
-            _get_document(textwrap.dedent('''\
-                # some title
+            _get_document(
+                content=textwrap.dedent('''\
+                    # some title
 
-                text with **bold**
-            '''))
+                    text with **bold**
+                '''))
         ])
 
     assert re.match(
@@ -54,12 +52,13 @@ def test_document_with_alt_title_syntax(testapp):
     documents = markdown.process(
         testapp,
         [
-            _get_document(textwrap.dedent('''\
-                some title
-                ==========
+            _get_document(
+                content=textwrap.dedent('''\
+                    some title
+                    ==========
 
-                text with **bold**
-            '''))
+                    text with **bold**
+                '''))
         ])
 
     assert re.match(
@@ -78,13 +77,14 @@ def test_document_with_newlines_at_the_beginning(testapp):
     documents = markdown.process(
         testapp,
         [
-            _get_document(textwrap.dedent('''\
+            _get_document(
+                content=textwrap.dedent('''\
 
 
-                # some title
+                    # some title
 
-                text with **bold**
-            '''))
+                    text with **bold**
+                '''))
         ])
 
     assert re.match(
@@ -103,9 +103,10 @@ def test_document_without_title(testapp):
     documents = markdown.process(
         testapp,
         [
-            _get_document(textwrap.dedent('''\
-                text with **bold**
-            '''))
+            _get_document(
+                content=textwrap.dedent('''\
+                    text with **bold**
+                '''))
         ])
 
     assert re.match(
@@ -121,11 +122,12 @@ def test_document_without_title(testapp):
 def test_document_title_is_not_overwritten(testapp):
     """Markdown processor hasn't to set title if it's already set."""
 
-    document = _get_document(textwrap.dedent('''\
-        # some title
+    document = _get_document(
+        content=textwrap.dedent('''\
+            # some title
 
-        text with **bold**
-    '''))
+            text with **bold**
+        '''))
     document.title = 'another title'
     documents = markdown.process(testapp, [document])
 
@@ -145,13 +147,14 @@ def test_document_title_ignored_in_the_middle_of_text(testapp):
     documents = markdown.process(
         testapp,
         [
-            _get_document(textwrap.dedent('''\
-                text
+            _get_document(
+                content=textwrap.dedent('''\
+                    text
 
-                # some title
+                    # some title
 
-                text with **bold**
-            '''))
+                    text with **bold**
+                '''))
         ])
 
     assert re.match(
@@ -172,30 +175,31 @@ def test_document_with_sections(testapp):
     documents = markdown.process(
         testapp,
         [
-            _get_document(textwrap.dedent('''\
-                some title 1
-                ============
+            _get_document(
+                content=textwrap.dedent('''\
+                    some title 1
+                    ============
 
-                aaa
+                    aaa
 
-                some section 1
-                --------------
+                    some section 1
+                    --------------
 
-                bbb
+                    bbb
 
-                some section 2
-                --------------
+                    some section 2
+                    --------------
 
-                ccc
+                    ccc
 
-                # some title 2
+                    # some title 2
 
-                xxx
+                    xxx
 
-                ## some section 3
+                    ## some section 3
 
-                yyy
-            '''))
+                    yyy
+                '''))
         ])
 
     assert re.match(
@@ -218,12 +222,13 @@ def test_document_with_code(testapp):
     documents = markdown.process(
         testapp,
         [
-            _get_document(textwrap.dedent('''\
-                test codeblock
+            _get_document(
+                content=textwrap.dedent('''\
+                    test codeblock
 
-                    :::python
-                    lambda x: pass
-            '''))
+                        :::python
+                        lambda x: pass
+                '''))
         ])
 
     assert re.match(
@@ -242,11 +247,12 @@ def test_document_with_fenced_code(testapp):
     documents = markdown.process(
         testapp,
         [
-            _get_document(textwrap.dedent('''\
-                ```python
-                lambda x: pass
-                ```
-            '''))
+            _get_document(
+                content=textwrap.dedent('''\
+                    ```python
+                    lambda x: pass
+                    ```
+                '''))
         ])
 
     assert re.match(
@@ -265,11 +271,12 @@ def test_document_with_table(testapp):
     documents = markdown.process(
         testapp,
         [
-            _get_document(textwrap.dedent('''\
-                column a | column b
-                ---------|---------
-                   foo   |   bar
-            '''))
+            _get_document(
+                content=textwrap.dedent('''\
+                    column a | column b
+                    ---------|---------
+                       foo   |   bar
+                '''))
         ])
 
     assert 'table' in documents[0].content
@@ -290,9 +297,10 @@ def test_document_with_inline_code(testapp):
     documents = markdown.process(
         testapp,
         [
-            _get_document(textwrap.dedent('''\
-                test `code`
-            '''))
+            _get_document(
+                content=textwrap.dedent('''\
+                    test `code`
+                '''))
         ])
 
     assert documents[0].content == '<p>test <code>code</code></p>'
@@ -306,11 +314,12 @@ def test_document_with_custom_extensions(testapp):
     documents = markdown.process(
         testapp,
         [
-            _get_document(textwrap.dedent('''\
-                ```
-                lambda x: pass
-                ```
-            '''))
+            _get_document(
+                content=textwrap.dedent('''\
+                    ```
+                    lambda x: pass
+                    ```
+                '''))
         ],
         extensions=[])
 
@@ -331,10 +340,22 @@ def test_documents(testapp):
     documents = markdown.process(
         testapp,
         [
-            _get_document('**wookiee**', path='0.txt'),
-            _get_document('**wookiee**', path='1.md'),
-            _get_document('# wookiee', path='2'),
-            _get_document('# wookiee', path='3.markdown'),
+            _get_document(
+                content='**wookiee**',
+                source='0.txt',
+                destination='0.txt'),
+            _get_document(
+                content='**wookiee**',
+                source='1.md',
+                destination='1.md'),
+            _get_document(
+                content='# wookiee',
+                source='2',
+                destination='2'),
+            _get_document(
+                content='# wookiee',
+                source='3.markdown',
+                destination='3.markdown'),
         ],
         when=[
             {
@@ -344,22 +365,22 @@ def test_documents(testapp):
             },
         ])
 
-    assert documents[0].source == 'cwd/0.txt'
+    assert documents[0].source == '0.txt'
     assert documents[0].content == '**wookiee**'
     assert documents[0].destination.endswith('0.txt')
     assert not hasattr(documents[0], 'title')
 
-    assert documents[1].source == 'cwd/1.md'
+    assert documents[1].source == '1.md'
     assert documents[1].content == '<p><strong>wookiee</strong></p>'
     assert documents[1].destination.endswith('1.html')
     assert not hasattr(documents[1], 'title')
 
-    assert documents[2].source == 'cwd/2'
+    assert documents[2].source == '2'
     assert documents[2].content == '# wookiee'
     assert documents[2].destination.endswith('2')
     assert not hasattr(documents[2], 'title')
 
-    assert documents[3].source == 'cwd/3.markdown'
+    assert documents[3].source == '3.markdown'
     assert documents[3].content == ''
     assert documents[3].destination.endswith('3.html')
     assert documents[3].title == 'wookiee'

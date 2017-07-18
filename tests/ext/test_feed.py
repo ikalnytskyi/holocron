@@ -290,7 +290,9 @@ class TestFeedGenerator(HolocronTestCase):
 
         open_fn = 'holocron.content.open'
         with mock.patch(open_fn, mock.mock_open(), create=True) as mopen:
-            make_document(Page('filename.fake', self.app), self.app)
+            page = Page(self.app)
+            page.destination = 'filename.fake'
+            make_document(page, self.app)
             content = mopen().write.call_args[0][0]
 
         err = 'could not find link to feed in html header'

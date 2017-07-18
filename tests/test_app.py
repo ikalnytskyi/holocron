@@ -126,24 +126,23 @@ class TestHolocron(HolocronTestCase):
 
     @mock.patch('holocron.app.make_document')
     @mock.patch('holocron.app.mkdir')
-    @mock.patch('holocron.app.iterfiles')
-    def test_run(self, iterfiles, mkdir, make_document):
+    @mock.patch('holocron.ext.processors.source.iterdocuments')
+    def test_run(self, iterdocuments, mkdir, make_document):
         """
         Tests build process.
         """
-        iterfiles.return_value = ['doc_a', 'doc_b', 'doc_c']
-        self.app.__class__.document_factory = mock.Mock()
+        iterdocuments.return_value = ['doc_a', 'doc_b', 'doc_c']
         self.app._copy_theme = mock.Mock()
         self.app._generators = {
             mock.Mock(): mock.Mock(),
             mock.Mock(): mock.Mock(),
         }
+        self.app.conf['processors'] = [{'name': 'source'}]
+        self.app._processors = {
+            'source': holocron.ext.processors.source.process,
+        }
 
         self.app.run()
-
-        # check iterfiles call signature
-        iterfiles.assert_called_with(
-            self.app.conf['paths']['content'], '[!_.]*', True)
 
         # check mkdir create ourpur dir
         mkdir.assert_called_with(self.app.conf['paths.output'])
@@ -151,20 +150,6 @@ class TestHolocron(HolocronTestCase):
         # check that generators was used
         for generator in self.app._generators:
             self.assertEqual(generator.generate.call_count, 1)
-
-        self.app.__class__.document_factory.assert_has_calls([
-            # check that document class was used to generate class instances
-            mock.call('doc_a', self.app),
-            mock.call('doc_b', self.app),
-            mock.call('doc_c', self.app),
-        ])
-        self.assertEqual(self.app.__class__.document_factory.call_count, 3)
-
-        make_document.assert_has_calls([
-            mock.call(self.app.document_factory(), self.app),
-            mock.call(self.app.document_factory(), self.app),
-            mock.call(self.app.document_factory(), self.app),
-        ])
 
         # check that _copy_theme was called
         self.app._copy_theme.assert_called_once_with()
@@ -232,6 +217,7 @@ class TestHolocronDefaults(HolocronTestCase):
         app = create_app()
 
         self.assertEqual(set(app._processors), set([
+            'source',
             'frontmatter',
             'markdown',
             'restructuredtext',
@@ -424,6 +410,7 @@ class TestCreateApp(HolocronTestCase):
         app = create_app()
 
         self.assertEqual(set(app._processors), set([
+            'source',
             'frontmatter',
             'markdown',
             'restructuredtext',
@@ -443,6 +430,14 @@ class TestCreateApp(HolocronTestCase):
         '''))
 
         self.assertEqual(app.conf['processors'], [
+            {
+                'name': 'source',
+                'when': [{
+                    'operator': 'match',
+                    'attribute': 'source',
+                    'pattern': r'[^_.].*$',
+                }],
+            },
             {
                 'name': 'frontmatter',
                 'when': [
@@ -506,6 +501,14 @@ class TestCreateApp(HolocronTestCase):
         '''))
 
         self.assertEqual(app.conf['processors'], [
+            {
+                'name': 'source',
+                'when': [{
+                    'operator': 'match',
+                    'attribute': 'source',
+                    'pattern': r'[^_.].*$',
+                }],
+            },
             {
                 'name': 'frontmatter',
                 'when': [

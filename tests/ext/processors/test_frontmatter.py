@@ -10,14 +10,10 @@ from holocron import app, content
 from holocron.ext.processors import frontmatter
 
 
-# We are forced to prepare documents this way as long as they smart.
-# Fortunately, it's a temporary measure as we are going towards plain
-# documents represented as dictionaries.
-@mock.patch('holocron.content.os.path.getmtime', return_value=1420121400)
-@mock.patch('holocron.content.os.path.getctime', return_value=662739000)
-@mock.patch('holocron.content.os.getcwd', return_value='cwd')
-def _get_document(content, _, __, ___, cls=content.Page, path='memory://'):
-    return cls(path, app.Holocron({}), content.encode('utf-8'))
+def _get_document(cls=content.Page, **kwargs):
+    document = cls(app.Holocron({}))
+    document.update(kwargs)
+    return document
 
 
 @pytest.fixture(scope='function')
@@ -31,15 +27,16 @@ def test_document(testapp):
     documents = frontmatter.process(
         testapp,
         [
-            _get_document(textwrap.dedent('''\
-                ---
-                author: Yoda
-                master: true
-                labels: [force, motto]
-                ---
+            _get_document(
+                content=textwrap.dedent('''\
+                    ---
+                    author: Yoda
+                    master: true
+                    labels: [force, motto]
+                    ---
 
-                May the Force be with you!
-            '''))
+                    May the Force be with you!
+                '''))
         ])
 
     assert documents[0].author == 'Yoda'
@@ -54,15 +51,16 @@ def test_document_without_frontmatter(testapp):
     documents = frontmatter.process(
         testapp,
         [
-            _get_document(textwrap.dedent('''\
-                ---
-                author: Yoda
-                master: true
-                labels: [force, motto]
-                ...
+            _get_document(
+                content=textwrap.dedent('''\
+                    ---
+                    author: Yoda
+                    master: true
+                    labels: [force, motto]
+                    ...
 
-                May the Force be with you!
-            '''))
+                    May the Force be with you!
+                '''))
         ])
 
     assert documents[0].content == textwrap.dedent('''\
@@ -82,17 +80,18 @@ def text_document_with_frontmatter_in_text(testapp):
     documents = frontmatter.process(
         testapp,
         [
-            _get_document(textwrap.dedent('''\
-                I am a Jedi, like my father before me.
+            _get_document(
+                content=textwrap.dedent('''\
+                    I am a Jedi, like my father before me.
 
-                ---
-                author: Yoda
-                master: true
-                labels: [force, motto]
-                ---
+                    ---
+                    author: Yoda
+                    master: true
+                    labels: [force, motto]
+                    ---
 
-                May the Force be with you!
-            '''))
+                    May the Force be with you!
+                '''))
         ])
 
     assert documents[0].content == textwrap.dedent('''\
@@ -114,15 +113,16 @@ def test_document_custom_delimiter(testapp):
     documents = frontmatter.process(
         testapp,
         [
-            _get_document(textwrap.dedent('''\
-                +++
-                author: Yoda
-                master: true
-                labels: [force, motto]
-                +++
+            _get_document(
+                content=textwrap.dedent('''\
+                    +++
+                    author: Yoda
+                    master: true
+                    labels: [force, motto]
+                    +++
 
-                May the Force be with you!
-            '''))
+                    May the Force be with you!
+                '''))
         ],
         delimiter='+++')
 
@@ -138,15 +138,16 @@ def test_document_overwrite_false(testapp):
     documents = frontmatter.process(
         testapp,
         [
-            _get_document(textwrap.dedent('''\
-                ---
-                author: Yoda
-                master: true
-                labels: [force, motto]
-                ---
+            _get_document(
+                content=textwrap.dedent('''\
+                    ---
+                    author: Yoda
+                    master: true
+                    labels: [force, motto]
+                    ---
 
-                May the Force be with you!
-            '''))
+                    May the Force be with you!
+                '''))
         ],
         overwrite=False)
 
@@ -163,14 +164,15 @@ def test_document_invalid_yaml(testapp):
         frontmatter.process(
             testapp,
             [
-                _get_document(textwrap.dedent('''\
-                    ---
-                    author: Yoda
-                     the best jedi ever:
-                    ---
+                _get_document(
+                    content=textwrap.dedent('''\
+                        ---
+                        author: Yoda
+                         the best jedi ever:
+                        ---
 
-                    May the Force be with you!
-                '''))
+                        May the Force be with you!
+                    '''))
             ])
 
 
@@ -181,15 +183,16 @@ def test_document_with_exploit(testapp):
         frontmatter.process(
             testapp,
             [
-                _get_document(textwrap.dedent('''\
-                    ---
-                    author: !!python/object/apply:subprocess.check_output
-                      args: [ cat ~/.ssh/id_rsa ]
-                      kwds: { shell: true }
-                    ---
+                _get_document(
+                    content=textwrap.dedent('''\
+                        ---
+                        author: !!python/object/apply:subprocess.check_output
+                          args: [ cat ~/.ssh/id_rsa ]
+                          kwds: { shell: true }
+                        ---
 
-                    May the Force be with you!
-                '''))
+                        May the Force be with you!
+                    '''))
             ])
 
 
@@ -208,10 +211,10 @@ def test_documents(testapp):
     documents = frontmatter.process(
         testapp,
         [
-            _get_document(content, path='0.txt'),
-            _get_document(content, path='1.md'),
-            _get_document(content, path='2'),
-            _get_document(content, path='3.markdown'),
+            _get_document(content=content, source='0.txt'),
+            _get_document(content=content, source='1.md'),
+            _get_document(content=content, source='2'),
+            _get_document(content=content, source='3.markdown'),
         ],
         when=[
             {

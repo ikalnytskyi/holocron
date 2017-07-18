@@ -9,63 +9,8 @@
 """
 
 import os
-import re
-import logging
-import datetime
-
-from dooku.datetime import UTC, Local
 
 from .utils import mkdir
-
-
-logger = logging.getLogger(__name__)
-
-
-def create_document(filename, app):
-    """
-    Creates and returns a concrete :class:`Document` instance.
-
-    Here's some rules which describe how the factory is working:
-
-    #. There are two document types: convertible and static.
-    #. Convertible document is a document that could be converted by one of
-       registered converters. Otherwise - it's a static document.
-    #. If a document has year, month and day in its path then it's a post.
-       Otherwise - it's a page.
-
-       (e.g. 2014/12/24/test.mdown is a post, when talks/test.mdown is a page)
-
-    :param filename: a path to physical file
-    :param app: a reference to the application it's attached to
-    """
-    #: regex pattern for separating posts from pages
-    _post_pattern = re.compile(r'^\d{2,4}/\d{1,2}/\d{1,2}')
-
-    with open(filename, 'rb') as f:
-        content = f.read()
-
-    # let's assume that if we have a converter for a given file
-    # then it's either a post or a page
-    _, ext = os.path.splitext(filename)
-    if ext in app._converters:
-        # by Holocron convention, post is a convertible document that
-        # has the following format YEAR/MONTH/DAY in its path
-        content_path = os.path.abspath(app.conf['paths.content'])
-        document_path = os.path.abspath(filename)[len(content_path) + 1:]
-        if _post_pattern.search(document_path):
-            post = Post(filename, app, content)
-
-            # Temporary solution to make documents as abstract as possible.
-            # As we move towards, this is going to be removed.
-            published = ''.join(
-                _post_pattern.search(document_path).group(0).split(os.sep)[:3])
-            published = datetime.datetime.strptime(published, '%Y%m%d')
-            post.published = published.replace(tzinfo=Local)
-
-            return post
-
-        return Page(filename, app, content)
-    return Document(filename, app, content)
 
 
 def make_document(document, app):
@@ -76,19 +21,20 @@ def make_document(document, app):
         template = app.jinja_env.get_template(document.template)
         document.content = template.render(document=document)
 
-    mkdir(os.path.dirname(document.destination))
+    destination = os.path.join(app.conf['paths.output'], document.destination)
+
+    mkdir(os.path.dirname(destination))
 
     if isinstance(document.content, str):
-        output = open(
-            document.destination, 'wt', encoding=app.conf['encoding.output'])
+        output = open(destination, 'wt', encoding=app.conf['encoding.output'])
     else:
-        output = open(document.destination, 'wb')
+        output = open(destination, 'wb')
 
     with output:
         output.write(document.content)
 
 
-class Document:
+class Document(dict):
     """
     An abstract base class for Holocron documents.
 
@@ -98,37 +44,23 @@ class Document:
     :param app: a reference to the application it's attached to
     """
 
-    def __init__(self, filename, app, content=b''):
-        logger.info(
-            '%s: creating %s', filename, self.__class__.__name__.lower())
+    def __init__(self, app):
         self._app = app
 
-        #: an absolute path to the source document
-        self.source = os.path.abspath(filename)
+    def __getattr__(self, attr):
+        try:
+            return self[attr]
+        except KeyError as exc:
+            raise AttributeError(str(exc))
 
-        #: bytes or string with file content
-        self.content = content
-
-        #: an absolute destination path
-        self.destination = os.path.join(
-            os.path.abspath(app.conf['paths.output']),
-            self.source[
-                len(os.path.abspath(self._app.conf['paths.content'])) + 1:])
-
-        #: a created date in UTC as :class:`datetime.datetime` object
-        self.created = datetime.datetime.fromtimestamp(
-            os.path.getctime(self.source), UTC)
-        self.created_local = self.created.astimezone(Local)
-
-        #: an updated date in UTC as :class:`datetime.datetime` object
-        self.updated = datetime.datetime.fromtimestamp(
-            os.path.getmtime(self.source), UTC)
-        self.updated_local = self.updated.astimezone(Local)
+    def __setattr__(self, attr, value):
+        # Provide object interface for new-style documents to maintain
+        # backward compatibility. It will be removed in Holocron 0.5.0.
+        self[attr] = value
 
     @property
     def url(self):
-        destination = self.destination[
-            len(os.path.abspath(self._app.conf['paths.output'])) + 1:]
+        destination = self['destination']
 
         # Most modern HTTP servers implicitly serve these files when
         # someone requested URL that points to directory. It's a
@@ -172,7 +104,6 @@ class Page(Document):
         super(Page, self).__init__(*args, **kwargs)
 
         self.author = self._app.conf['site.author']
-        self.content = self.content.decode(self._app.conf['encoding.content'])
 
 
 class Post(Page):

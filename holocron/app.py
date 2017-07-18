@@ -25,9 +25,9 @@ from dooku.conf import Conf
 from dooku.decorator import cached_property
 from dooku.ext import ExtensionManager
 
-from .content import create_document, make_document
+from .content import make_document
 from .ext.processors._misc import iterdocuments
-from .utils import iterfiles, mkdir
+from .utils import mkdir
 
 
 logger = logging.getLogger(__name__)
@@ -76,6 +76,17 @@ def create_app(confpath=None):
         app.add_processor(name, ext)
 
     if conf and 'processors' not in conf and app.conf.get('ext.enabled'):
+        app.conf['processors'].append(
+            {
+                'name': 'source',
+                'when': [{
+                    'operator': 'match',
+                    'attribute': 'source',
+                    'pattern': r'[^_.].*$',
+                }],
+            },
+        )
+
         # If Markdown converter was previously used we need to repeat its
         # behaviour by means of processors.
         if 'markdown' in app.conf.get('ext.enabled', []):
@@ -183,9 +194,6 @@ class Holocron(object):
 
     :param conf: (dict) a user configuration, that overrides a default one
     """
-
-    #: The factory function that is used to create a new document instance.
-    document_factory = create_document
 
     #: Default settings.
     default_conf = {
@@ -446,33 +454,12 @@ class Holocron(object):
         env.globals.update(**self._theme_ctx)
         return env
 
-    def _get_documents(self):
-        """
-        Iterates over files in the content directory except files/dirs
-        starting with underscore or dot and converts files into document
-        objects.
-        """
-        documents_paths = list(
-            iterfiles(self.conf['paths.content'], '[!_.]*', True))
-
-        # create document objects from raw files
-        documents = []
-        for index, document_path in enumerate(documents_paths):
-            try:
-                document = self.__class__.document_factory(document_path, self)
-                documents.append(document)
-
-            except Exception:
-                logger.warning('skip %s: invalid file', document_path)
-
-        return documents
-
     def run(self):
         """
         Starts build process.
         """
         mkdir(self.conf['paths.output'])
-        documents = self._get_documents()
+        documents = []
 
         for idx, processor in enumerate(self.conf['processors']):
             processfn = self._processors[processor.pop('name')]

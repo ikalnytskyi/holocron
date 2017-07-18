@@ -217,7 +217,8 @@ class TestTagsGenerator(HolocronTestCase):
         # a fake converter for that purpose
         self.app.add_converter(FakeConverter())
 
-        post = Post('2015/05/23/filename.fake', self.app, b'some text')
+        post = Post(self.app)
+        setattr(post, 'destination', '2015/05/23/filename.fake')
         setattr(post, 'published', datetime.now())
         setattr(post, 'tags', ['tag1', 'tag2'])
 
