@@ -222,6 +222,7 @@ class TestHolocronDefaults(HolocronTestCase):
             'markdown',
             'restructuredtext',
             'prettyuri',
+            'atom',
         ]))
 
     def test_registered_converters(self):
@@ -239,7 +240,6 @@ class TestHolocronDefaults(HolocronTestCase):
         generators_cls = [type(gen) for gen in self.app._generators]
 
         self.assertCountEqual(generators_cls, [
-            holocron.ext.Feed,
             holocron.ext.Index,
             holocron.ext.Sitemap,
             holocron.ext.Tags,
@@ -415,6 +415,7 @@ class TestCreateApp(HolocronTestCase):
             'markdown',
             'restructuredtext',
             'prettyuri',
+            'atom',
         ]))
 
     def test_deprecated_settings_default(self):
@@ -427,6 +428,7 @@ class TestCreateApp(HolocronTestCase):
               enabled:
                 - markdown
                 - restructuredtext
+                - feed
         '''))
 
         self.assertEqual(app.conf['processors'], [
@@ -478,6 +480,15 @@ class TestCreateApp(HolocronTestCase):
                      'pattern': r'.*\.(markdown|md|mdown|mkd|rest|rst)$'},
                 ],
             },
+            {
+                'name': 'atom',
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': '\\d{2,4}/\\d{1,2}/\\d{1,2}.*'
+                                '\\.(markdown|md|mdown|mkd|rest|rst)$'}],
+                'save_as': 'feed.xml',
+            },
         ])
 
     def test_deprecated_settings_custom(self):
@@ -490,6 +501,7 @@ class TestCreateApp(HolocronTestCase):
               enabled:
                 - markdown
                 - restructuredtext
+                - feed
 
               markdown:
                 extensions:
@@ -498,6 +510,9 @@ class TestCreateApp(HolocronTestCase):
               restructuredtext:
                 docutils:
                   syntax_highlight: short
+
+              feed:
+                save_as: feed/index.xml
         '''))
 
         self.assertEqual(app.conf['processors'], [
@@ -550,6 +565,15 @@ class TestCreateApp(HolocronTestCase):
                      'operator': 'match',
                      'pattern': r'.*\.(markdown|md|mdown|mkd|rest|rst)$'},
                 ],
+            },
+            {
+                'name': 'atom',
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': '\\d{2,4}/\\d{1,2}/\\d{1,2}.*'
+                                '\\.(markdown|md|mdown|mkd|rest|rst)$'}],
+                'save_as': 'feed/index.xml',
             },
         ])
 

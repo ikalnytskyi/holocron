@@ -19,27 +19,3 @@ def mkdir(path):
     """
     if not os.path.exists(path):
         os.makedirs(path)
-
-
-def normalize_url(url, trailing_slash=True):
-    """
-    Ensures that url is in normal form and transforms to it if not.
-
-    :param url: a url to normalize
-    :param trailing_slash: add trailing slash if True; remove it if False
-                           and keep unchanged if 'keep'
-    :returns: a normalized url
-    """
-    assert trailing_slash in (True, False, 'keep')
-
-    # ensures that url is started with an http prefix
-    if not url.startswith(('http://', 'https://', )):
-        url = '{prefix}{url}'.format(prefix='http://', url=url)
-
-    # an additional logic for adding trailing slash or not
-    if not url.endswith('/') and trailing_slash is True:
-        url = '{url}/'.format(url=url)
-    elif url.endswith('/') and trailing_slash is False:
-        url = url[:-1]
-
-    return url

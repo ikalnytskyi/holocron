@@ -10,7 +10,7 @@
 
 import mock
 
-from holocron.utils import mkdir, normalize_url
+from holocron.utils import mkdir
 from tests import HolocronTestCase
 
 
@@ -33,43 +33,3 @@ class TestMkdir(HolocronTestCase):
         """
         mkdir('path/to/dir')
         makedirs.assert_not_called()
-
-
-class TestNormalizeUrl(HolocronTestCase):
-
-    def test_default(self):
-        """
-        Tests that func works correctly with default parameters.
-        """
-        corner_cases = (
-            ('test.com', 'http://test.com/'),
-            ('http://test.com', 'http://test.com/'),
-            ('https://test.com', 'https://test.com/'), )
-
-        for url, expected in corner_cases:
-            self.assertEqual(normalize_url(url), expected)
-
-    def test_trailing_slash(self):
-        """
-        Tests that trailing slash works correctly: ensures that present or not.
-        """
-        self.assertEqual(
-            normalize_url('http://test.com', trailing_slash=True),
-            'http://test.com/')
-        self.assertEqual(
-            normalize_url('http://test.com/', trailing_slash=True),
-            'http://test.com/')
-
-        self.assertEqual(
-            normalize_url('http://test.com', trailing_slash=False),
-            'http://test.com')
-        self.assertEqual(
-            normalize_url('http://test.com/', trailing_slash=False),
-            'http://test.com')
-
-        self.assertEqual(
-            normalize_url('http://test.com', trailing_slash='keep'),
-            'http://test.com')
-        self.assertEqual(
-            normalize_url('http://test.com/', trailing_slash='keep'),
-            'http://test.com/')

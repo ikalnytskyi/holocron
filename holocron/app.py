@@ -145,6 +145,11 @@ def create_app(confpath=None):
             for ext in ['.rst', '.rest']:
                 app._converters[ext] = None
 
+        # Since converter's extensions list contains extensions started with
+        # dot, we need to strip it as it has another meaning in regular
+        # expression world
+        extensions = [ext.lstrip('.') for ext in sorted(app._converters)]
+
         # Holocron behaviour has been changed in v0.4.0, and documents
         # preserve its path in output directory. In other words, some
         # 'a.mdown' will be rendered as 'a.html' instead of 'a/index.html'.
@@ -156,15 +161,25 @@ def create_app(confpath=None):
                 'when': [{
                     'operator': 'match',
                     'attribute': 'source',
-                    'pattern': r'.*\.(%s)$' % '|'.join(
-                        # since converter's extensions list contains extensions
-                        # started with dot, we need to strip it as it has
-                        # another meaning in regular expression world
-                        (ext.lstrip('.') for ext in sorted(app._converters))
-                    ),
+                    'pattern': r'.*\.(%s)$' % '|'.join(extensions),
                 }],
             },
         )
+
+        if 'feed' in app.conf.get('ext.enabled', []):
+            app.conf['processors'].append(dict(
+                {
+                    'name': 'atom',
+                    'when': [{
+                        'operator': 'match',
+                        'attribute': 'source',
+                        'pattern': r'\d{2,4}/\d{1,2}/\d{1,2}.*\.(%s)$'
+                            % '|'.join(extensions),
+                    }],
+                    'save_as': 'feed.xml',
+                },
+                **app.conf.get('ext.feed', {})
+            ))
 
         warnings.warn(
             (
