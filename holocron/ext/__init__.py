@@ -10,7 +10,6 @@
 """
 
 from .index import Index
-from .sitemap import Sitemap
 from .tags import Tags
 
 from .user_theme import UserTheme
@@ -18,7 +17,6 @@ from .user_theme import UserTheme
 
 __all__ = [
     'Index',
-    'Sitemap',
     'Tags',
 
     'UserTheme',

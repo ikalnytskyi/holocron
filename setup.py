@@ -53,7 +53,6 @@ setup(
         ],
         'holocron.ext': [
             'index = holocron.ext:Index',
-            'sitemap = holocron.ext:Sitemap',
             'tags = holocron.ext:Tags',
 
             'user-theme = holocron.ext:UserTheme',
@@ -66,6 +65,7 @@ setup(
             'restructuredtext = '
             '   holocron.ext.processors.restructuredtext:process',
             'atom = holocron.ext.processors.atom:process',
+            'sitemap = holocron.ext.processors.sitemap:process',
         ],
         'holocron.ext.commands': [
             'init = holocron.ext.commands.init:Init',

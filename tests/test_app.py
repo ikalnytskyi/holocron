@@ -223,6 +223,7 @@ class TestHolocronDefaults(HolocronTestCase):
             'restructuredtext',
             'prettyuri',
             'atom',
+            'sitemap',
         ]))
 
     def test_registered_converters(self):
@@ -241,7 +242,6 @@ class TestHolocronDefaults(HolocronTestCase):
 
         self.assertCountEqual(generators_cls, [
             holocron.ext.Index,
-            holocron.ext.Sitemap,
             holocron.ext.Tags,
         ])
 
@@ -416,6 +416,7 @@ class TestCreateApp(HolocronTestCase):
             'restructuredtext',
             'prettyuri',
             'atom',
+            'sitemap',
         ]))
 
     def test_deprecated_settings_default(self):
@@ -429,6 +430,7 @@ class TestCreateApp(HolocronTestCase):
                 - markdown
                 - restructuredtext
                 - feed
+                - sitemap
         '''))
 
         self.assertEqual(app.conf['processors'], [
@@ -489,6 +491,14 @@ class TestCreateApp(HolocronTestCase):
                                 '\\.(markdown|md|mdown|mkd|rest|rst)$'}],
                 'save_as': 'feed.xml',
             },
+            {
+                'name': 'sitemap',
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': r'.*\.(markdown|md|mdown|mkd|rest|rst)$'},
+                ],
+            },
         ])
 
     def test_deprecated_settings_custom(self):
@@ -502,6 +512,7 @@ class TestCreateApp(HolocronTestCase):
                 - markdown
                 - restructuredtext
                 - feed
+                - sitemap
 
               markdown:
                 extensions:
@@ -574,6 +585,14 @@ class TestCreateApp(HolocronTestCase):
                      'pattern': '\\d{2,4}/\\d{1,2}/\\d{1,2}.*'
                                 '\\.(markdown|md|mdown|mkd|rest|rst)$'}],
                 'save_as': 'feed/index.xml',
+            },
+            {
+                'name': 'sitemap',
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': r'.*\.(markdown|md|mdown|mkd|rest|rst)$'},
+                ],
             },
         ])
 

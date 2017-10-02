@@ -181,6 +181,18 @@ def create_app(confpath=None):
                 **app.conf.get('ext.feed', {})
             ))
 
+        if 'sitemap' in app.conf.get('ext.enabled', []):
+            app.conf['processors'].append(
+                {
+                    'name': 'sitemap',
+                    'when': [{
+                        'operator': 'match',
+                        'attribute': 'source',
+                        'pattern': r'.*\.(%s)$' % '|'.join(extensions),
+                    }],
+                },
+            )
+
         warnings.warn(
             (
                 "Extension settings (ext.*) are deprecated in favor of "
