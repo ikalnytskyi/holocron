@@ -193,6 +193,19 @@ def create_app(confpath=None):
                 },
             )
 
+        if 'index' in app.conf.get('ext.enabled', []):
+            app.conf['processors'].append(
+                {
+                    'name': 'index',
+                    'when': [{
+                        'operator': 'match',
+                        'attribute': 'source',
+                        'pattern': r'\d{2,4}/\d{1,2}/\d{1,2}.*\.(%s)$'
+                            % '|'.join(extensions),
+                    }],
+                },
+            )
+
         warnings.warn(
             (
                 "Extension settings (ext.*) are deprecated in favor of "

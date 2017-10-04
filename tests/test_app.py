@@ -224,6 +224,7 @@ class TestHolocronDefaults(HolocronTestCase):
             'prettyuri',
             'atom',
             'sitemap',
+            'index',
         ]))
 
     def test_registered_converters(self):
@@ -241,7 +242,6 @@ class TestHolocronDefaults(HolocronTestCase):
         generators_cls = [type(gen) for gen in self.app._generators]
 
         self.assertCountEqual(generators_cls, [
-            holocron.ext.Index,
             holocron.ext.Tags,
         ])
 
@@ -417,6 +417,7 @@ class TestCreateApp(HolocronTestCase):
             'prettyuri',
             'atom',
             'sitemap',
+            'index',
         ]))
 
     def test_deprecated_settings_default(self):
@@ -431,6 +432,7 @@ class TestCreateApp(HolocronTestCase):
                 - restructuredtext
                 - feed
                 - sitemap
+                - index
         '''))
 
         self.assertEqual(app.conf['processors'], [
@@ -499,6 +501,14 @@ class TestCreateApp(HolocronTestCase):
                      'pattern': r'.*\.(markdown|md|mdown|mkd|rest|rst)$'},
                 ],
             },
+            {
+                'name': 'index',
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': '\\d{2,4}/\\d{1,2}/\\d{1,2}.*'
+                                '\\.(markdown|md|mdown|mkd|rest|rst)$'}],
+            },
         ])
 
     def test_deprecated_settings_custom(self):
@@ -513,6 +523,7 @@ class TestCreateApp(HolocronTestCase):
                 - restructuredtext
                 - feed
                 - sitemap
+                - index
 
               markdown:
                 extensions:
@@ -593,6 +604,14 @@ class TestCreateApp(HolocronTestCase):
                      'operator': 'match',
                      'pattern': r'.*\.(markdown|md|mdown|mkd|rest|rst)$'},
                 ],
+            },
+            {
+                'name': 'index',
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': '\\d{2,4}/\\d{1,2}/\\d{1,2}.*'
+                                '\\.(markdown|md|mdown|mkd|rest|rst)$'}],
             },
         ])
 
