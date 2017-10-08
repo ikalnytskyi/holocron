@@ -206,6 +206,21 @@ def create_app(confpath=None):
                 },
             )
 
+        if 'tags' in app.conf.get('ext.enabled', []):
+            app.conf['processors'].append(dict(
+                {
+                    'name': 'tags',
+                    'when': [{
+                        'operator': 'match',
+                        'attribute': 'source',
+                        'pattern': r'\d{2,4}/\d{1,2}/\d{1,2}.*\.(%s)$'
+                            % '|'.join(extensions),
+                    }],
+                    'output': 'tags/{tag}/index.html',
+                },
+                **app.conf.get('ext.tags', {})
+            ))
+
         warnings.warn(
             (
                 "Extension settings (ext.*) are deprecated in favor of "

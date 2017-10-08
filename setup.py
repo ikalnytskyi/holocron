@@ -52,8 +52,6 @@ setup(
             'holocron = holocron.main:main',
         ],
         'holocron.ext': [
-            'tags = holocron.ext:Tags',
-
             'user-theme = holocron.ext:UserTheme',
         ],
         'holocron.ext.processors': [
@@ -66,6 +64,7 @@ setup(
             'atom = holocron.ext.processors.atom:process',
             'sitemap = holocron.ext.processors.sitemap:process',
             'index = holocron.ext.processors.index:process',
+            'tags = holocron.ext.processors.tags:process',
         ],
         'holocron.ext.commands': [
             'init = holocron.ext.commands.init:Init',

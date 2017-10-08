@@ -9,13 +9,9 @@
     :license: 3-clause BSD, see LICENSE for details.
 """
 
-from .tags import Tags
-
 from .user_theme import UserTheme
 
 
 __all__ = [
-    'Tags',
-
     'UserTheme',
 ]

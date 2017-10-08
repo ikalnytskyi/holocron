@@ -225,6 +225,7 @@ class TestHolocronDefaults(HolocronTestCase):
             'atom',
             'sitemap',
             'index',
+            'tags',
         ]))
 
     def test_registered_converters(self):
@@ -241,9 +242,7 @@ class TestHolocronDefaults(HolocronTestCase):
         """
         generators_cls = [type(gen) for gen in self.app._generators]
 
-        self.assertCountEqual(generators_cls, [
-            holocron.ext.Tags,
-        ])
+        self.assertCountEqual(generators_cls, [])
 
     def test_registered_themes(self):
         """
@@ -418,6 +417,7 @@ class TestCreateApp(HolocronTestCase):
             'atom',
             'sitemap',
             'index',
+            'tags',
         ]))
 
     def test_deprecated_settings_default(self):
@@ -433,6 +433,7 @@ class TestCreateApp(HolocronTestCase):
                 - feed
                 - sitemap
                 - index
+                - tags
         '''))
 
         self.assertEqual(app.conf['processors'], [
@@ -509,6 +510,15 @@ class TestCreateApp(HolocronTestCase):
                      'pattern': '\\d{2,4}/\\d{1,2}/\\d{1,2}.*'
                                 '\\.(markdown|md|mdown|mkd|rest|rst)$'}],
             },
+            {
+                'name': 'tags',
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': '\\d{2,4}/\\d{1,2}/\\d{1,2}.*'
+                                '\\.(markdown|md|mdown|mkd|rest|rst)$'}],
+                'output': 'tags/{tag}/index.html',
+            },
         ])
 
     def test_deprecated_settings_custom(self):
@@ -524,6 +534,7 @@ class TestCreateApp(HolocronTestCase):
                 - feed
                 - sitemap
                 - index
+                - tags
 
               markdown:
                 extensions:
@@ -535,6 +546,9 @@ class TestCreateApp(HolocronTestCase):
 
               feed:
                 save_as: feed/index.xml
+
+              tags:
+                output: tags-{{tag}}.html
         '''))
 
         self.assertEqual(app.conf['processors'], [
@@ -612,6 +626,15 @@ class TestCreateApp(HolocronTestCase):
                      'operator': 'match',
                      'pattern': '\\d{2,4}/\\d{1,2}/\\d{1,2}.*'
                                 '\\.(markdown|md|mdown|mkd|rest|rst)$'}],
+            },
+            {
+                'name': 'tags',
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': '\\d{2,4}/\\d{1,2}/\\d{1,2}.*'
+                                '\\.(markdown|md|mdown|mkd|rest|rst)$'}],
+                'output': 'tags-{tag}.html',
             },
         ])
 
