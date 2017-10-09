@@ -39,12 +39,6 @@ def process(app,
         # important to have this one.
         enc = document.get('encoding', encoding)
 
-        # Once Jinja2 is a standalone processor, these lines will be gone.
-        if 'template' in document:
-            template = app.jinja_env.get_template(document['template'])
-            document['content'] = \
-                template.render(document=document, encoding=enc)
-
         if isinstance(document['content'], str):
             output = open(destination, 'wt', encoding=enc)
         else:

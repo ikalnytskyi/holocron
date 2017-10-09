@@ -1,13 +1,3 @@
-{#-
-    holocron/themes/default/templates/page.j2
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    Default template for rendering Holocron pages.
-
-    :copyright: (c) 2014 by the Holocron Team, see AUTHORS for details.
-    :license: 3-clause BSD, see LICENSE for details.
--#}
-
 {% extends '_base.j2' %}
 
 {% if document.summary %}
@@ -25,9 +15,9 @@
   <meta name="description" content="{{ summary }}">
   {%- endif %}
 
-  {% if 'twitter_cards.username' in theme and document.summary -%}
+  {% if metadata | jsonpointer('/theme/twitter_cards/username', None) and document.summary -%}
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:site" content="@{{ theme['twitter_cards.username'] }}">
+  <meta name="twitter:site" content="@{{ metadata.theme.twitter_cards.username }}">
   <meta name="twitter:title" content="{{ document.title }}">
   <meta name="twitter:description" content="{{ summary }}">
   {% endif %}

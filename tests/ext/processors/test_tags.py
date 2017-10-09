@@ -4,7 +4,6 @@ import os
 import datetime
 
 import pytest
-import bs4
 
 from holocron import app, content
 from holocron.ext.processors import tags
@@ -41,35 +40,15 @@ def test_document(testapp):
     assert documents[0]['destination'] == os.path.join('posts', '1.html')
     assert documents[0]['published'] == datetime.date(2017, 10, 4)
 
-    # - / -
-
     assert documents[1]['source'] == 'virtual://tags/kenobi'
     assert documents[1]['destination'] == 'tags/kenobi.html'
-
-    soup = bs4.BeautifulSoup(documents[1]['content'], 'html.parser')
-    entries = soup.find(class_='index').find_all(recursive=False)
-
-    assert 'year' in entries[0].attrs['class']
-    assert 'index-entry' in entries[1].attrs['class']
-
-    assert entries[0].string == '2017'
-    assert entries[1].time.attrs['datetime'] == '2017-10-04'
-    assert entries[1].a.attrs['href'] == '/posts/1.html'
-
-    # - / -
+    assert documents[1]['template'] == 'index.j2'
+    assert documents[1]['documents'] == [documents[0]]
 
     assert documents[2]['source'] == 'virtual://tags/skywalker'
     assert documents[2]['destination'] == 'tags/skywalker.html'
-
-    soup = bs4.BeautifulSoup(documents[2]['content'], 'html.parser')
-    entries = soup.find(class_='index').find_all(recursive=False)
-
-    assert 'year' in entries[0].attrs['class']
-    assert 'index-entry' in entries[1].attrs['class']
-
-    assert entries[0].string == '2017'
-    assert entries[1].time.attrs['datetime'] == '2017-10-04'
-    assert entries[1].a.attrs['href'] == '/posts/1.html'
+    assert documents[2]['template'] == 'index.j2'
+    assert documents[2]['documents'] == [documents[0]]
 
 
 def test_documents_cross_tags(testapp):
@@ -100,52 +79,46 @@ def test_documents_cross_tags(testapp):
     assert documents[1]['destination'] == os.path.join('posts', '2.html')
     assert documents[1]['published'] == datetime.date(2017, 10, 2)
 
-    # - / -
+    assert documents[2]['source'] == 'virtual://tags/kenobi'
+    assert documents[2]['destination'] == 'tags/kenobi.html'
+    assert documents[2]['template'] == 'index.j2'
+    assert documents[2]['documents'] == [documents[0]]
 
-    assert documents[-3]['source'] == 'virtual://tags/kenobi'
-    assert documents[-3]['destination'] == 'tags/kenobi.html'
+    assert documents[3]['source'] == 'virtual://tags/skywalker'
+    assert documents[3]['destination'] == 'tags/skywalker.html'
+    assert documents[3]['template'] == 'index.j2'
+    assert documents[3]['documents'] == [documents[0], documents[1]]
 
-    soup = bs4.BeautifulSoup(documents[-3]['content'], 'html.parser')
-    entries = soup.find(class_='index').find_all(recursive=False)
+    assert documents[4]['source'] == 'virtual://tags/yoda'
+    assert documents[4]['destination'] == 'tags/yoda.html'
+    assert documents[4]['template'] == 'index.j2'
+    assert documents[4]['documents'] == [documents[1]]
 
-    assert 'year' in entries[0].attrs['class']
-    assert 'index-entry' in entries[1].attrs['class']
 
-    assert entries[0].string == '2017'
-    assert entries[1].time.attrs['datetime'] == '2017-10-01'
-    assert entries[1].a.attrs['href'] == '/posts/1.html'
+def test_param_template(testapp):
+    """Tags processor has to respect template parameter."""
 
-    # - / -
+    documents = tags.process(
+        testapp,
+        [
+            _get_document(
+                title='the way of the Force',
+                destination=os.path.join('posts', '1.html'),
+                published=datetime.date(2017, 10, 4),
+                tags=['kenobi']),
+        ],
+        template='foobar.txt')
 
-    assert documents[-2]['source'] == 'virtual://tags/skywalker'
-    assert documents[-2]['destination'] == 'tags/skywalker.html'
+    assert len(documents) == 2
 
-    soup = bs4.BeautifulSoup(documents[-2]['content'], 'html.parser')
-    entries = soup.find(class_='index').find_all(recursive=False)
+    assert documents[0]['title'] == 'the way of the Force'
+    assert documents[0]['destination'] == os.path.join('posts', '1.html')
+    assert documents[0]['published'] == datetime.date(2017, 10, 4)
 
-    assert 'year' in entries[0].attrs['class']
-    assert 'index-entry' in entries[1].attrs['class']
-
-    assert entries[0].string == '2017'
-    assert entries[1].time.attrs['datetime'] == '2017-10-02'
-    assert entries[1].a.attrs['href'] == '/posts/2.html'
-    assert entries[2].time.attrs['datetime'] == '2017-10-01'
-    assert entries[2].a.attrs['href'] == '/posts/1.html'
-
-    # - / -
-
-    assert documents[-1]['source'] == 'virtual://tags/yoda'
-    assert documents[-1]['destination'] == 'tags/yoda.html'
-
-    soup = bs4.BeautifulSoup(documents[-1]['content'], 'html.parser')
-    entries = soup.find(class_='index').find_all(recursive=False)
-
-    assert 'year' in entries[0].attrs['class']
-    assert 'index-entry' in entries[1].attrs['class']
-
-    assert entries[0].string == '2017'
-    assert entries[1].time.attrs['datetime'] == '2017-10-02'
-    assert entries[1].a.attrs['href'] == '/posts/2.html'
+    assert documents[1]['source'] == 'virtual://tags/kenobi'
+    assert documents[1]['destination'] == 'tags/kenobi.html'
+    assert documents[1]['template'] == 'foobar.txt'
+    assert documents[1]['documents'] == [documents[0]]
 
 
 def test_param_output(testapp):
@@ -162,56 +135,6 @@ def test_param_output(testapp):
         ],
         output='mytags/{tag}/index.html')
 
-    assert documents[0]['title'] == 'the way of the Force'
-    assert documents[0]['destination'] == os.path.join('posts', '1.html')
-    assert documents[0]['published'] == datetime.date(2017, 10, 4)
-
-    # - / -
-
-    assert documents[-2]['source'] == 'virtual://tags/kenobi'
-    assert documents[-2]['destination'] == 'mytags/kenobi/index.html'
-
-    soup = bs4.BeautifulSoup(documents[-2]['content'], 'html.parser')
-    entries = soup.find(class_='index').find_all(recursive=False)
-
-    assert 'year' in entries[0].attrs['class']
-    assert 'index-entry' in entries[1].attrs['class']
-
-    assert entries[0].string == '2017'
-    assert entries[1].time.attrs['datetime'] == '2017-10-04'
-    assert entries[1].a.attrs['href'] == '/posts/1.html'
-
-    # - / -
-
-    assert documents[-1]['source'] == 'virtual://tags/skywalker'
-    assert documents[-1]['destination'] == 'mytags/skywalker/index.html'
-
-    soup = bs4.BeautifulSoup(documents[-1]['content'], 'html.parser')
-    entries = soup.find(class_='index').find_all(recursive=False)
-
-    assert 'year' in entries[0].attrs['class']
-    assert 'index-entry' in entries[1].attrs['class']
-
-    assert entries[0].string == '2017'
-    assert entries[1].time.attrs['datetime'] == '2017-10-04'
-    assert entries[1].a.attrs['href'] == '/posts/1.html'
-
-
-@pytest.mark.parametrize('encoding', ['CP1251', 'UTF-16'])
-def test_param_encoding(testapp, encoding):
-    """Tags processor has to respect encoding parameter."""
-
-    documents = tags.process(
-        testapp,
-        [
-            _get_document(
-                title='the way of the Force',
-                destination=os.path.join('posts', '1.html'),
-                published=datetime.date(2017, 10, 4),
-                tags=['kenobi', 'skywalker']),
-        ],
-        encoding=encoding)
-
     assert len(documents) == 3
 
     assert documents[0]['title'] == 'the way of the Force'
@@ -219,47 +142,14 @@ def test_param_encoding(testapp, encoding):
     assert documents[0]['published'] == datetime.date(2017, 10, 4)
 
     assert documents[1]['source'] == 'virtual://tags/kenobi'
-    assert documents[1]['destination'] == 'tags/kenobi.html'
-    assert documents[1]['encoding'] == encoding
-    assert documents[1]['content'].decode(encoding)
+    assert documents[1]['destination'] == 'mytags/kenobi/index.html'
+    assert documents[1]['template'] == 'index.j2'
+    assert documents[1]['documents'] == [documents[0]]
 
     assert documents[2]['source'] == 'virtual://tags/skywalker'
-    assert documents[2]['destination'] == 'tags/skywalker.html'
-    assert documents[2]['encoding'] == encoding
-    assert documents[2]['content'].decode(encoding)
-
-
-@pytest.mark.parametrize('encoding', ['CP1251', 'UTF-16'])
-def test_param_encoding_fallback(testapp, encoding):
-    """Tags processor has to respect encoding parameter (fallback)."""
-
-    testapp.metadata.update({'encoding': encoding})
-
-    documents = tags.process(
-        testapp,
-        [
-            _get_document(
-                title='the way of the Force',
-                destination=os.path.join('posts', '1.html'),
-                published=datetime.date(2017, 10, 4),
-                tags=['kenobi', 'skywalker']),
-        ])
-
-    assert len(documents) == 3
-
-    assert documents[0]['title'] == 'the way of the Force'
-    assert documents[0]['destination'] == os.path.join('posts', '1.html')
-    assert documents[0]['published'] == datetime.date(2017, 10, 4)
-
-    assert documents[1]['source'] == 'virtual://tags/kenobi'
-    assert documents[1]['destination'] == 'tags/kenobi.html'
-    assert documents[1]['encoding'] == encoding
-    assert documents[1]['content'].decode(encoding)
-
-    assert documents[2]['source'] == 'virtual://tags/skywalker'
-    assert documents[2]['destination'] == 'tags/skywalker.html'
-    assert documents[2]['encoding'] == encoding
-    assert documents[2]['content'].decode(encoding)
+    assert documents[2]['destination'] == 'mytags/skywalker/index.html'
+    assert documents[2]['template'] == 'index.j2'
+    assert documents[2]['documents'] == [documents[0]]
 
 
 def test_param_when(testapp):
@@ -308,23 +198,10 @@ def test_param_when(testapp):
         assert document['title'] == 'the way of the Force #%d' % (i + 1)
         assert document['published'] == datetime.date(2017, 10, i + 1)
 
-    # - / -
-
     assert documents[-1]['source'] == 'virtual://tags/kenobi'
     assert documents[-1]['destination'] == 'tags/kenobi.html'
-
-    soup = bs4.BeautifulSoup(documents[-1]['content'], 'html.parser')
-    entries = soup.find(class_='index').find_all(recursive=False)
-
-    assert 'year' in entries[0].attrs['class']
-    assert 'index-entry' in entries[1].attrs['class']
-
-    assert entries[0].string == '2017'
-    assert entries[1].time.attrs['datetime'] == '2017-10-03'
-    assert entries[1].a.attrs['href'] == '/posts/3.html'
-
-    assert entries[2].time.attrs['datetime'] == '2017-10-01'
-    assert entries[2].a.attrs['href'] == '/posts/1.html'
+    assert documents[-1]['template'] == 'index.j2'
+    assert documents[-1]['documents'] == [documents[0], documents[2]]
 
 
 @pytest.mark.parametrize('params, error', [

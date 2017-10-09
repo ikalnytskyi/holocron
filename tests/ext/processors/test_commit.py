@@ -4,7 +4,6 @@ import os
 
 import py
 import pytest
-import bs4
 
 from holocron import app, content
 from holocron.ext.processors import commit
@@ -39,32 +38,6 @@ def test_document(testapp, monkeypatch, tmpdir):
 
     text = tmpdir.join('_site', 'posts', '1.html').read()
     assert text == 'the Force'
-
-
-def test_document_template(testapp, monkeypatch, tmpdir):
-    """Commit processor has to render a document."""
-
-    monkeypatch.chdir(tmpdir)
-
-    documents = commit.process(
-        testapp,
-        [
-            _get_document(
-                template='page.j2',
-                title='History of the Force',
-                content='the Force',
-                destination=os.path.join('posts', '1.html')),
-        ],
-        encoding='CP1251')
-
-    assert len(documents) == 0
-
-    html = tmpdir.join('_site', 'posts', '1.html').read()
-    soup = bs4.BeautifulSoup(html, 'html.parser')
-
-    assert soup.meta['charset'] == 'CP1251'
-    assert soup.article.header.h1.string == 'History of the Force'
-    assert list(soup.article.stripped_strings)[1] == 'the Force'
 
 
 @pytest.mark.parametrize('encoding', ['CP1251', 'UTF-16'])
