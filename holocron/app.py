@@ -25,9 +25,7 @@ from dooku.conf import Conf
 from dooku.decorator import cached_property
 from dooku.ext import ExtensionManager
 
-from .content import make_document
 from .ext.processors._misc import iterdocuments
-from .utils import mkdir
 
 
 logger = logging.getLogger(__name__)
@@ -220,6 +218,14 @@ def create_app(confpath=None):
                 },
                 **app.conf.get('ext.tags', {})
             ))
+
+        app.conf['processors'].append(
+            {
+                'name': 'commit',
+                'path': app.conf.get('paths.output', '_build'),
+                'encoding': app.conf.get('encoding.output', 'utf-8'),
+            },
+        )
 
         warnings.warn(
             (
@@ -513,7 +519,6 @@ class Holocron(object):
         """
         Starts build process.
         """
-        mkdir(self.conf['paths.output'])
         documents = []
 
         for idx, processor in enumerate(self.conf['processors']):
@@ -523,10 +528,6 @@ class Holocron(object):
         # use generators to generate additional stuff
         for generator in self._generators:
             generator.generate(documents)
-
-        # build all documents found
-        for document in documents:
-            make_document(document, self)
 
         self._copy_theme()
 

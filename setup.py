@@ -65,6 +65,7 @@ setup(
             'sitemap = holocron.ext.processors.sitemap:process',
             'index = holocron.ext.processors.index:process',
             'tags = holocron.ext.processors.tags:process',
+            'commit = holocron.ext.processors.commit:process',
         ],
         'holocron.ext.commands': [
             'init = holocron.ext.commands.init:Init',

@@ -124,10 +124,8 @@ class TestHolocron(HolocronTestCase):
         self.assertEqual(len(self.app._generators), 2)
         self.assertIn(new_generator, self.app._generators)
 
-    @mock.patch('holocron.app.make_document')
-    @mock.patch('holocron.app.mkdir')
     @mock.patch('holocron.ext.processors.source.iterdocuments')
-    def test_run(self, iterdocuments, mkdir, make_document):
+    def test_run(self, iterdocuments):
         """
         Tests build process.
         """
@@ -143,9 +141,6 @@ class TestHolocron(HolocronTestCase):
         }
 
         self.app.run()
-
-        # check mkdir create ourpur dir
-        mkdir.assert_called_with(self.app.conf['paths.output'])
 
         # check that generators was used
         for generator in self.app._generators:
@@ -226,6 +221,7 @@ class TestHolocronDefaults(HolocronTestCase):
             'sitemap',
             'index',
             'tags',
+            'commit',
         ]))
 
     def test_registered_converters(self):
@@ -418,6 +414,7 @@ class TestCreateApp(HolocronTestCase):
             'sitemap',
             'index',
             'tags',
+            'commit',
         ]))
 
     def test_deprecated_settings_default(self):
@@ -519,6 +516,11 @@ class TestCreateApp(HolocronTestCase):
                                 '\\.(markdown|md|mdown|mkd|rest|rst)$'}],
                 'output': 'tags/{tag}/index.html',
             },
+            {
+                'name': 'commit',
+                'path': '_build',
+                'encoding': 'utf-8',
+            },
         ])
 
     def test_deprecated_settings_custom(self):
@@ -527,6 +529,12 @@ class TestCreateApp(HolocronTestCase):
         processors settings.
         """
         app = self._create_app(conf_raw=textwrap.dedent('''\
+            encoding:
+              output: my-out-enc
+
+            paths:
+              output: my-out-dir
+
             ext:
               enabled:
                 - markdown
@@ -635,6 +643,11 @@ class TestCreateApp(HolocronTestCase):
                      'pattern': '\\d{2,4}/\\d{1,2}/\\d{1,2}.*'
                                 '\\.(markdown|md|mdown|mkd|rest|rst)$'}],
                 'output': 'tags-{tag}.html',
+            },
+            {
+                'name': 'commit',
+                'path': 'my-out-dir',
+                'encoding': 'my-out-enc',
             },
         ])
 

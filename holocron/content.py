@@ -10,29 +10,6 @@
 
 import os
 
-from .utils import mkdir
-
-
-def make_document(document, app):
-    # This function is intermediate step required to incrementally implement
-    # processors pipeline.
-
-    if isinstance(document, Page):
-        template = app.jinja_env.get_template(document.template)
-        document.content = template.render(document=document)
-
-    destination = os.path.join(app.conf['paths.output'], document.destination)
-
-    mkdir(os.path.dirname(destination))
-
-    if isinstance(document.content, str):
-        output = open(destination, 'wt', encoding=app.conf['encoding.output'])
-    else:
-        output = open(destination, 'wb')
-
-    with output:
-        output.write(document.content)
-
 
 class Document(dict):
     """

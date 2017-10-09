@@ -8,7 +8,6 @@
     :license: 3-clause BSD, see LICENSE for details.
 """
 
-import mock
 from dooku.conf import Conf
 
 from holocron.app import Holocron
@@ -96,25 +95,6 @@ class TestPage(DocumentTestCase):
         self.assertEqual(self.doc.author, self.app.conf['site.author'])
         self.assertEqual(self.doc.template, self.document_class.template)
 
-    @mock.patch('holocron.content.mkdir', mock.Mock())
-    def test_build(self):
-        """
-        The page instance has to be rendered in the right place.
-        """
-        self.app.jinja_env = mock.Mock()
-        self.app.jinja_env.get_template.return_value.render.return_value = ' '
-
-        mopen = mock.mock_open()
-        with mock.patch(self._open_fn, mopen, create=True):
-            content.make_document(self.doc, self.app)
-
-        self.app.jinja_env.get_template.assert_called_once_with('page.j2')
-
-        self.assertEqual(
-            mopen.call_args[0][0], './_output/about/cv.mdown')
-
-        self.assertEqual(mopen.call_args[1]['encoding'], 'out-enc')
-
 
 class TestPost(TestPage):
     """
@@ -122,22 +102,3 @@ class TestPost(TestPage):
     """
 
     document_class = content.Post
-
-    @mock.patch('holocron.content.mkdir', mock.Mock())
-    def test_build(self):
-        """
-        The post instance has to be rendered in the right place.
-        """
-        self.app.jinja_env = mock.Mock()
-        self.app.jinja_env.get_template.return_value.render.return_value = ' '
-
-        mopen = mock.mock_open()
-        with mock.patch(self._open_fn, mopen, create=True):
-            content.make_document(self.doc, self.app)
-
-        self.app.jinja_env.get_template.assert_called_once_with('post.j2')
-
-        self.assertEqual(
-            mopen.call_args[0][0], './_output/about/cv.mdown')
-
-        self.assertEqual(mopen.call_args[1]['encoding'], 'out-enc')
