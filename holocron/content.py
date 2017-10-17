@@ -9,6 +9,7 @@
 """
 
 import os
+import warnings
 
 
 class Document(dict):
@@ -26,6 +27,9 @@ class Document(dict):
 
     def __getattr__(self, attr):
         try:
+            warnings.warn(
+                "Attributes are deprecated way to retrieve data out of "
+                "documents, please use dict syntax instead.")
             return self[attr]
         except KeyError as exc:
             raise AttributeError(str(exc))
@@ -80,7 +84,8 @@ class Page(Document):
     def __init__(self, *args, **kwargs):
         super(Page, self).__init__(*args, **kwargs)
 
-        self.author = self._app.conf['site.author']
+        self['author'] = self._app.conf['site.author']
+        self['template'] = self.template
 
 
 class Post(Page):

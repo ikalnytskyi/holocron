@@ -78,7 +78,7 @@ def _getinstance(filename, app):
             published = ''.join(
                 _post_pattern.search(document_path).group(0).split(os.sep)[:3])
             published = datetime.datetime.strptime(published, '%Y%m%d')
-            post.published = published.date()
+            post['published'] = published.date()
 
             return post
 

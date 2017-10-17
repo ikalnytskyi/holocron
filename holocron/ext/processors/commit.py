@@ -18,16 +18,16 @@ def process(app, documents, **options):
     for document in iterdocuments(list(documents), when):
         to_remove.append(document)
 
-        destination = os.path.join(path, document.destination)
+        destination = os.path.join(path, document['destination'])
         if not os.path.exists(os.path.dirname(destination)):
             os.makedirs(os.path.dirname(destination))
 
         # Once Jinja2 is a standalone processor, these lines will be gone.
         if isinstance(document, content.Page):
-            template = app.jinja_env.get_template(document.template)
-            document.content = template.render(document=document)
+            template = app.jinja_env.get_template(document['template'])
+            document['content'] = template.render(document=document)
 
-        if isinstance(document.content, str):
+        if isinstance(document['content'], str):
             # A document may suggest its own encoding as it might be pretty
             # important to have this one. One of such examples is sitemap.xml
             # which must be a UTF-8 encoded by design.
@@ -37,7 +37,7 @@ def process(app, documents, **options):
             output = open(destination, 'wb')
 
         with output:
-            output.write(document.content)
+            output.write(document['content'])
 
     if unload:
         for document in to_remove:

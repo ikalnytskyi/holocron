@@ -41,10 +41,10 @@ def test_document(testapp):
         (
             '<p>text with <strong>bold</strong></p>\s*'
         ),
-        documents[0].content)
+        documents[0]['content'])
 
-    assert documents[0].destination.endswith('.html')
-    assert documents[0].title == 'some title'
+    assert documents[0]['destination'].endswith('.html')
+    assert documents[0]['title'] == 'some title'
 
 
 def test_document_with_subsection(testapp):
@@ -73,10 +73,10 @@ def test_document_with_subsection(testapp):
             '<h2>some section</h2>\s*'
             '<p>text with <strong>bold</strong></p>\s*'
         ),
-        documents[0].content)
+        documents[0]['content'])
 
-    assert documents[0].destination.endswith('.html')
-    assert documents[0].title == 'some title'
+    assert documents[0]['destination'].endswith('.html')
+    assert documents[0]['title'] == 'some title'
 
 
 def test_document_without_title(testapp):
@@ -95,10 +95,10 @@ def test_document_without_title(testapp):
         (
             '<p>text with <strong>bold</strong></p>\s*'
         ),
-        documents[0].content)
+        documents[0]['content'])
 
-    assert documents[0].destination.endswith('.html')
-    assert not hasattr(documents[0], 'title')
+    assert documents[0]['destination'].endswith('.html')
+    assert 'title' not in documents[0]
 
 
 def test_document_with_sections(testapp):
@@ -149,10 +149,10 @@ def test_document_with_sections(testapp):
             '<h3>some section 3</h3>\s*'
             '<p>yyy</p>\s*'
         ),
-        documents[0].content)
+        documents[0]['content'])
 
-    assert documents[0].destination.endswith('.html')
-    assert not hasattr(documents[0], 'title')
+    assert documents[0]['destination'].endswith('.html')
+    assert 'title' not in documents[0]
 
 
 def test_document_with_code(testapp):
@@ -175,10 +175,10 @@ def test_document_with_code(testapp):
         (
             r'<p>test codeblock</p>\s*<pre.*python[^>]*>[\s\S]+</pre>'
         ),
-        documents[0].content)
+        documents[0]['content'])
 
-    assert documents[0].destination.endswith('.html')
-    assert not hasattr(documents[0], 'title')
+    assert documents[0]['destination'].endswith('.html')
+    assert 'title' not in documents[0]
 
 
 def test_document_with_inline_code(testapp):
@@ -197,10 +197,10 @@ def test_document_with_inline_code(testapp):
         (
             '<p>test <code>code</code></p>'
         ),
-        documents[0].content)
+        documents[0]['content'])
 
-    assert documents[0].destination.endswith('.html')
-    assert not hasattr(documents[0], 'title')
+    assert documents[0]['destination'].endswith('.html')
+    assert 'title' not in documents[0]
 
 
 def test_document_with_setting(testapp):
@@ -235,9 +235,9 @@ def test_document_with_setting(testapp):
             '<h3>section 2</h3>\s*'
             '<p>bbb</p>\s*'
         ),
-        documents[0].content)
-    assert documents[0].destination.endswith('.html')
-    assert not hasattr(documents[0], 'title')
+        documents[0]['content'])
+    assert documents[0]['destination'].endswith('.html')
+    assert 'title' not in documents[0]
 
 
 def test_documents(testapp):
@@ -271,22 +271,22 @@ def test_documents(testapp):
             },
         ])
 
-    assert documents[0].source == '0.txt'
-    assert documents[0].content == '**wookiee**'
-    assert documents[0].destination.endswith('0.txt')
-    assert not hasattr(documents[0], 'title')
+    assert documents[0]['source'] == '0.txt'
+    assert documents[0]['content'] == '**wookiee**'
+    assert documents[0]['destination'].endswith('0.txt')
+    assert 'title' not in documents[0]
 
-    assert documents[1].source == '1.rst'
-    assert documents[1].content == '<p><strong>wookiee</strong></p>'
-    assert documents[1].destination.endswith('1.html')
-    assert not hasattr(documents[1], 'title')
+    assert documents[1]['source'] == '1.rst'
+    assert documents[1]['content'] == '<p><strong>wookiee</strong></p>'
+    assert documents[1]['destination'].endswith('1.html')
+    assert 'title' not in documents[1]
 
-    assert documents[2].source == '2'
-    assert documents[2].content == 'wookiee\n======='
-    assert documents[2].destination.endswith('2')
-    assert not hasattr(documents[2], 'title')
+    assert documents[2]['source'] == '2'
+    assert documents[2]['content'] == 'wookiee\n======='
+    assert documents[2]['destination'].endswith('2')
+    assert 'title' not in documents[2]
 
-    assert documents[3].source == '3.rest'
-    assert documents[3].content == ''
-    assert documents[3].destination.endswith('3.html')
-    assert documents[3].title == 'wookiee'
+    assert documents[3]['source'] == '3.rest'
+    assert documents[3]['content'] == ''
+    assert documents[3]['destination'].endswith('3.html')
+    assert documents[3]['title'] == 'wookiee'

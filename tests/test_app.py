@@ -281,30 +281,35 @@ class TestHolocronDefaults(HolocronTestCase):
             },
         ])
 
-        document = mock.Mock(
-            source='2.tst', content='text:2', destination='2.rst')
-        del document.key
+        document_a = holocron.content.Document(app)
+        document_a['source'] = '1.rst'
+        document_a['destination'] = '1.rst'
+        document_a['content'] = 'text:1'
+
+        document_b = holocron.content.Document(app)
+        document_b['source'] = '2.tst'
+        document_b['destination'] = '2.tst'
+        document_b['content'] = 'text:2'
 
         processor_options = copy.deepcopy(app.conf['processors'][-1])
         documents = app._processors[processor_options.pop('name')](
             app,
             [
-                mock.Mock(
-                    source='1.rst', content='text:1', destination='1.rst'),
-                document,
+                document_a,
+                document_b,
             ],
             **processor_options)
 
         self.assertEqual(len(documents), 2)
 
-        self.assertEqual(documents[0].source, '1.rst')
-        self.assertEqual(documents[0].destination, '1.rst')
-        self.assertEqual(documents[0].content, 'text:1')
+        self.assertEqual(documents[0]['source'], '1.rst')
+        self.assertEqual(documents[0]['destination'], '1.rst')
+        self.assertEqual(documents[0]['content'], 'text:1')
 
-        self.assertEqual(documents[1].source, '2.tst')
-        self.assertEqual(documents[1].destination, '2.html')
-        self.assertEqual(documents[1].content, 'processed:text:2')
-        self.assertEqual(documents[1].key, 'value')
+        self.assertEqual(documents[1]['source'], '2.tst')
+        self.assertEqual(documents[1]['destination'], '2.html')
+        self.assertEqual(documents[1]['content'], 'processed:text:2')
+        self.assertEqual(documents[1]['key'], 'value')
 
 
 class TestCreateApp(HolocronTestCase):

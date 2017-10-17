@@ -17,21 +17,21 @@ def process(app, documents, **options):
     tags = collections.defaultdict(list)
 
     for post in iterdocuments(documents, when):
-        if hasattr(post, 'tags'):
+        if 'tags' in post:
             tag_objects = []
-            for tag in post.tags:
+            for tag in post['tags']:
                 tags[tag].append(post)
                 tag_objects.append(_Tag(tag, output))
-            post.tags = tag_objects
+            post['tags'] = tag_objects
 
     template = app.jinja_env.get_template(template)
     inserted = []
 
     for tag in sorted(tags):
         tag_doc = content.Document(app)
-        tag_doc.content = template.render(posts=tags[tag])
-        tag_doc.source = 'virtual://tags/%s' % tag
-        tag_doc.destination = output.format(tag=tag)
+        tag_doc['content'] = template.render(posts=tags[tag])
+        tag_doc['source'] = 'virtual://tags/%s' % tag
+        tag_doc['destination'] = output.format(tag=tag)
         inserted.append(tag_doc)
 
     return documents + inserted

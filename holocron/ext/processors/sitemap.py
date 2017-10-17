@@ -29,8 +29,11 @@ def process(app, documents, **options):
 
     # Produce a virtual document with Feed.
     sitemap = content.Document(app)
-    sitemap.content = _template.render(documents=selected, encoding=encoding)
-    sitemap.source = 'virtual://sitemap'
-    sitemap.destination = 'sitemap.xml'
+    sitemap['content'] = _template.render(
+        documents=selected,
+        encoding=encoding
+    )
+    sitemap['source'] = 'virtual://sitemap'
+    sitemap['destination'] = 'sitemap.xml'
 
     return documents + [sitemap]

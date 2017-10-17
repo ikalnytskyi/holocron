@@ -47,19 +47,19 @@ def process(app, documents, **options):
         writer.translator_class = _HTMLTranslator
 
         parts = publish_parts(
-            document.content, writer=writer, settings_overrides=settings)
+            document['content'], writer=writer, settings_overrides=settings)
 
-        document.content = parts['fragment'].strip()
-        document.destination = \
-            '%s.html' % os.path.splitext(document.destination)[0]
+        document['content'] = parts['fragment'].strip()
+        document['destination'] = \
+            '%s.html' % os.path.splitext(document['destination'])[0]
 
         # Usually converters go after frontmatter processor and that
         # means any explicitly specified attribute is already set on
         # the document. Since frontmatter processor is considered to
         # have a higher priority, let's set 'title' iff it does't
         # exist.
-        if not hasattr(document, 'title') and parts.get('title'):
-            document.title = parts['title']
+        if 'title' not in document and parts.get('title'):
+            document['title'] = parts['title']
 
     return documents
 

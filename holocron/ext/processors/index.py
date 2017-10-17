@@ -12,8 +12,8 @@ def process(app, documents, **options):
     template = app.jinja_env.get_template(template)
 
     index = content.Document(app)
-    index.content = template.render(posts=selected)
-    index.source = 'virtual://index'
-    index.destination = 'index.html'
+    index['content'] = template.render(posts=selected)
+    index['source'] = 'virtual://index'
+    index['destination'] = 'index.html'
 
     return documents + [index]
