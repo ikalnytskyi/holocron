@@ -23,8 +23,13 @@ def testapp():
 
 
 @pytest.mark.parametrize('filename', [
-    's.html',       # basic test
-    'ы.html',       # check for proper UTF-8 encoding/decoding
+    's.html',       # test basic case works
+    'ы.html',       # test for proper UTF-8 encoding/decoding
+    'a&b.html',     # test escaping, otherwise XML is invalid
+    'a<b.html',     # test escaping, otherwise XML is invalid
+    'a>b.html',     # test escaping, otherwise XML is invalid
+    'a"b.html',     # test escaping, otherwise XML is invalid
+    "a'b.html",     # test escaping, otherwise XML is invalid
 ])
 def test_document(testapp, filename):
     """Sitemap processor has to work!"""

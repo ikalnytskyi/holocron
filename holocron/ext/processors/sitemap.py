@@ -13,8 +13,8 @@ _template = jinja2.Template(textwrap.dedent('''\
     <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     {%- for doc in documents %}
       <url>
-        <loc>{{ doc.abs_url }}</loc>
-        <lastmod>{{ doc.updated_local.isoformat() }}</lastmod>
+        <loc>{{ doc.abs_url | e }}</loc>
+        <lastmod>{{ doc.updated_local.isoformat() | e }}</lastmod>
       </url>
     {% endfor -%}
     </urlset>
