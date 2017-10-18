@@ -59,6 +59,35 @@ def test_document(testapp, filename):
     }
 
 
+def test_document_options(testapp):
+    """Sitemap processor has to respect custom options."""
+
+    timepoint = datetime.datetime.fromtimestamp(0, tz=datetime.timezone.utc)
+    documents = sitemap.process(
+        testapp,
+        [
+            _get_document(
+                destination=os.path.join('posts', '1.html'),
+                updated_local=timepoint)
+        ],
+        save_as='masters/skywalker.luke')
+
+    assert documents[0]['destination'] == os.path.join('posts', '1.html')
+    assert documents[0]['updated_local'] == timepoint
+
+    assert documents[1]['source'] == 'virtual://sitemap'
+    assert documents[1]['destination'] == 'masters/skywalker.luke'
+    assert xmltodict.parse(documents[1]['content'], 'UTF-8') == {
+        'urlset': {
+            '@xmlns': 'http://www.sitemaps.org/schemas/sitemap/0.9',
+            'url': {
+                'loc': 'http://obi-wan.jedi/posts/1.html',
+                'lastmod': '1970-01-01T00:00:00+00:00',
+            }
+        }
+    }
+
+
 def test_documents(testapp):
     """Sitemap processor has to ignore non-relevant documents."""
 

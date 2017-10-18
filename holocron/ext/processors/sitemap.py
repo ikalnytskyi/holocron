@@ -22,13 +22,14 @@ _template = jinja2.Template(textwrap.dedent('''\
 
 
 def process(app, documents, **options):
+    save_as = options.pop('save_as', 'sitemap.xml')
     when = options.pop('when', None)
 
     selected = iterdocuments(documents, when)
 
     sitemap = content.Document(app)
     sitemap['source'] = 'virtual://sitemap'
-    sitemap['destination'] = 'sitemap.xml'
+    sitemap['destination'] = save_as
 
     # According to the Sitemap protocol, the output encoding must be UTF-8.
     # Since this processor does not perform any I/O, the only thing we can
