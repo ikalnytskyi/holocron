@@ -9,7 +9,7 @@ from holocron import content
 
 
 _template = jinja2.Template(textwrap.dedent('''\
-    <?xml version="1.0" encoding="{{ encoding }}"?>
+    <?xml version="1.0" encoding="UTF-8"?>
     <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     {%- for doc in documents %}
       <url>
@@ -23,16 +23,16 @@ _template = jinja2.Template(textwrap.dedent('''\
 
 def process(app, documents, **options):
     when = options.pop('when', None)
-    encoding = options.pop('encoding', 'utf-8')
 
     selected = iterdocuments(documents, when)
 
     sitemap = content.Document(app)
-    sitemap['content'] = _template.render(
-        documents=selected,
-        encoding=encoding
-    )
     sitemap['source'] = 'virtual://sitemap'
     sitemap['destination'] = 'sitemap.xml'
+
+    # According to the Sitemap protocol, the output encoding must be UTF-8.
+    # Since this processor does not perform any I/O, the only thing we can
+    # do here is to provide bytes representing UTF-8 encoded XML.
+    sitemap['content'] = _template.render(documents=selected).encode('UTF-8')
 
     return documents + [sitemap]

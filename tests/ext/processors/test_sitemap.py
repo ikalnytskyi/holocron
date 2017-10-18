@@ -22,7 +22,11 @@ def testapp():
     return instance
 
 
-def test_document(testapp):
+@pytest.mark.parametrize('filename', [
+    's.html',       # basic test
+    'ы.html',       # check for proper UTF-8 encoding/decoding
+])
+def test_document(testapp, filename):
     """Sitemap processor has to work!"""
 
     timepoint = datetime.datetime.fromtimestamp(0, tz=datetime.timezone.utc)
@@ -30,20 +34,20 @@ def test_document(testapp):
         testapp,
         [
             _get_document(
-                destination=os.path.join('posts', '1.html'),
+                destination=os.path.join('posts', filename),
                 updated_local=timepoint)
         ])
 
-    assert documents[0]['destination'] == os.path.join('posts', '1.html')
+    assert documents[0]['destination'] == os.path.join('posts', filename)
     assert documents[0]['updated_local'] == timepoint
 
     assert documents[1]['source'] == 'virtual://sitemap'
     assert documents[1]['destination'] == 'sitemap.xml'
-    assert xmltodict.parse(documents[1]['content']) == {
+    assert xmltodict.parse(documents[1]['content'], 'UTF-8') == {
         'urlset': {
             '@xmlns': 'http://www.sitemaps.org/schemas/sitemap/0.9',
             'url': {
-                'loc': 'http://obi-wan.jedi/posts/1.html',
+                'loc': 'http://obi-wan.jedi/posts/' + filename,
                 'lastmod': '1970-01-01T00:00:00+00:00',
             }
         }
@@ -89,7 +93,7 @@ def test_documents(testapp):
     # Ensure a virtual sitemap document contains proper values.
     assert documents[-1]['source'] == 'virtual://sitemap'
     assert documents[-1]['destination'] == 'sitemap.xml'
-    assert xmltodict.parse(documents[-1]['content']) == {
+    assert xmltodict.parse(documents[-1]['content'], 'UTF-8') == {
         'urlset': {
             '@xmlns': 'http://www.sitemaps.org/schemas/sitemap/0.9',
             'url': [
