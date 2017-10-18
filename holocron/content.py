@@ -9,58 +9,9 @@
 """
 
 import os
-import re
-import abc
-import shutil
-import logging
-import datetime
-
-import yaml
-
-from dooku.datetime import UTC, Local
-from dooku.decorator import cached_property
-
-from .utils import mkdir
 
 
-logger = logging.getLogger(__name__)
-
-
-def create_document(filename, app):
-    """
-    Creates and returns a concrete :class:`Document` instance.
-
-    Here's some rules which describe how the factory is working:
-
-    #. There are two document types: convertible and static.
-    #. Convertible document is a document that could be converted by one of
-       registered converters. Otherwise - it's a static document.
-    #. If a document has year, month and day in its path then it's a post.
-       Otherwise - it's a page.
-
-       (e.g. 2014/12/24/test.mdown is a post, when talks/test.mdown is a page)
-
-    :param filename: a path to physical file
-    :param app: a reference to the application it's attached to
-    """
-    #: regex pattern for separating posts from pages
-    _post_pattern = re.compile(r'^\d{2,4}/\d{1,2}/\d{1,2}')
-
-    # let's assume that if we have a converter for a given file
-    # then it's either a post or a page
-    _, ext = os.path.splitext(filename)
-    if ext in app._converters:
-        # by Holocron convention, post is a convertible document that
-        # has the following format YEAR/MONTH/DAY in its path
-        content_path = os.path.abspath(app.conf['paths.content'])
-        document_path = os.path.abspath(filename)[len(content_path) + 1:]
-        if _post_pattern.search(document_path):
-            return Post(filename, app)
-        return Page(filename, app)
-    return Static(filename, app)
-
-
-class Document(metaclass=abc.ABCMeta):
+class Document(dict):
     """
     An abstract base class for Holocron documents.
 
@@ -70,43 +21,36 @@ class Document(metaclass=abc.ABCMeta):
     :param app: a reference to the application it's attached to
     """
 
-    def __init__(self, filename, app):
-        logger.info(
-            '%s: creating %s', filename, self.__class__.__name__.lower())
+    def __init__(self, app):
         self._app = app
 
-        #: an absolute path to the source document
-        self.source = os.path.abspath(filename)
+    def __getattr__(self, attr):
+        try:
+            return self[attr]
+        except KeyError as exc:
+            raise AttributeError(str(exc))
 
-        #: a path to the source document relative to the content folder
-        self.short_source = self.source[
-            len(os.path.abspath(self._app.conf['paths.content'])) + 1:]
-
-        #: a created date in UTC as :class:`datetime.datetime` object
-        self.created = datetime.datetime.fromtimestamp(
-            os.path.getctime(self.source), UTC)
-        self.created_local = self.created.astimezone(Local)
-
-        #: an updated date in UTC as :class:`datetime.datetime` object
-        self.updated = datetime.datetime.fromtimestamp(
-            os.path.getmtime(self.source), UTC)
-        self.updated_local = self.updated.astimezone(Local)
-
-        #: an absolute url to the built document
-        self.abs_url = self._app.conf['site.url'] + self.url
-
-    @abc.abstractmethod
-    def build(self):
-        """
-        Builds a current document object.
-        """
+    def __setattr__(self, attr, value):
+        # Provide object interface for new-style documents to maintain
+        # backward compatibility. It will be removed in Holocron 0.5.0.
+        self[attr] = value
 
     @property
-    @abc.abstractmethod
     def url(self):
-        """
-        Returns a URL to the resource this object represents.
-        """
+        destination = self['destination']
+
+        # Most modern HTTP servers implicitly serve these files when
+        # someone requested URL that points to directory. It's a
+        # common practice to do not end URLs with those filenames as
+        # they are assumed by default.
+        if os.path.basename(destination) in ('index.html', 'index.htm'):
+            destination = os.path.dirname(destination) + '/'
+
+        return '/' + destination
+
+    @property
+    def abs_url(self):
+        return self._app.conf['site.url'] + self.url
 
 
 class Page(Document):
@@ -130,69 +74,13 @@ class Page(Document):
 
     """
 
-    #: A regex for splitting page header and page content.
-    _re_extract_header = re.compile(
-        r'(---\s*\n.*?\n)---\s*\n(.*)', re.M | re.S)
-
     #: A default template for page documents.
     template = 'page.j2'
-
-    #: A default title for page documents.
-    title = 'Untitled'
 
     def __init__(self, *args, **kwargs):
         super(Page, self).__init__(*args, **kwargs)
 
-        # set default author (if none was specified in the document)
         self.author = self._app.conf['site.author']
-
-        # set extracted information and override default one
-        meta = self._parse_document()
-        for key, value in meta.items():
-            setattr(self, key, value)
-
-    def _parse_document(self):
-        """
-        Parses a given document and returns result
-
-        :returns: a dictionary with parsed information
-        """
-        encoding = self._app.conf['encoding.content']
-        with open(self.source, encoding=encoding) as f:
-            headers = {}
-            content = f.read()
-
-            # parse yaml header if exists
-            match = self._re_extract_header.match(content)
-            if match:
-                headers, content = match.groups()
-                headers = yaml.safe_load(headers)
-
-            # get converter for building a given document
-            converter = self._app._converters[os.path.splitext(self.source)[1]]
-            # convert markup to html, extracting some meta
-            metadata, html = converter.to_html(content)
-            metadata['content'] = html
-            # override extracted meta information with document's headers
-            metadata.update(headers)
-        return metadata
-
-    def build(self):
-        filename, _ = os.path.splitext(self.short_source)
-        destination = os.path.join(
-            self._app.conf['paths.output'], filename, 'index.html')
-        mkdir(os.path.dirname(destination))
-
-        template = self._app.jinja_env.get_template(self.template)
-        encoding = self._app.conf['encoding.output']
-
-        with open(destination, 'w', encoding=encoding) as f:
-            f.write(template.render(document=self))
-
-    @cached_property
-    def url(self):
-        filename, _ = os.path.splitext(self.short_source)
-        return '/' + filename + '/'
 
 
 class Post(Page):
@@ -214,41 +102,3 @@ class Post(Page):
     #: We're using a separate template, since unlike a page we need to show
     #: post's author, published date and a list of tags.
     template = 'post.j2'
-
-    def __init__(self, *args, **kwargs):
-        super(Post, self).__init__(*args, **kwargs)
-
-        published = ''.join(self.short_source.split(os.sep)[:3])
-        published = datetime.datetime.strptime(published, '%Y%m%d')
-
-        self.published = published.replace(tzinfo=Local)
-
-
-class Static(Document):
-    """
-    A Static document implementation and representation.
-
-    Just copy "As Is" from the content directory to the output directory.
-    Here's an example of building basics:
-
-      ===================  ===================  ===================
-          Content Dir           Output Dir              URL
-      ===================  ===================  ===================
-         /about/me.png        /about/me.png        /about/me.png
-      ===================  ===================  ===================
-
-    """
-
-    @cached_property
-    def url(self):
-        # A URL to the static document is the same as a path to this file.
-        # There is only one note: the path to this file should be relative
-        # to the content/output directory.
-        return '/' + self.short_source
-
-    def build(self):
-        destination = os.path.join(
-            self._app.conf['paths.output'], self.short_source)
-
-        mkdir(os.path.dirname(destination))
-        shutil.copy(self.source, destination)

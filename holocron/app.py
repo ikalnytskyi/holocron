@@ -10,6 +10,8 @@
 
 import os
 import logging
+import warnings
+import textwrap
 
 # shutil.copytree doesn't fit our needs since it requires destination
 # directory to do not exist, while we need it to be existed in order
@@ -23,8 +25,7 @@ from dooku.conf import Conf
 from dooku.decorator import cached_property
 from dooku.ext import ExtensionManager
 
-from .content import create_document
-from .utils import iterfiles, mkdir
+from .ext.processors._misc import iterdocuments
 
 
 logger = logging.getLogger(__name__)
@@ -67,7 +68,176 @@ def create_app(confpath=None):
         logger.error('%s: %s', confpath, str(exc))
         return None
 
-    return Holocron(conf)
+    app = Holocron(conf)
+
+    for name, ext in ExtensionManager(namespace='holocron.ext.processors'):
+        app.add_processor(name, ext)
+
+    if conf and 'processors' not in conf and app.conf.get('ext.enabled'):
+        app.conf['processors'].append(
+            {
+                'name': 'source',
+                'when': [{
+                    'operator': 'match',
+                    'attribute': 'source',
+                    'pattern': r'[^_.].*$',
+                }],
+            },
+        )
+
+        # If Markdown converter was previously used we need to repeat its
+        # behaviour by means of processors.
+        if 'markdown' in app.conf.get('ext.enabled', []):
+            when = [{
+                'operator': 'match',
+                'attribute': 'source',
+                'pattern': r'.*\.(md|mkd|mdown|markdown)$',
+            }]
+
+            app.conf['processors'].extend([
+                {
+                    'name': 'frontmatter',
+                    'when': when,
+                },
+                {
+                    'name': 'markdown',
+                    'when': when,
+                },
+            ])
+
+            if 'ext.markdown.extensions' in app.conf:
+                app.conf['processors'][-1]['extensions'] = \
+                    app.conf['ext.markdown.extensions']
+
+            # Converters are still used to distinguish convertible document
+            # from regular one. We still temporary need this workaround.
+            for ext in ['.md', '.mkd', '.mdown', '.markdown']:
+                app._converters[ext] = None
+
+        # If reStructuredText converter was previously used we need to repeat
+        # its behaviour by means of processors.
+        if 'restructuredtext' in app.conf.get('ext.enabled', []):
+            when = [{
+                'operator': 'match',
+                'attribute': 'source',
+                'pattern': r'.*\.(rst|rest)$',
+            }]
+
+            app.conf['processors'].extend([
+                {
+                    'name': 'frontmatter',
+                    'when': when,
+                },
+                {
+                    'name': 'restructuredtext',
+                    'when': when,
+                },
+            ])
+
+            if 'ext.restructuredtext.docutils' in app.conf:
+                app.conf['processors'][-1]['docutils'] = \
+                    app.conf['ext.restructuredtext.docutils']
+
+            # Converters are still used to distinguish convertible document
+            # from regular one. We still temporary need this workaround.
+            for ext in ['.rst', '.rest']:
+                app._converters[ext] = None
+
+        # Since converter's extensions list contains extensions started with
+        # dot, we need to strip it as it has another meaning in regular
+        # expression world
+        extensions = [ext.lstrip('.') for ext in sorted(app._converters)]
+
+        # Holocron behaviour has been changed in v0.4.0, and documents
+        # preserve its path in output directory. In other words, some
+        # 'a.mdown' will be rendered as 'a.html' instead of 'a/index.html'.
+        # In order to do not break the world, let's inject the processor
+        # that keeps old behaviour in-place.
+        app.conf['processors'].append(
+            {
+                'name': 'prettyuri',
+                'when': [{
+                    'operator': 'match',
+                    'attribute': 'source',
+                    'pattern': r'.*\.(%s)$' % '|'.join(extensions),
+                }],
+            },
+        )
+
+        if 'feed' in app.conf.get('ext.enabled', []):
+            app.conf['processors'].append(dict(
+                {
+                    'name': 'atom',
+                    'when': [{
+                        'operator': 'match',
+                        'attribute': 'source',
+                        'pattern': r'\d{2,4}/\d{1,2}/\d{1,2}.*\.(%s)$'
+                            % '|'.join(extensions),
+                    }],
+                    'save_as': 'feed.xml',
+                },
+                **app.conf.get('ext.feed', {})
+            ))
+
+        if 'sitemap' in app.conf.get('ext.enabled', []):
+            app.conf['processors'].append(
+                {
+                    'name': 'sitemap',
+                    'when': [{
+                        'operator': 'match',
+                        'attribute': 'source',
+                        'pattern': r'.*\.(%s)$' % '|'.join(extensions),
+                    }],
+                },
+            )
+
+        if 'index' in app.conf.get('ext.enabled', []):
+            app.conf['processors'].append(
+                {
+                    'name': 'index',
+                    'when': [{
+                        'operator': 'match',
+                        'attribute': 'source',
+                        'pattern': r'\d{2,4}/\d{1,2}/\d{1,2}.*\.(%s)$'
+                            % '|'.join(extensions),
+                    }],
+                },
+            )
+
+        if 'tags' in app.conf.get('ext.enabled', []):
+            app.conf['processors'].append(dict(
+                {
+                    'name': 'tags',
+                    'when': [{
+                        'operator': 'match',
+                        'attribute': 'source',
+                        'pattern': r'\d{2,4}/\d{1,2}/\d{1,2}.*\.(%s)$'
+                            % '|'.join(extensions),
+                    }],
+                    'output': 'tags/{tag}/index.html',
+                },
+                **app.conf.get('ext.tags', {})
+            ))
+
+        app.conf['processors'].append(
+            {
+                'name': 'commit',
+                'path': app.conf.get('paths.output', '_build'),
+                'encoding': app.conf.get('encoding.output', 'utf-8'),
+            },
+        )
+
+        warnings.warn(
+            (
+                "Extension settings (ext.*) are deprecated in favor of "
+                "processors pipeline. Use the following pipeline "
+                "configuration to match your previous behaviour.\n"
+                "\n%s\n" % textwrap.indent(
+                    yaml.dump(app.conf['processors']), '  ')
+            ),
+            DeprecationWarning)
+
+    return app
 
 
 class Holocron(object):
@@ -85,9 +255,6 @@ class Holocron(object):
 
     :param conf: (dict) a user configuration, that overrides a default one
     """
-
-    #: The factory function that is used to create a new document instance.
-    document_factory = create_document
 
     #: Default settings.
     default_conf = {
@@ -108,6 +275,8 @@ class Holocron(object):
         },
 
         'theme': {},
+
+        'processors': [],
 
         'ext': {
             'enabled': [
@@ -152,6 +321,17 @@ class Holocron(object):
         #: Contains all registered generators and is used for executing them.
         self._generators = []
 
+        #: processor name -> processor function
+        #:
+        #: Processors are stateless functions that receive a list of documents
+        #: and return a list of documents. Each output of one processor goes
+        #: as input to next one. This property is intended to keep track of
+        #: known processors, the one that could be used by application
+        #: instance.
+        #:
+        #: .. versionadded:: 0.4.0
+        self._processors = {}
+
         #: theme path, ...
         #:
         #: Contains all registered themes. Initially it has only a default one.
@@ -186,6 +366,21 @@ class Holocron(object):
                 continue
             self._extensions[name] = ext(self)
 
+    def add_processor(self, name, processor):
+        """Register a given processor in the application instance.
+
+        Application instance comes with no registered processors by default.
+        The usual place where they are registered is create_app function.
+
+        :param name: a name to be used to call the processor
+        :param processor: a process function to be registered
+        """
+        if name in self._processors:
+            logger.warning('%s processor skipped: already registered', name)
+            return
+
+        self._processors[name] = processor
+
     def add_converter(self, converter, _force=False):
         """
         Registers a given converter in the application instance.
@@ -193,6 +388,15 @@ class Holocron(object):
         :param converter: a converter to be registered
         :param _force: allows to override already registered converters
         """
+        warnings.warn(
+            (
+                'Converters are deprecated and will be removed in '
+                'Holocron v0.5.0. Please use processors instead.'
+            ),
+            DeprecationWarning)
+
+        # We use converters to distinguish convertible documents from
+        # static ones, so let's keep using it for a while.
         for ext in converter.extensions:
             if ext in self._converters and not _force:
                 logger.warning(
@@ -202,12 +406,64 @@ class Holocron(object):
 
             self._converters[ext] = converter
 
+        def process(app, documents, **options):
+            when = options.pop('when', None)
+
+            for document in iterdocuments(documents, when):
+                meta, document.content = converter.to_html(document.content)
+                document.destination = \
+                    os.path.splitext(document.destination)[0] + '.html'
+
+                for key, value in meta.items():
+                    if not hasattr(document, key):
+                        setattr(document, key, value)
+
+            return documents
+
+        # Converters are used to be executed on document parsing, and since
+        # we dropped that code the only way to get them executed is to
+        # register them as processors.
+        self.add_processor(type(converter).__name__.lower(), process)
+
+        when = [{
+            'operator': 'match',
+            'attribute': 'source',
+            'pattern': r'.*\.(%s)$' % '|'.join(
+                # since converter's extensions list contains extensions
+                # started with dot, we need to strip it as it has another
+                # meaning in regular expression world
+                (ext.lstrip('.') for ext in converter.extensions)
+            ),
+        }]
+
+        self.conf['processors'].extend([
+            # YAML front matter parsing is not a part of the core anymore,
+            # so we need to add it to the pipe unconditionally for backward
+            # compatibility reasons. New design assumes explicit using
+            # in processors pipeline.
+            {
+                'name': 'frontmatter',
+                'when': when,
+            },
+            {
+                'name': type(converter).__name__.lower(),
+                'when': when,
+            },
+        ])
+
     def add_generator(self, generator):
         """
         Registers a given generator in the application instance.
 
         :param generator: a generator to be registered
         """
+        warnings.warn(
+            (
+                'Generators are deprecated and will be removed in '
+                'Holocron v0.5.0. Please use processors instead.'
+            ),
+            DeprecationWarning)
+
         self._generators.append(generator)
 
     def add_theme_ctx(self, **kwargs):
@@ -259,41 +515,19 @@ class Holocron(object):
         env.globals.update(**self._theme_ctx)
         return env
 
-    def _get_documents(self):
-        """
-        Iterates over files in the content directory except files/dirs
-        starting with underscore or dot and converts files into document
-        objects.
-        """
-        documents_paths = list(
-            iterfiles(self.conf['paths.content'], '[!_.]*', True))
-
-        # create document objects from raw files
-        documents = []
-        for index, document_path in enumerate(documents_paths):
-            try:
-                document = self.__class__.document_factory(document_path, self)
-                documents.append(document)
-
-            except Exception:
-                logger.warning('skip %s: invalid file', document_path)
-
-        return documents
-
     def run(self):
         """
         Starts build process.
         """
-        mkdir(self.conf['paths.output'])
-        documents = self._get_documents()
+        documents = []
+
+        for idx, processor in enumerate(self.conf['processors']):
+            processfn = self._processors[processor.pop('name')]
+            documents = processfn(self, documents, **processor)
 
         # use generators to generate additional stuff
         for generator in self._generators:
             generator.generate(documents)
-
-        # build all documents found
-        for document in documents:
-            document.build()
 
         self._copy_theme()
 

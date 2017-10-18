@@ -9,25 +9,9 @@
     :license: 3-clause BSD, see LICENSE for details.
 """
 
-from .markdown import Markdown
-from .restructuredtext import ReStructuredText
-
-from .index import Index
-from .feed import Feed
-from .sitemap import Sitemap
-from .tags import Tags
-
 from .user_theme import UserTheme
 
 
 __all__ = [
-    'Markdown',
-    'ReStructuredText',
-
-    'Index',
-    'Feed',
-    'Sitemap',
-    'Tags',
-
     'UserTheme',
 ]

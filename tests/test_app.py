@@ -47,7 +47,28 @@ class TestHolocron(HolocronTestCase):
         conf['sitename'] = 'Luke Skywalker'
         conf['paths']['content'] = 'path/to/content'
 
+        # Processors are injected automatically by adopting converters, so
+        # in the sake of sanity let's do not test it here.
+        app.conf['processors'] = []
+
         self.assertEqual(app.conf, conf)
+
+    def test_add_processor(self):
+        """
+        Tests processor registration process.
+        """
+        def process(documents, **options):
+            return documents
+
+        self.assertEqual(len(self.app._processors), 0)
+        self.app.add_processor('test', process)
+        self.assertEqual(len(self.app._processors), 1)
+        self.assertIs(self.app._processors['test'], process)
+
+        # registration under the same name is not allowed
+        self.app.add_processor('test', lambda: 0)
+        self.assertEqual(len(self.app._processors), 1)
+        self.assertIs(self.app._processors['test'], process)
 
     def test_add_converter(self):
         """
@@ -103,44 +124,27 @@ class TestHolocron(HolocronTestCase):
         self.assertEqual(len(self.app._generators), 2)
         self.assertIn(new_generator, self.app._generators)
 
-    @mock.patch('holocron.app.mkdir')
-    @mock.patch('holocron.app.iterfiles')
-    def test_run(self, iterfiles, mkdir):
+    @mock.patch('holocron.ext.processors.source.iterdocuments')
+    def test_run(self, iterdocuments):
         """
         Tests build process.
         """
-        iterfiles.return_value = ['doc_a', 'doc_b', 'doc_c']
-        self.app.__class__.document_factory = mock.Mock()
+        iterdocuments.return_value = ['doc_a', 'doc_b', 'doc_c']
         self.app._copy_theme = mock.Mock()
         self.app._generators = {
             mock.Mock(): mock.Mock(),
             mock.Mock(): mock.Mock(),
         }
+        self.app.conf['processors'] = [{'name': 'source'}]
+        self.app._processors = {
+            'source': holocron.ext.processors.source.process,
+        }
 
         self.app.run()
-
-        # check iterfiles call signature
-        iterfiles.assert_called_with(
-            self.app.conf['paths']['content'], '[!_.]*', True)
-
-        # check mkdir create ourpur dir
-        mkdir.assert_called_with(self.app.conf['paths.output'])
 
         # check that generators was used
         for generator in self.app._generators:
             self.assertEqual(generator.generate.call_count, 1)
-
-        self.app.__class__.document_factory.assert_has_calls([
-            # check that document class was used to generate class instances
-            mock.call('doc_a', self.app),
-            mock.call('doc_b', self.app),
-            mock.call('doc_c', self.app),
-            # check that document instances were built
-            mock.call().build(),
-            mock.call().build(),
-            mock.call().build(),
-        ])
-        self.assertEqual(self.app.__class__.document_factory.call_count, 3)
 
         # check that _copy_theme was called
         self.app._copy_theme.assert_called_once_with()
@@ -201,16 +205,32 @@ class TestHolocronDefaults(HolocronTestCase):
     def setUp(self):
         self.app = Holocron()
 
+    def test_registered_processors(self):
+        """
+        Tests that default processors are registered.
+        """
+        app = create_app()
+
+        self.assertEqual(set(app._processors), set([
+            'source',
+            'frontmatter',
+            'markdown',
+            'restructuredtext',
+            'prettyuri',
+            'atom',
+            'sitemap',
+            'index',
+            'tags',
+            'commit',
+        ]))
+
     def test_registered_converters(self):
         """
         Tests that default converters are registered.
         """
         converters_cls = {type(conv) for conv in self.app._converters.values()}
 
-        self.assertCountEqual(converters_cls, [
-            holocron.ext.Markdown,
-            holocron.ext.ReStructuredText,
-        ])
+        self.assertCountEqual(converters_cls, [])
 
     def test_registered_generators(self):
         """
@@ -218,12 +238,7 @@ class TestHolocronDefaults(HolocronTestCase):
         """
         generators_cls = [type(gen) for gen in self.app._generators]
 
-        self.assertCountEqual(generators_cls, [
-            holocron.ext.Feed,
-            holocron.ext.Index,
-            holocron.ext.Sitemap,
-            holocron.ext.Tags,
-        ])
+        self.assertCountEqual(generators_cls, [])
 
     def test_registered_themes(self):
         """
@@ -232,6 +247,64 @@ class TestHolocronDefaults(HolocronTestCase):
         self.assertCountEqual(self.app._themes, [
             os.path.join(os.path.dirname(holocron.__file__), 'theme'),
         ])
+
+    def test_converters_are_processors(self):
+        """
+        Tests that Holocron 0.4.0 converts converters into processors.
+        """
+        app = create_app()
+
+        class TestConverter(abc.Converter):
+            extensions = ['.tst', '.test']
+
+            def to_html(self, text):
+                return {'key': 'value'}, 'processed:' + text
+
+        app.add_converter(TestConverter())
+
+        self.assertEqual(app.conf['processors'], [
+            {
+                'name': 'frontmatter',
+                'when': [{
+                    'operator': 'match',
+                    'attribute': 'source',
+                    'pattern': '.*\\.(tst|test)$'
+                }],
+            },
+            {
+                'name': 'testconverter',
+                'when': [{
+                    'operator': 'match',
+                    'attribute': 'source',
+                    'pattern': r'.*\.(tst|test)$',
+                }],
+            },
+        ])
+
+        document = mock.Mock(
+            source='2.tst', content='text:2', destination='2.rst')
+        del document.key
+
+        processor_options = copy.deepcopy(app.conf['processors'][-1])
+        documents = app._processors[processor_options.pop('name')](
+            app,
+            [
+                mock.Mock(
+                    source='1.rst', content='text:1', destination='1.rst'),
+                document,
+            ],
+            **processor_options)
+
+        self.assertEqual(len(documents), 2)
+
+        self.assertEqual(documents[0].source, '1.rst')
+        self.assertEqual(documents[0].destination, '1.rst')
+        self.assertEqual(documents[0].content, 'text:1')
+
+        self.assertEqual(documents[1].source, '2.tst')
+        self.assertEqual(documents[1].destination, '2.html')
+        self.assertEqual(documents[1].content, 'processed:text:2')
+        self.assertEqual(documents[1].key, 'value')
 
 
 class TestCreateApp(HolocronTestCase):
@@ -324,3 +397,268 @@ class TestCreateApp(HolocronTestCase):
         app = self._create_app(side_effect=IsADirectoryError)
 
         self.assertIsNone(app)
+
+    def test_registered_processors(self):
+        """
+        Tests that default processors are registered.
+        """
+        app = create_app()
+
+        self.assertEqual(set(app._processors), set([
+            'source',
+            'frontmatter',
+            'markdown',
+            'restructuredtext',
+            'prettyuri',
+            'atom',
+            'sitemap',
+            'index',
+            'tags',
+            'commit',
+        ]))
+
+    def test_deprecated_settings_default(self):
+        """
+        Tests that deprecated settings under 'ext.*' are converted into
+        processors settings.
+        """
+        app = self._create_app(conf_raw=textwrap.dedent('''\
+            ext:
+              enabled:
+                - markdown
+                - restructuredtext
+                - feed
+                - sitemap
+                - index
+                - tags
+        '''))
+
+        self.assertEqual(app.conf['processors'], [
+            {
+                'name': 'source',
+                'when': [{
+                    'operator': 'match',
+                    'attribute': 'source',
+                    'pattern': r'[^_.].*$',
+                }],
+            },
+            {
+                'name': 'frontmatter',
+                'when': [
+                    {'operator': 'match',
+                     'attribute': 'source',
+                     'pattern': r'.*\.(md|mkd|mdown|markdown)$'},
+                ],
+            },
+            {
+                'name': 'markdown',
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': r'.*\.(md|mkd|mdown|markdown)$'},
+                ],
+            },
+            {
+                'name': 'frontmatter',
+                'when': [
+                    {'operator': 'match',
+                     'attribute': 'source',
+                     'pattern': r'.*\.(rst|rest)$'},
+                ],
+            },
+            {
+                'name': 'restructuredtext',
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': r'.*\.(rst|rest)$'},
+                ],
+            },
+            {
+                'name': 'prettyuri',
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': r'.*\.(markdown|md|mdown|mkd|rest|rst)$'},
+                ],
+            },
+            {
+                'name': 'atom',
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': '\\d{2,4}/\\d{1,2}/\\d{1,2}.*'
+                                '\\.(markdown|md|mdown|mkd|rest|rst)$'}],
+                'save_as': 'feed.xml',
+            },
+            {
+                'name': 'sitemap',
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': r'.*\.(markdown|md|mdown|mkd|rest|rst)$'},
+                ],
+            },
+            {
+                'name': 'index',
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': '\\d{2,4}/\\d{1,2}/\\d{1,2}.*'
+                                '\\.(markdown|md|mdown|mkd|rest|rst)$'}],
+            },
+            {
+                'name': 'tags',
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': '\\d{2,4}/\\d{1,2}/\\d{1,2}.*'
+                                '\\.(markdown|md|mdown|mkd|rest|rst)$'}],
+                'output': 'tags/{tag}/index.html',
+            },
+            {
+                'name': 'commit',
+                'path': '_build',
+                'encoding': 'utf-8',
+            },
+        ])
+
+    def test_deprecated_settings_custom(self):
+        """
+        Tests that deprecated settings under 'ext.*' are converted into
+        processors settings.
+        """
+        app = self._create_app(conf_raw=textwrap.dedent('''\
+            encoding:
+              output: my-out-enc
+
+            paths:
+              output: my-out-dir
+
+            ext:
+              enabled:
+                - markdown
+                - restructuredtext
+                - feed
+                - sitemap
+                - index
+                - tags
+
+              markdown:
+                extensions:
+                  - markdown.extensions.smarty
+
+              restructuredtext:
+                docutils:
+                  syntax_highlight: short
+
+              feed:
+                save_as: feed/index.xml
+
+              tags:
+                output: tags-{{tag}}.html
+        '''))
+
+        self.assertEqual(app.conf['processors'], [
+            {
+                'name': 'source',
+                'when': [{
+                    'operator': 'match',
+                    'attribute': 'source',
+                    'pattern': r'[^_.].*$',
+                }],
+            },
+            {
+                'name': 'frontmatter',
+                'when': [
+                    {'operator': 'match',
+                     'attribute': 'source',
+                     'pattern': r'.*\.(md|mkd|mdown|markdown)$'},
+                ],
+            },
+            {
+                'name': 'markdown',
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': r'.*\.(md|mkd|mdown|markdown)$'},
+                ],
+                'extensions': ['markdown.extensions.smarty'],
+            },
+            {
+                'name': 'frontmatter',
+                'when': [
+                    {'operator': 'match',
+                     'attribute': 'source',
+                     'pattern': r'.*\.(rst|rest)$'},
+                ],
+            },
+            {
+                'name': 'restructuredtext',
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': r'.*\.(rst|rest)$'},
+                ],
+                'docutils': {'syntax_highlight': 'short'},
+            },
+            {
+                'name': 'prettyuri',
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': r'.*\.(markdown|md|mdown|mkd|rest|rst)$'},
+                ],
+            },
+            {
+                'name': 'atom',
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': '\\d{2,4}/\\d{1,2}/\\d{1,2}.*'
+                                '\\.(markdown|md|mdown|mkd|rest|rst)$'}],
+                'save_as': 'feed/index.xml',
+            },
+            {
+                'name': 'sitemap',
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': r'.*\.(markdown|md|mdown|mkd|rest|rst)$'},
+                ],
+            },
+            {
+                'name': 'index',
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': '\\d{2,4}/\\d{1,2}/\\d{1,2}.*'
+                                '\\.(markdown|md|mdown|mkd|rest|rst)$'}],
+            },
+            {
+                'name': 'tags',
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': '\\d{2,4}/\\d{1,2}/\\d{1,2}.*'
+                                '\\.(markdown|md|mdown|mkd|rest|rst)$'}],
+                'output': 'tags-{tag}.html',
+            },
+            {
+                'name': 'commit',
+                'path': 'my-out-dir',
+                'encoding': 'my-out-enc',
+            },
+        ])
+
+    def test_deprecated_settings_custom_turn_off(self):
+        """
+        Tests that deprecated settings under 'ext.*' are converted into
+        processors settings.
+        """
+        app = self._create_app(conf_raw=textwrap.dedent('''\
+            ext:
+              enabled: []
+        '''))
+
+        self.assertEqual(app.conf['processors'], [])

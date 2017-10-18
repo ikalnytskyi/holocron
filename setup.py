@@ -52,15 +52,20 @@ setup(
             'holocron = holocron.main:main',
         ],
         'holocron.ext': [
-            'markdown = holocron.ext:Markdown',
-            'restructuredtext = holocron.ext:ReStructuredText',
-
-            'index = holocron.ext:Index',
-            'feed = holocron.ext:Feed',
-            'sitemap = holocron.ext:Sitemap',
-            'tags = holocron.ext:Tags',
-
             'user-theme = holocron.ext:UserTheme',
+        ],
+        'holocron.ext.processors': [
+            'source = holocron.ext.processors.source:process',
+            'frontmatter = holocron.ext.processors.frontmatter:process',
+            'prettyuri = holocron.ext.processors.prettyuri:process',
+            'markdown = holocron.ext.processors.markdown:process',
+            'restructuredtext = '
+            '   holocron.ext.processors.restructuredtext:process',
+            'atom = holocron.ext.processors.atom:process',
+            'sitemap = holocron.ext.processors.sitemap:process',
+            'index = holocron.ext.processors.index:process',
+            'tags = holocron.ext.processors.tags:process',
+            'commit = holocron.ext.processors.commit:process',
         ],
         'holocron.ext.commands': [
             'init = holocron.ext.commands.init:Init',

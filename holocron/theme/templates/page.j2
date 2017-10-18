@@ -35,14 +35,14 @@
 {%- endblock %}
 
 {% block title -%}
-  {{ document.title }}
+  {{ document.title | default('Untitled') }}
 {%- endblock %}
 
 
 {% block content %}
 <article>
   <header>
-    <h1>{{ document.title }}</h1>
+    <h1>{{ document.title | default('Untitled') }}</h1>
 
     <div class="meta">
     {% block article_meta %}
