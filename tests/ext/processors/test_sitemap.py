@@ -71,14 +71,14 @@ def test_document_options(testapp):
                 destination=os.path.join('posts', '1.html'),
                 updated_local=timepoint)
         ],
-        save_as='masters/skywalker.luke',
+        save_as='posts/skywalker.luke',
         gzip=True)
 
     assert documents[0]['destination'] == os.path.join('posts', '1.html')
     assert documents[0]['updated_local'] == timepoint
 
     assert documents[1]['source'] == 'virtual://sitemap'
-    assert documents[1]['destination'] == 'masters/skywalker.luke.gz'
+    assert documents[1]['destination'] == 'posts/skywalker.luke.gz'
 
     decompressed = gzip.decompress(documents[1]['content'])
     assert xmltodict.parse(decompressed, 'UTF-8') == {
@@ -90,6 +90,33 @@ def test_document_options(testapp):
             }
         }
     }
+
+
+@pytest.mark.parametrize('document_path, sitemap_path', [
+    (os.path.join('1.html'), os.path.join('b', 'sitemap.xml')),
+    (os.path.join('a', '1.html'), os.path.join('b', 'sitemap.xml')),
+    (os.path.join('a', '1.html'), os.path.join('a', 'c', 'sitemap.xml')),
+])
+def test_document_sitemap_location(testapp, document_path, sitemap_path):
+    """Sitemap process has to check enlisted URLs for compatibility."""
+
+    timepoint = datetime.datetime.fromtimestamp(0, tz=datetime.timezone.utc)
+
+    with pytest.raises(ValueError) as excinfo:
+        sitemap.process(
+            testapp,
+            [
+                _get_document(
+                    destination=document_path,
+                    updated_local=timepoint)
+            ],
+            save_as=sitemap_path)
+
+    excinfo.match(
+        "The location of a Sitemap file determines the set of URLs "
+        "that can be included in that Sitemap. A Sitemap file located "
+        "at .* can include any URLs starting with .* but can not "
+        "include .*.")
 
 
 def test_documents(testapp):
