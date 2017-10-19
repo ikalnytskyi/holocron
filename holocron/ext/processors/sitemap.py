@@ -1,11 +1,12 @@
 """Generate Sitemap XML."""
 
 import textwrap
+import gzip
 
 import jinja2
 
 from ._misc import iterdocuments
-from holocron import content
+from holocron.content import Document
 
 
 _template = jinja2.Template(textwrap.dedent('''\
@@ -22,18 +23,26 @@ _template = jinja2.Template(textwrap.dedent('''\
 
 
 def process(app, documents, **options):
+    use_gzip = options.pop('gzip', False)
     save_as = options.pop('save_as', 'sitemap.xml')
     when = options.pop('when', None)
 
     selected = iterdocuments(documents, when)
 
-    sitemap = content.Document(app)
-    sitemap['source'] = 'virtual://sitemap'
-    sitemap['destination'] = save_as
-
     # According to the Sitemap protocol, the output encoding must be UTF-8.
     # Since this processor does not perform any I/O, the only thing we can
     # do here is to provide bytes representing UTF-8 encoded XML.
-    sitemap['content'] = _template.render(documents=selected).encode('UTF-8')
+    content = _template.render(documents=selected).encode('UTF-8')
+
+    # According to the Sitemap protocol, the sitemap.xml can be compressed
+    # using gzip to reduce bandwidth requirements.
+    if use_gzip:
+        content = gzip.compress(content)
+        save_as += '.gz'
+
+    sitemap = Document(app)
+    sitemap['source'] = 'virtual://sitemap'
+    sitemap['destination'] = save_as
+    sitemap['content'] = content
 
     return documents + [sitemap]

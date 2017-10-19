@@ -2,6 +2,7 @@
 
 import os
 import datetime
+import gzip
 
 import pytest
 import xmltodict
@@ -70,14 +71,17 @@ def test_document_options(testapp):
                 destination=os.path.join('posts', '1.html'),
                 updated_local=timepoint)
         ],
-        save_as='masters/skywalker.luke')
+        save_as='masters/skywalker.luke',
+        gzip=True)
 
     assert documents[0]['destination'] == os.path.join('posts', '1.html')
     assert documents[0]['updated_local'] == timepoint
 
     assert documents[1]['source'] == 'virtual://sitemap'
-    assert documents[1]['destination'] == 'masters/skywalker.luke'
-    assert xmltodict.parse(documents[1]['content'], 'UTF-8') == {
+    assert documents[1]['destination'] == 'masters/skywalker.luke.gz'
+
+    decompressed = gzip.decompress(documents[1]['content'])
+    assert xmltodict.parse(decompressed, 'UTF-8') == {
         'urlset': {
             '@xmlns': 'http://www.sitemaps.org/schemas/sitemap/0.9',
             'url': {
