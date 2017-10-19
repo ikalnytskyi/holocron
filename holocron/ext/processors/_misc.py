@@ -6,7 +6,7 @@ import re
 _evaluators = {
     'match':
         lambda attribute, pattern, document: (
-            bool(re.match(pattern, getattr(document, attribute)))
+            bool(re.match(pattern, document[attribute]))
         ),
 }
 

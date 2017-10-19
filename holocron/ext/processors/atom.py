@@ -58,7 +58,7 @@ def process(app, documents, **options):
     # In order to speed up feed fetching and decrease amount of traffic to
     # deliver its content the feed is usually limited to "N" latest posts
     # where "N" is passed as option.
-    selected = sorted(selected, key=lambda d: d.published, reverse=True)
+    selected = sorted(selected, key=lambda d: d['published'], reverse=True)
     selected = selected[:posts_number]
 
     # These two lines will be gone once state mechanism is implemented to
@@ -68,7 +68,7 @@ def process(app, documents, **options):
 
     # Produce a virtual document with Feed.
     feed = content.Document(app)
-    feed.content = _template.render(
+    feed['content'] = _template.render(
         documents=selected,
         siteurl_self=url,
         siteurl_alt=app.conf['site.url'],
@@ -77,7 +77,7 @@ def process(app, documents, **options):
         site=app.conf['site'],
         date=datetime.datetime.utcnow().replace(microsecond=0),
         encoding=encoding)
-    feed.source = 'virtual://feed'
-    feed.destination = save_as
+    feed['source'] = 'virtual://feed'
+    feed['destination'] = save_as
 
     return documents + [feed]

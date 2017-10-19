@@ -42,20 +42,20 @@ def process(app, documents, **options):
     for document in iterdocuments(documents, when):
         # We need to strip top level heading out of the document because
         # its value is used separately in number of places.
-        match = _top_heading_re.match(document.content)
+        match = _top_heading_re.match(document['content'])
         if match:
             title = match.group('heading').strip()
-            document.content = match.group('content').strip()
+            document['content'] = match.group('content').strip()
 
             # Usually converters go after frontmatter processor and that
             # means any explicitly specified attribute is already set on
             # the document. Since frontmatter processor is considered to
             # have a higher priority, let's set 'title' iff it does't
             # exist.
-            document.title = getattr(document, 'title', title)
+            document['title'] = document.get('title', title)
 
-        document.content = markdown_.convert(document.content)
-        document.destination = \
-            '%s.html' % os.path.splitext(document.destination)[0]
+        document['content'] = markdown_.convert(document['content'])
+        document['destination'] = \
+            '%s.html' % os.path.splitext(document['destination'])[0]
 
     return documents

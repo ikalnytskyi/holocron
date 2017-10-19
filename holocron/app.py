@@ -410,13 +410,13 @@ class Holocron(object):
             when = options.pop('when', None)
 
             for document in iterdocuments(documents, when):
-                meta, document.content = converter.to_html(document.content)
-                document.destination = \
-                    os.path.splitext(document.destination)[0] + '.html'
+                meta, document['content'] = \
+                    converter.to_html(document['content'])
+                document['destination'] = \
+                    os.path.splitext(document['destination'])[0] + '.html'
 
                 for key, value in meta.items():
-                    if not hasattr(document, key):
-                        setattr(document, key, value)
+                    document.setdefault(key, value)
 
             return documents
 

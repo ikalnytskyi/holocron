@@ -39,10 +39,10 @@ def test_document(testapp):
                 '''))
         ])
 
-    assert documents[0].author == 'Yoda'
-    assert documents[0].master
-    assert documents[0].labels == ['force', 'motto']
-    assert documents[0].content == 'May the Force be with you!\n'
+    assert documents[0]['author'] == 'Yoda'
+    assert documents[0]['master']
+    assert documents[0]['labels'] == ['force', 'motto']
+    assert documents[0]['content'] == 'May the Force be with you!\n'
 
 
 def test_document_without_frontmatter(testapp):
@@ -63,7 +63,7 @@ def test_document_without_frontmatter(testapp):
                 '''))
         ])
 
-    assert documents[0].content == textwrap.dedent('''\
+    assert documents[0]['content'] == textwrap.dedent('''\
         ---
         author: Yoda
         master: true
@@ -94,7 +94,7 @@ def text_document_with_frontmatter_in_text(testapp):
                 '''))
         ])
 
-    assert documents[0].content == textwrap.dedent('''\
+    assert documents[0]['content'] == textwrap.dedent('''\
         I am a Jedi, like my father before me.
 
         ---
@@ -126,10 +126,10 @@ def test_document_custom_delimiter(testapp):
         ],
         delimiter='+++')
 
-    assert documents[0].author == 'Yoda'
-    assert documents[0].master
-    assert documents[0].labels == ['force', 'motto']
-    assert documents[0].content == 'May the Force be with you!\n'
+    assert documents[0]['author'] == 'Yoda'
+    assert documents[0]['master']
+    assert documents[0]['labels'] == ['force', 'motto']
+    assert documents[0]['content'] == 'May the Force be with you!\n'
 
 
 def test_document_overwrite_false(testapp):
@@ -151,10 +151,10 @@ def test_document_overwrite_false(testapp):
         ],
         overwrite=False)
 
-    assert documents[0].author == 'Obi-Wan Kenobi'
-    assert documents[0].master
-    assert documents[0].labels == ['force', 'motto']
-    assert documents[0].content == 'May the Force be with you!\n'
+    assert documents[0]['author'] == 'Obi-Wan Kenobi'
+    assert documents[0]['master']
+    assert documents[0]['labels'] == ['force', 'motto']
+    assert documents[0]['content'] == 'May the Force be with you!\n'
 
 
 def test_document_invalid_yaml(testapp):
@@ -224,18 +224,18 @@ def test_documents(testapp):
             },
         ])
 
-    assert not hasattr(documents[0], 'master')
-    assert not hasattr(documents[0], 'labels')
-    assert documents[0].content == content
+    assert 'master' not in documents[0]
+    assert 'labels' not in documents[0]
+    assert documents[0]['content'] == content
 
-    assert documents[1].master
-    assert documents[1].labels == ['force', 'motto']
-    assert documents[1].content == 'May the Force be with you!\n'
+    assert documents[1]['master']
+    assert documents[1]['labels'] == ['force', 'motto']
+    assert documents[1]['content'] == 'May the Force be with you!\n'
 
-    assert not hasattr(documents[2], 'master')
-    assert not hasattr(documents[2], 'labels')
-    assert documents[2].content == content
+    assert 'master' not in documents[2]
+    assert 'labels' not in documents[2]
+    assert documents[2]['content'] == content
 
-    assert documents[3].master
-    assert documents[3].labels == ['force', 'motto']
-    assert documents[3].content == 'May the Force be with you!\n'
+    assert documents[3]['master']
+    assert documents[3]['labels'] == ['force', 'motto']
+    assert documents[3]['content'] == 'May the Force be with you!\n'

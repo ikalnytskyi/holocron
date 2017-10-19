@@ -83,8 +83,8 @@ def test_document_options(testapp, monkeypatch, tmpdir):
 
     assert len(documents) == 1
 
-    assert documents[0].content == '\u0421\u0438\u043b\u0430'
-    assert documents[0].destination == '1.html'
+    assert documents[0]['content'] == '\u0421\u0438\u043b\u0430'
+    assert documents[0]['destination'] == '1.html'
 
     assert tmpdir.join('_build', '1.html').read_binary() == b'\xd1\xe8\xeb\xe0'
 
@@ -165,13 +165,13 @@ def test_documents(testapp, monkeypatch, tmpdir):
 
     assert len(documents) == 2
 
-    assert documents[0].content == 'the Force #2'
-    assert documents[0].source == os.path.join('pages', '2.md')
-    assert documents[0].destination == os.path.join('pages', '2.html')
+    assert documents[0]['content'] == 'the Force #2'
+    assert documents[0]['source'] == os.path.join('pages', '2.md')
+    assert documents[0]['destination'] == os.path.join('pages', '2.html')
 
-    assert documents[1].content == 'the Force #4'
-    assert documents[1].source == os.path.join('pages', '4.md')
-    assert documents[1].destination == os.path.join('pages', '4.html')
+    assert documents[1]['content'] == 'the Force #4'
+    assert documents[1]['source'] == os.path.join('pages', '4.md')
+    assert documents[1]['destination'] == os.path.join('pages', '4.html')
 
     assert tmpdir.join('_site', 'posts', '1.html').read() == 'the Force #1'
     assert tmpdir.join('_site', 'posts', '3.html').read() == 'the Force #3'

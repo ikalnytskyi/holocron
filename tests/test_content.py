@@ -45,7 +45,7 @@ class DocumentTestCase(HolocronTestCase):
         self.app = Holocron(self._conf)
         self.app.add_converter(FakeConverter())
         self.doc = self.document_class(self.app)
-        self.doc.destination = self.document_filename
+        self.doc['destination'] = self.document_filename
 
 
 class TestDocument(DocumentTestCase):
@@ -92,8 +92,8 @@ class TestPage(DocumentTestCase):
         The page instance has to has a set of default attributes with
         valid values.
         """
-        self.assertEqual(self.doc.author, self.app.conf['site.author'])
-        self.assertEqual(self.doc.template, self.document_class.template)
+        self.assertEqual(self.doc['author'], self.app.conf['site.author'])
+        self.assertEqual(self.doc['template'], self.document_class.template)
 
 
 class TestPost(TestPage):

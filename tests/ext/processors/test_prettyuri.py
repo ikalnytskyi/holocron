@@ -29,7 +29,7 @@ def test_document(testapp):
             _get_document(destination='about/cv.html'),
         ])
 
-    assert documents[0].destination == 'about/cv/index.html'
+    assert documents[0]['destination'] == 'about/cv/index.html'
 
 
 @pytest.mark.parametrize('index', [
@@ -45,7 +45,7 @@ def test_document_index(testapp, index):
             _get_document(destination=os.path.join('about', 'cv', index)),
         ])
 
-    assert documents[0].destination == os.path.join('about', 'cv', index)
+    assert documents[0]['destination'] == os.path.join('about', 'cv', index)
 
 
 def test_documents(testapp):
@@ -67,7 +67,7 @@ def test_documents(testapp):
             },
         ])
 
-    assert documents[0].destination == '0.txt'
-    assert documents[1].destination == '1/index.html'
-    assert documents[2].destination == '2.html'
-    assert documents[3].destination == '3/index.html'
+    assert documents[0]['destination'] == '0.txt'
+    assert documents[1]['destination'] == '1/index.html'
+    assert documents[2]['destination'] == '2.html'
+    assert documents[3]['destination'] == '3/index.html'
