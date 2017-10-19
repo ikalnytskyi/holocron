@@ -10,14 +10,14 @@ from holocron import content
 
 _template = jinja2.Template(textwrap.dedent('''\
     <?xml version="1.0" encoding="{{ encoding }}"?>
-     <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-     {%- for doc in documents %}
-       <url>
-         <loc>{{ doc.abs_url }}</loc>
-         <lastmod>{{ doc.updated_local.isoformat() }}</lastmod>
-       </url>
-     {% endfor -%}
-     </urlset>
+    <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    {%- for doc in documents %}
+      <url>
+        <loc>{{ doc.abs_url }}</loc>
+        <lastmod>{{ doc.updated_local.isoformat() }}</lastmod>
+      </url>
+    {% endfor -%}
+    </urlset>
 '''))
 
 
@@ -27,7 +27,6 @@ def process(app, documents, **options):
 
     selected = iterdocuments(documents, when)
 
-    # Produce a virtual document with Feed.
     sitemap = content.Document(app)
     sitemap['content'] = _template.render(
         documents=selected,
