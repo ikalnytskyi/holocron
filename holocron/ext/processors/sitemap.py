@@ -16,7 +16,7 @@ _template = jinja2.Template(textwrap.dedent('''\
     {%- for doc in documents %}
       <url>
         <loc>{{ doc.abs_url | e }}</loc>
-        <lastmod>{{ doc.updated_local.isoformat() | e }}</lastmod>
+        <lastmod>{{ doc.updated.isoformat() | e }}</lastmod>
       </url>
     {% endfor -%}
     </urlset>
