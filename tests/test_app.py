@@ -15,7 +15,7 @@ import textwrap
 import mock
 
 import holocron
-import holocron.ext
+import holocron.content
 from holocron.app import Holocron, create_app
 from holocron.ext import abc
 
@@ -252,7 +252,6 @@ class TestHolocronDefaults(HolocronTestCase):
         """
         Tests that Holocron 0.4.0 converts converters into processors.
         """
-        app = create_app()
 
         class TestConverter(abc.Converter):
             extensions = ['.tst', '.test']
@@ -260,9 +259,9 @@ class TestHolocronDefaults(HolocronTestCase):
             def to_html(self, text):
                 return {'key': 'value'}, 'processed:' + text
 
-        app.add_converter(TestConverter())
+        self.app.add_converter(TestConverter())
 
-        self.assertEqual(app.conf['processors'], [
+        self.assertEqual(self.app.conf['processors'], [
             {
                 'name': 'frontmatter',
                 'when': [{
@@ -281,19 +280,19 @@ class TestHolocronDefaults(HolocronTestCase):
             },
         ])
 
-        document_a = holocron.content.Document(app)
+        document_a = holocron.content.Document(self.app)
         document_a['source'] = '1.rst'
         document_a['destination'] = '1.rst'
         document_a['content'] = 'text:1'
 
-        document_b = holocron.content.Document(app)
+        document_b = holocron.content.Document(self.app)
         document_b['source'] = '2.tst'
         document_b['destination'] = '2.tst'
         document_b['content'] = 'text:2'
 
-        processor_options = copy.deepcopy(app.conf['processors'][-1])
-        documents = app._processors[processor_options.pop('name')](
-            app,
+        processor_options = copy.deepcopy(self.app.conf['processors'][-1])
+        documents = self.app._processors[processor_options.pop('name')](
+            self.app,
             [
                 document_a,
                 document_b,
@@ -427,16 +426,7 @@ class TestCreateApp(HolocronTestCase):
         Tests that deprecated settings under 'ext.*' are converted into
         processors settings.
         """
-        app = self._create_app(conf_raw=textwrap.dedent('''\
-            ext:
-              enabled:
-                - markdown
-                - restructuredtext
-                - feed
-                - sitemap
-                - index
-                - tags
-        '''))
+        app = self._create_app(conf_raw=textwrap.dedent(''))
 
         self.assertEqual(app.conf['processors'], [
             {
@@ -520,6 +510,85 @@ class TestCreateApp(HolocronTestCase):
                      'pattern': '\\d{2,4}/\\d{1,2}/\\d{1,2}.*'
                                 '\\.(markdown|md|mdown|mkd|rest|rst)$'}],
                 'output': 'tags/{tag}/index.html',
+            },
+            {
+                'name': 'commit',
+                'path': '_build',
+                'encoding': 'utf-8',
+            },
+        ])
+
+    def test_deprecated_settings_custom_w_defaults(self):
+        """
+        Tests that deprecated settings under 'ext.*' are converted into
+        processors settings.
+        """
+        app = self._create_app(conf_raw=textwrap.dedent('''\
+            ext:
+              enabled:
+                - markdown
+                - feed
+                - sitemap
+                - index
+        '''))
+
+        self.assertEqual(app.conf['processors'], [
+            {
+                'name': 'source',
+                'when': [{
+                    'operator': 'match',
+                    'attribute': 'source',
+                    'pattern': r'[^_.].*$',
+                }],
+            },
+            {
+                'name': 'frontmatter',
+                'when': [
+                    {'operator': 'match',
+                     'attribute': 'source',
+                     'pattern': r'.*\.(md|mkd|mdown|markdown)$'},
+                ],
+            },
+            {
+                'name': 'markdown',
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': r'.*\.(md|mkd|mdown|markdown)$'},
+                ],
+            },
+            {
+                'name': 'prettyuri',
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': r'.*\.(markdown|md|mdown|mkd)$'},
+                ],
+            },
+            {
+                'name': 'atom',
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': '\\d{2,4}/\\d{1,2}/\\d{1,2}.*'
+                                '\\.(markdown|md|mdown|mkd)$'}],
+                'save_as': 'feed.xml',
+            },
+            {
+                'name': 'sitemap',
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': r'.*\.(markdown|md|mdown|mkd)$'},
+                ],
+            },
+            {
+                'name': 'index',
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': '\\d{2,4}/\\d{1,2}/\\d{1,2}.*'
+                                '\\.(markdown|md|mdown|mkd)$'}],
             },
             {
                 'name': 'commit',
@@ -666,4 +735,26 @@ class TestCreateApp(HolocronTestCase):
               enabled: []
         '''))
 
-        self.assertEqual(app.conf['processors'], [])
+        self.assertEqual(app.conf['processors'], [
+            {
+                'name': 'source',
+                'when': [{
+                    'operator': 'match',
+                    'attribute': 'source',
+                    'pattern': r'[^_.].*$',
+                }],
+            },
+            {
+                'name': 'prettyuri',
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': r'.*\.()$'},
+                ],
+            },
+            {
+                'name': 'commit',
+                'path': '_build',
+                'encoding': 'utf-8',
+            },
+        ])
