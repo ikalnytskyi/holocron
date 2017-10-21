@@ -73,7 +73,7 @@ def create_app(confpath=None):
     for name, ext in ExtensionManager(namespace='holocron.ext.processors'):
         app.add_processor(name, ext)
 
-    if conf and 'processors' not in conf and app.conf.get('ext.enabled'):
+    if (conf and 'processors' not in conf) or not conf:
         app.conf['processors'].append(
             {
                 'name': 'source',
@@ -87,7 +87,7 @@ def create_app(confpath=None):
 
         # If Markdown converter was previously used we need to repeat its
         # behaviour by means of processors.
-        if 'markdown' in app.conf.get('ext.enabled', []):
+        if 'markdown' in app.conf.get('ext.enabled', ['markdown']):
             when = [{
                 'operator': 'match',
                 'attribute': 'source',
@@ -116,7 +116,8 @@ def create_app(confpath=None):
 
         # If reStructuredText converter was previously used we need to repeat
         # its behaviour by means of processors.
-        if 'restructuredtext' in app.conf.get('ext.enabled', []):
+        if 'restructuredtext' in \
+                app.conf.get('ext.enabled', ['restructuredtext']):
             when = [{
                 'operator': 'match',
                 'attribute': 'source',
@@ -164,7 +165,7 @@ def create_app(confpath=None):
             },
         )
 
-        if 'feed' in app.conf.get('ext.enabled', []):
+        if 'feed' in app.conf.get('ext.enabled', ['feed']):
             app.conf['processors'].append(dict(
                 {
                     'name': 'atom',
@@ -179,7 +180,7 @@ def create_app(confpath=None):
                 **app.conf.get('ext.feed', {})
             ))
 
-        if 'sitemap' in app.conf.get('ext.enabled', []):
+        if 'sitemap' in app.conf.get('ext.enabled', ['sitemap']):
             app.conf['processors'].append(
                 {
                     'name': 'sitemap',
@@ -191,7 +192,7 @@ def create_app(confpath=None):
                 },
             )
 
-        if 'index' in app.conf.get('ext.enabled', []):
+        if 'index' in app.conf.get('ext.enabled', ['index']):
             app.conf['processors'].append(
                 {
                     'name': 'index',
@@ -204,7 +205,7 @@ def create_app(confpath=None):
                 },
             )
 
-        if 'tags' in app.conf.get('ext.enabled', []):
+        if 'tags' in app.conf.get('ext.enabled', ['tags']):
             app.conf['processors'].append(dict(
                 {
                     'name': 'tags',
@@ -278,18 +279,6 @@ class Holocron(object):
 
         'processors': [],
 
-        'ext': {
-            'enabled': [
-                'markdown',
-                'restructuredtext',
-
-                'index',
-                'feed',
-                'sitemap',
-                'tags',
-            ],
-        },
-
         'commands': {
             'serve': {
                 'host': '0.0.0.0',
@@ -358,7 +347,7 @@ class Holocron(object):
         # discover and execute all found extensions
         for name, ext in ExtensionManager(
             namespace='holocron.ext',
-            names=self.conf['ext']['enabled'],
+            names=self.conf.get('ext.enabled', []),
         ):
             if name in self._extensions:
                 logger.warning(
