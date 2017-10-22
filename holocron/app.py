@@ -13,11 +13,6 @@ import logging
 import warnings
 import textwrap
 
-# shutil.copytree doesn't fit our needs since it requires destination
-# directory to do not exist, while we need it to be existed in order
-# to collect static files from different themes
-from distutils.dir_util import copy_tree
-
 import yaml
 import jinja2
 
@@ -26,6 +21,7 @@ from dooku.decorator import cached_property
 from dooku.ext import ExtensionManager
 
 from .ext.processors._misc import iterdocuments
+from .ext.processors import source
 
 
 logger = logging.getLogger(__name__)
@@ -510,6 +506,17 @@ class Holocron(object):
         """
         documents = []
 
+        # These lines are temporal measure until jinja2 processor is
+        # implemented. The idea here is to inject theme static files,
+        # like stylesheet, javascript or images into processor pipeline
+        # so they will be persisted on the filesystem.
+        for theme in self._themes:
+            documents = source.process(self, documents, path=theme, when=[{
+                'operator': 'match',
+                'attribute': 'source',
+                'pattern': r'^static/',
+            }])
+
         for idx, processor in enumerate(self.conf['processors']):
             processfn = self._processors[processor.pop('name')]
             documents = processfn(self, documents, **processor)
@@ -518,21 +525,4 @@ class Holocron(object):
         for generator in self._generators:
             generator.generate(documents)
 
-        self._copy_theme()
-
         print('Documents were built successfully')
-
-    def _copy_theme(self):
-        """
-        Copy themes' static files to output directory. Each next copy
-        overwrites the previous one, that's why we're going to copy
-        base theme first.
-        """
-        out_static = os.path.join(self.conf['paths.output'], 'static')
-
-        for theme in self._themes:
-            static = os.path.join(theme, 'static')
-
-            # not all themes are mandatory to distribute static
-            if os.path.exists(static):
-                copy_tree(static, out_static)
