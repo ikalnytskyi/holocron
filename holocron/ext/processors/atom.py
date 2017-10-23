@@ -33,7 +33,7 @@ _template = jinja2.Template(textwrap.dedent('''\
         <id>{{ doc.abs_url }}</id>
 
         <published>{{ doc.published.isoformat() }}</published>
-        <updated>{{ doc.updated_local.isoformat() }}</updated>
+        <updated>{{ doc.updated.isoformat() }}</updated>
 
         <author>
           <name>{{ doc.author }}</name>

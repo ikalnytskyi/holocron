@@ -34,13 +34,13 @@ def test_document(testapp):
                 title='Essay',
                 content='the way of the Force',
                 destination=os.path.join('posts', '1.html'),
-                updated_local=timepoint,
+                updated=timepoint,
                 published=datetime.date(2017, 9, 25)),
         ])
 
     assert documents[0]['content'] == 'the way of the Force'
     assert documents[0]['destination'] == os.path.join('posts', '1.html')
-    assert documents[0]['updated_local'] == timepoint
+    assert documents[0]['updated'] == timepoint
     assert documents[0]['published'] == datetime.date(2017, 9, 25)
 
     assert documents[1]['source'] == 'virtual://feed'
@@ -137,7 +137,7 @@ def test_document_options(testapp):
                 title='Essay #%d' % i,
                 content='the way of the Force',
                 destination=os.path.join('posts', '%d.html' % i),
-                updated_local=timepoint,
+                updated=timepoint,
                 published=datetime.date(2017, 9, i + 1))
             for i in range(10)
         ],
@@ -149,7 +149,7 @@ def test_document_options(testapp):
     for i, document in enumerate(documents[:-1]):
         assert document['content'] == 'the way of the Force'
         assert document['destination'] == os.path.join('posts', '%d.html' % i)
-        assert document['updated_local'] == timepoint
+        assert document['updated'] == timepoint
         assert document['published'] == datetime.date(2017, 9, i + 1)
 
     # Ensure a virtual feed document contains proper values.
@@ -249,28 +249,28 @@ def test_documents(testapp):
                 content='the way of the Force',
                 source=os.path.join('posts', '1.md'),
                 destination=os.path.join('posts', '1.html'),
-                updated_local=timepoint,
+                updated=timepoint,
                 published=datetime.date(2017, 9, 1)),
             _get_document(
                 title='Essay #2',
                 content='the way of the Force',
                 source=os.path.join('pages', '2.md'),
                 destination=os.path.join('pages', '2.html'),
-                updated_local=timepoint,
+                updated=timepoint,
                 published=datetime.date(2017, 9, 2)),
             _get_document(
                 title='Essay #3',
                 content='the way of the Force',
                 source=os.path.join('posts', '3.md'),
                 destination=os.path.join('posts', '3.html'),
-                updated_local=timepoint,
+                updated=timepoint,
                 published=datetime.date(2017, 9, 3)),
             _get_document(
                 title='Essay #4',
                 content='the way of the Force',
                 source=os.path.join('pages', '4.md'),
                 destination=os.path.join('pages', '4.html'),
-                updated_local=timepoint,
+                updated=timepoint,
                 published=datetime.date(2017, 9, 4)),
         ],
         when=[
