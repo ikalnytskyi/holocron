@@ -30,21 +30,33 @@ def test_document(testapp, tmpdir, path, cls):
 
     tmpdir.ensure(*path).write_text('text', encoding='utf-8')
 
-    documents = source.process(testapp, [], path=tmpdir.strpath)
-    assert len(documents) == 1
+    preserved = content.Document(testapp)
+    preserved['source'] = os.path.join('images', 'me.png')
+    preserved['destination'] = os.path.join('images', 'me.png')
 
-    document = documents[0]
-    assert isinstance(document, cls)
-    assert document['source'] == os.path.join(*path)
-    assert document['destination'] == os.path.join(*path)
-    assert document['created'].timestamp() \
+    documents = source.process(
+        testapp,
+        [
+            preserved,
+        ],
+        path=tmpdir.strpath)
+
+    assert len(documents) == 2
+
+    assert documents[0]['source'] == os.path.join('images', 'me.png')
+    assert documents[0]['destination'] == os.path.join('images', 'me.png')
+
+    assert isinstance(documents[1], cls)
+    assert documents[1]['source'] == os.path.join(*path)
+    assert documents[1]['destination'] == os.path.join(*path)
+    assert documents[1]['created'].timestamp() \
         == pytest.approx(tmpdir.join(*path).stat().ctime, 0.00001)
-    assert document['updated'].timestamp() \
+    assert documents[1]['updated'].timestamp() \
         == pytest.approx(tmpdir.join(*path).stat().mtime, 0.00001)
-    assert document['content'] == 'text'
+    assert documents[1]['content'] == 'text'
 
-    if isinstance(document, content.Post):
-        assert document['published'] == datetime.date(2017, 9, 17)
+    if isinstance(documents[1], content.Post):
+        assert documents[1]['published'] == datetime.date(2017, 9, 17)
 
 
 @pytest.mark.parametrize('data, cls', [

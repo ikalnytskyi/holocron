@@ -15,7 +15,8 @@ def process(app, documents, **options):
     when = options.pop('when', None)
     encoding = options.pop('encoding', 'utf-8')
 
-    return list(iterdocuments(_finddocuments(app, path, encoding), when))
+    documents.extend(iterdocuments(_finddocuments(app, path, encoding), when))
+    return documents
 
 
 def _finddocuments(app, path, encoding):

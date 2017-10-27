@@ -12,12 +12,14 @@ import os
 import copy
 import textwrap
 
+import pytest
 import mock
 
 import holocron
 import holocron.content
 from holocron.app import Holocron, create_app
 from holocron.ext import abc
+from holocron.ext.processors import commit
 
 from tests import HolocronTestCase
 
@@ -124,80 +126,20 @@ class TestHolocron(HolocronTestCase):
         self.assertEqual(len(self.app._generators), 2)
         self.assertIn(new_generator, self.app._generators)
 
-    @mock.patch('holocron.ext.processors.source.iterdocuments')
-    def test_run(self, iterdocuments):
+    def test_run(self):
         """
         Tests build process.
         """
-        iterdocuments.return_value = ['doc_a', 'doc_b', 'doc_c']
-        self.app._copy_theme = mock.Mock()
         self.app._generators = {
             mock.Mock(): mock.Mock(),
             mock.Mock(): mock.Mock(),
         }
-        self.app.conf['processors'] = [{'name': 'source'}]
-        self.app._processors = {
-            'source': holocron.ext.processors.source.process,
-        }
-
+        self.app.conf['processors'] = []
         self.app.run()
 
         # check that generators was used
         for generator in self.app._generators:
             self.assertEqual(generator.generate.call_count, 1)
-
-        # check that _copy_theme was called
-        self.app._copy_theme.assert_called_once_with()
-
-    @mock.patch('holocron.app.copy_tree')
-    def test_copy_base_theme(self, mcopytree):
-        """
-        Tests that Holocron do copy default theme.
-        """
-        output = os.path.join(self.app.conf['paths.output'], 'static')
-        theme = os.path.join(
-            os.path.dirname(holocron.__file__), 'theme', 'static')
-
-        self.app._copy_theme()
-
-        mcopytree.assert_called_with(theme, output)
-
-    @mock.patch('holocron.app.os.path.exists', return_value=True)
-    @mock.patch('holocron.app.copy_tree')
-    def test_copy_user_themes(self, mcopytree, _):
-        """
-        Tests that Holocron do copy user theme.
-        """
-        output = os.path.join(self.app.conf['paths.output'], 'static')
-        theme = os.path.join(
-            os.path.dirname(holocron.__file__), 'theme', 'static')
-
-        self.app.add_theme('theme1')
-        self.app.add_theme('theme2')
-        self.app._copy_theme()
-
-        self.assertEqual(mcopytree.call_args_list, [
-            mock.call(theme, output),
-            mock.call(os.path.join('theme1', 'static'), output),
-            mock.call(os.path.join('theme2', 'static'), output),
-        ])
-
-    @mock.patch('holocron.app.os.path.exists', side_effect=[True, False])
-    @mock.patch('holocron.app.copy_tree')
-    def test_copy_user_themes_not_exist(self, mcopytree, _):
-        """
-        Tests that Holocron doesn't copy static if it's not exist.
-        """
-        output = os.path.join(self.app.conf['paths.output'], 'static')
-        theme = os.path.join(
-            os.path.dirname(holocron.__file__), 'theme', 'static')
-
-        self.app.add_theme('theme1')
-        self.app._copy_theme()
-
-        self.assertEqual(mcopytree.call_args_list, [
-            mock.call(theme, output),
-        ])
 
 
 class TestHolocronDefaults(HolocronTestCase):
@@ -758,3 +700,59 @@ class TestCreateApp(HolocronTestCase):
                 'encoding': 'utf-8',
             },
         ])
+
+
+@pytest.fixture(scope='function')
+def testapp():
+    return Holocron({})
+
+
+def test_theme_static(testapp, monkeypatch, tmpdir):
+    """Default theme's static has to be copied."""
+
+    monkeypatch.chdir(tmpdir)
+
+    testapp.add_processor('commit', commit.process)
+    testapp.conf['processors'] = [{'name': 'commit'}]
+
+    testapp.run()
+
+    assert set(tmpdir.join('_site').listdir()) == set([
+        tmpdir.join('_site', 'static'),
+    ])
+
+    assert set(tmpdir.join('_site', 'static').listdir()) == set([
+        tmpdir.join('_site', 'static', 'logo.svg'),
+        tmpdir.join('_site', 'static', 'pygments.css'),
+        tmpdir.join('_site', 'static', 'style.css'),
+    ])
+
+
+def test_user_theme_static(testapp, monkeypatch, tmpdir):
+    """User theme's static has to be copied overwriting default theme."""
+
+    monkeypatch.chdir(tmpdir)
+
+    tmpdir.ensure('_theme', 'templates', 'some.txt').write('yoda')
+    tmpdir.ensure('_theme', 'static', 'marker.txt').write('skywalker')
+    tmpdir.ensure('_theme', 'static', 'style.css').write('overwritten')
+
+    testapp.add_theme(tmpdir.join('_theme').strpath)
+    testapp.add_processor('commit', commit.process)
+    testapp.conf['processors'] = [{'name': 'commit'}]
+
+    testapp.run()
+
+    assert set(tmpdir.join('_site').listdir()) == set([
+        tmpdir.join('_site', 'static'),
+    ])
+
+    assert set(tmpdir.join('_site', 'static').listdir()) == set([
+        tmpdir.join('_site', 'static', 'logo.svg'),
+        tmpdir.join('_site', 'static', 'marker.txt'),
+        tmpdir.join('_site', 'static', 'pygments.css'),
+        tmpdir.join('_site', 'static', 'style.css'),
+    ])
+
+    assert tmpdir.join('_site', 'static', 'style.css').read() == 'overwritten'
+    assert tmpdir.join('_site', 'static', 'marker.txt').read() == 'skywalker'
