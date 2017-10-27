@@ -39,6 +39,14 @@ class Document(dict):
         # backward compatibility. It will be removed in Holocron 0.5.0.
         self[attr] = value
 
+    def __getitem__(self, item):
+        if item in ('created_local', 'updated_local'):
+            warnings.warn(
+                "Do not use *_local datetimes as they are deprecated. "
+                "Instead use UTC based datetimes and convert to local "
+                "time explicitly where needed.")
+        return super().__getitem__(item)
+
     @property
     def url(self):
         destination = self['destination']
