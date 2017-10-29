@@ -2,8 +2,6 @@
 
 import os
 
-from holocron import content
-
 from ._misc import iterdocuments
 
 
@@ -23,7 +21,7 @@ def process(app, documents, **options):
             os.makedirs(os.path.dirname(destination))
 
         # Once Jinja2 is a standalone processor, these lines will be gone.
-        if isinstance(document, content.Page):
+        if 'template' in document:
             template = app.jinja_env.get_template(document['template'])
             document['content'] = template.render(document=document)
 

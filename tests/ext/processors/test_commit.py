@@ -50,7 +50,7 @@ def test_document_template(testapp, monkeypatch, tmpdir):
         testapp,
         [
             _get_document(
-                cls=content.Page,
+                template='page.j2',
                 title='History of the Force',
                 content='the Force',
                 destination=os.path.join('posts', '1.html')),

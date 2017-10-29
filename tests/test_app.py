@@ -456,6 +456,25 @@ class TestCreateApp(HolocronTestCase):
                 'output': 'tags/{tag}/index.html',
             },
             {
+                'name': 'metadata',
+                'metadata':
+                    {'template': 'page.j2'},
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': r'.*\.(markdown|md|mdown|mkd|rest|rst)$'}],
+            },
+            {
+                'name': 'metadata',
+                'metadata':
+                    {'template': 'post.j2'},
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': '\\d{2,4}/\\d{1,2}/\\d{1,2}.*'
+                                '\\.(markdown|md|mdown|mkd|rest|rst)$'}],
+            },
+            {
                 'name': 'commit',
                 'path': '_build',
                 'encoding': 'utf-8',
@@ -528,6 +547,25 @@ class TestCreateApp(HolocronTestCase):
             },
             {
                 'name': 'index',
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': '\\d{2,4}/\\d{1,2}/\\d{1,2}.*'
+                                '\\.(markdown|md|mdown|mkd)$'}],
+            },
+            {
+                'name': 'metadata',
+                'metadata':
+                    {'template': 'page.j2'},
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': r'.*\.(markdown|md|mdown|mkd)$'}],
+            },
+            {
+                'name': 'metadata',
+                'metadata':
+                    {'template': 'post.j2'},
                 'when': [
                     {'attribute': 'source',
                      'operator': 'match',
@@ -663,6 +701,25 @@ class TestCreateApp(HolocronTestCase):
                 'output': 'tags-{tag}.html',
             },
             {
+                'name': 'metadata',
+                'metadata':
+                    {'template': 'page.j2'},
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': r'.*\.(markdown|md|mdown|mkd|rest|rst)$'}],
+            },
+            {
+                'name': 'metadata',
+                'metadata':
+                    {'template': 'post.j2'},
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': '\\d{2,4}/\\d{1,2}/\\d{1,2}.*'
+                                '\\.(markdown|md|mdown|mkd|rest|rst)$'}],
+            },
+            {
                 'name': 'commit',
                 'path': 'my-out-dir',
                 'encoding': 'my-out-enc',
@@ -695,6 +752,24 @@ class TestCreateApp(HolocronTestCase):
                      'operator': 'match',
                      'pattern': r'.*\.()$'},
                 ],
+            },
+            {
+                'name': 'metadata',
+                'metadata':
+                    {'template': 'page.j2'},
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': r'.*\.()$'}],
+            },
+            {
+                'name': 'metadata',
+                'metadata':
+                    {'template': 'post.j2'},
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': '\\d{2,4}/\\d{1,2}/\\d{1,2}.*\\.()$'}],
             },
             {
                 'name': 'commit',
