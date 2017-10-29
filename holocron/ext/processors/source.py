@@ -58,30 +58,29 @@ def _createdocument(app, path, basepath, encoding):
 
 
 def _getinstance(filename, app):
-    # this function is temporary
+    post_pattern = re.compile(r'^\d{2,4}/\d{1,2}/\d{1,2}')
 
-    # regex pattern for separating posts from pages
-    _post_pattern = re.compile(r'^\d{2,4}/\d{1,2}/\d{1,2}')
+    # Extract 'published' date out of document path.
+    published = None
+    if post_pattern.search(filename):
+        published = ''.join(
+            post_pattern.search(filename).group(0).split(os.sep)[:3])
+        published = datetime.datetime.strptime(published, '%Y%m%d')
 
-    # let's assume that if we have a converter for a given file
-    # then it's either a post or a page
     _, ext = os.path.splitext(filename)
+
+    # Previously Holocron used to have multiple document classes, so these
+    # lines are attempt to keep these classes. They are not required anymore,
+    # and is recommended to do not rely on them 'cause they are deprecated
+    # and will gone in future releases.
+    cls = content.Document
     if ext in app._converters:
-        # by Holocron convention, post is a convertible document that
-        # has the following format YEAR/MONTH/DAY in its path
-        content_path = os.path.abspath(app.conf['paths.content'])
-        document_path = os.path.abspath(filename)[len(content_path) + 1:]
-        if _post_pattern.search(document_path):
-            post = content.Post(app)
+        cls = content.Page
+        if published:
+            cls = content.Post
 
-            # Temporary solution to make documents as abstract as possible.
-            # As we move towards, this is going to be removed.
-            published = ''.join(
-                _post_pattern.search(document_path).group(0).split(os.sep)[:3])
-            published = datetime.datetime.strptime(published, '%Y%m%d')
-            post['published'] = published.date()
-
-            return post
-
-        return content.Page(app)
-    return content.Document(app)
+    # Create appropriate document class and assign published date if found.
+    document = cls(app)
+    if published:
+        document['published'] = published.date()
+    return document
