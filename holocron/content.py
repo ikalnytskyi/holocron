@@ -9,10 +9,11 @@
 """
 
 import os
+import abc
 import warnings
 
 
-class Document(dict):
+class Document(dict, metaclass=abc.ABCMeta):
     """
     An abstract base class for Holocron documents.
 
@@ -64,6 +65,13 @@ class Document(dict):
     def abs_url(self):
         return self._app.conf['site.url'] + self.url
 
+    @classmethod
+    def __subclasshook__(cls, subclass):
+        warnings.warn(
+            "isinstance() check for this class is deprecated, and the class "
+            "itself will be removed in next release.")
+        return super().__subclasshook__(subclass)
+
 
 class Page(Document):
     """
@@ -107,3 +115,6 @@ class Post(Page):
     there's a converter for this document, the document is a post.
     """
     pass
+
+
+Document.register(Page)
