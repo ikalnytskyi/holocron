@@ -93,7 +93,6 @@ class TestPage(DocumentTestCase):
         valid values.
         """
         self.assertEqual(self.doc['author'], self.app.conf['site.author'])
-        self.assertEqual(self.doc['template'], self.document_class.template)
 
 
 class TestPost(TestPage):

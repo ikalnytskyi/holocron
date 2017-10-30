@@ -56,6 +56,7 @@ setup(
         ],
         'holocron.ext.processors': [
             'source = holocron.ext.processors.source:process',
+            'metadata = holocron.ext.processors.metadata:process',
             'frontmatter = holocron.ext.processors.frontmatter:process',
             'prettyuri = holocron.ext.processors.prettyuri:process',
             'markdown = holocron.ext.processors.markdown:process',

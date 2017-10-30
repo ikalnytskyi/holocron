@@ -86,14 +86,9 @@ class Page(Document):
 
     """
 
-    #: A default template for page documents.
-    template = 'page.j2'
-
     def __init__(self, *args, **kwargs):
         super(Page, self).__init__(*args, **kwargs)
-
         self['author'] = self._app.conf['site.author']
-        self['template'] = self.template
 
 
 class Post(Page):
@@ -111,7 +106,4 @@ class Post(Page):
     If a path to the document represents a date - ``/2015/01/04/`` - and
     there's a converter for this document, the document is a post.
     """
-
-    #: We're using a separate template, since unlike a page we need to show
-    #: post's author, published date and a list of tags.
-    template = 'post.j2'
+    pass

@@ -216,13 +216,36 @@ def create_app(confpath=None):
                 **app.conf.get('ext.tags', {})
             ))
 
-        app.conf['processors'].append(
+        app.conf['processors'].extend([
+            {
+                'name': 'metadata',
+                'metadata': {
+                    'template': 'page.j2',
+                },
+                'when': [{
+                    'operator': 'match',
+                    'attribute': 'source',
+                    'pattern': r'.*\.(%s)$' % '|'.join(extensions),
+                }],
+            },
+            {
+                'name': 'metadata',
+                'metadata': {
+                    'template': 'post.j2',
+                },
+                'when': [{
+                    'operator': 'match',
+                    'attribute': 'source',
+                    'pattern': r'\d{2,4}/\d{1,2}/\d{1,2}.*\.(%s)$'
+                    % '|'.join(extensions),
+                }],
+            },
             {
                 'name': 'commit',
                 'path': app.conf.get('paths.output', '_build'),
                 'encoding': app.conf.get('encoding.output', 'utf-8'),
             },
-        )
+        ])
 
         warnings.warn(
             (
