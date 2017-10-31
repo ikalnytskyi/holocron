@@ -23,6 +23,7 @@ def testapp():
     (['about', 'cv.pdf'], content.Document),
     (['about', 'cv.md'], content.Page),
     (['2017', '09', '17', 'cv.md'], content.Post),
+    (['2017', '09', '17', 'cv.rst'], content.Document),
     (['2017', '09', '17', 'cv.pdf'], content.Document),
 ])
 def test_document(testapp, tmpdir, path, cls):
@@ -55,8 +56,11 @@ def test_document(testapp, tmpdir, path, cls):
         == pytest.approx(tmpdir.join(*path).stat().mtime, 0.00001)
     assert documents[1]['content'] == 'text'
 
-    if isinstance(documents[1], content.Post):
+    if path[0] == '2017':
         assert documents[1]['published'] == datetime.date(2017, 9, 17)
+
+        if path[3].endswith('.md'):
+            assert isinstance(documents[1], content.Post)
 
 
 @pytest.mark.parametrize('data, cls', [
