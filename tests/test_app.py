@@ -156,6 +156,7 @@ class TestHolocronDefaults(HolocronTestCase):
         self.assertEqual(set(app._processors), set([
             'source',
             'metadata',
+            'pipeline',
             'frontmatter',
             'markdown',
             'restructuredtext',
@@ -354,6 +355,7 @@ class TestCreateApp(HolocronTestCase):
         self.assertEqual(set(app._processors), set([
             'source',
             'metadata',
+            'pipeline',
             'frontmatter',
             'markdown',
             'restructuredtext',
