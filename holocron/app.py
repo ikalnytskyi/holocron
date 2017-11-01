@@ -523,6 +523,13 @@ class Holocron(object):
         env.globals.update(**self._theme_ctx)
         return env
 
+    def invoke_processors(self, documents, pipeline):
+        for processor in pipeline:
+            processor = processor.copy()
+            processfn = self._processors[processor.pop('name')]
+            documents = processfn(self, documents, **processor)
+        return documents
+
     def run(self):
         """
         Starts build process.
@@ -540,9 +547,7 @@ class Holocron(object):
                 'pattern': r'^static/',
             }])
 
-        for idx, processor in enumerate(self.conf['processors']):
-            processfn = self._processors[processor.pop('name')]
-            documents = processfn(self, documents, **processor)
+        documents = self.invoke_processors(documents, self.conf['processors'])
 
         # use generators to generate additional stuff
         for generator in self._generators:

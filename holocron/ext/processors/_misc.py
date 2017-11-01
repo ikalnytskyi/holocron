@@ -18,9 +18,17 @@ def evalcondition(condition, document):
 
 
 def iterdocuments(documents, when):
-    for document in documents:
-        if when is not None:
-            if all((evalcondition(cond, document) for cond in when)):
-                yield document
-        else:
+    for document, is_matched in iterdocuments_ex(documents, when):
+        if is_matched:
             yield document
+
+
+def iterdocuments_ex(documents, when):
+    for document in documents:
+        is_matched = True
+
+        if when is not None:
+            if any((not evalcondition(cond, document) for cond in when)):
+                is_matched = False
+
+        yield document, is_matched
