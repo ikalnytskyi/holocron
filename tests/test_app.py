@@ -424,6 +424,26 @@ class TestCreateApp(HolocronTestCase):
                 ],
             },
             {
+                'name': 'metadata',
+                'metadata':
+                    {'template': 'page.j2',
+                     'author': 'Obi-Wan Kenobi'},
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': r'.*\.(markdown|md|mdown|mkd|rest|rst)$'}],
+            },
+            {
+                'name': 'metadata',
+                'metadata':
+                    {'template': 'post.j2'},
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': '\\d{2,4}/\\d{1,2}/\\d{1,2}.*'
+                                '\\.(markdown|md|mdown|mkd|rest|rst)$'}],
+            },
+            {
                 'name': 'atom',
                 'when': [
                     {'attribute': 'source',
@@ -456,25 +476,6 @@ class TestCreateApp(HolocronTestCase):
                      'pattern': '\\d{2,4}/\\d{1,2}/\\d{1,2}.*'
                                 '\\.(markdown|md|mdown|mkd|rest|rst)$'}],
                 'output': 'tags/{tag}/index.html',
-            },
-            {
-                'name': 'metadata',
-                'metadata':
-                    {'template': 'page.j2'},
-                'when': [
-                    {'attribute': 'source',
-                     'operator': 'match',
-                     'pattern': r'.*\.(markdown|md|mdown|mkd|rest|rst)$'}],
-            },
-            {
-                'name': 'metadata',
-                'metadata':
-                    {'template': 'post.j2'},
-                'when': [
-                    {'attribute': 'source',
-                     'operator': 'match',
-                     'pattern': '\\d{2,4}/\\d{1,2}/\\d{1,2}.*'
-                                '\\.(markdown|md|mdown|mkd|rest|rst)$'}],
             },
             {
                 'name': 'commit',
@@ -531,6 +532,26 @@ class TestCreateApp(HolocronTestCase):
                 ],
             },
             {
+                'name': 'metadata',
+                'metadata':
+                    {'template': 'page.j2',
+                     'author': 'Obi-Wan Kenobi'},
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': r'.*\.(markdown|md|mdown|mkd)$'}],
+            },
+            {
+                'name': 'metadata',
+                'metadata':
+                    {'template': 'post.j2'},
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': '\\d{2,4}/\\d{1,2}/\\d{1,2}.*'
+                                '\\.(markdown|md|mdown|mkd)$'}],
+            },
+            {
                 'name': 'atom',
                 'when': [
                     {'attribute': 'source',
@@ -556,25 +577,6 @@ class TestCreateApp(HolocronTestCase):
                                 '\\.(markdown|md|mdown|mkd)$'}],
             },
             {
-                'name': 'metadata',
-                'metadata':
-                    {'template': 'page.j2'},
-                'when': [
-                    {'attribute': 'source',
-                     'operator': 'match',
-                     'pattern': r'.*\.(markdown|md|mdown|mkd)$'}],
-            },
-            {
-                'name': 'metadata',
-                'metadata':
-                    {'template': 'post.j2'},
-                'when': [
-                    {'attribute': 'source',
-                     'operator': 'match',
-                     'pattern': '\\d{2,4}/\\d{1,2}/\\d{1,2}.*'
-                                '\\.(markdown|md|mdown|mkd)$'}],
-            },
-            {
                 'name': 'commit',
                 'path': '_build',
                 'encoding': 'utf-8',
@@ -587,6 +589,9 @@ class TestCreateApp(HolocronTestCase):
         processors settings.
         """
         app = self._create_app(conf_raw=textwrap.dedent('''\
+            site:
+              author: V
+
             encoding:
               output: my-out-enc
 
@@ -669,6 +674,26 @@ class TestCreateApp(HolocronTestCase):
                 ],
             },
             {
+                'name': 'metadata',
+                'metadata':
+                    {'template': 'page.j2',
+                     'author': 'V'},
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': r'.*\.(markdown|md|mdown|mkd|rest|rst)$'}],
+            },
+            {
+                'name': 'metadata',
+                'metadata':
+                    {'template': 'post.j2'},
+                'when': [
+                    {'attribute': 'source',
+                     'operator': 'match',
+                     'pattern': '\\d{2,4}/\\d{1,2}/\\d{1,2}.*'
+                                '\\.(markdown|md|mdown|mkd|rest|rst)$'}],
+            },
+            {
                 'name': 'atom',
                 'when': [
                     {'attribute': 'source',
@@ -701,25 +726,6 @@ class TestCreateApp(HolocronTestCase):
                      'pattern': '\\d{2,4}/\\d{1,2}/\\d{1,2}.*'
                                 '\\.(markdown|md|mdown|mkd|rest|rst)$'}],
                 'output': 'tags-{tag}.html',
-            },
-            {
-                'name': 'metadata',
-                'metadata':
-                    {'template': 'page.j2'},
-                'when': [
-                    {'attribute': 'source',
-                     'operator': 'match',
-                     'pattern': r'.*\.(markdown|md|mdown|mkd|rest|rst)$'}],
-            },
-            {
-                'name': 'metadata',
-                'metadata':
-                    {'template': 'post.j2'},
-                'when': [
-                    {'attribute': 'source',
-                     'operator': 'match',
-                     'pattern': '\\d{2,4}/\\d{1,2}/\\d{1,2}.*'
-                                '\\.(markdown|md|mdown|mkd|rest|rst)$'}],
             },
             {
                 'name': 'commit',
@@ -758,7 +764,8 @@ class TestCreateApp(HolocronTestCase):
             {
                 'name': 'metadata',
                 'metadata':
-                    {'template': 'page.j2'},
+                    {'template': 'page.j2',
+                     'author': 'Obi-Wan Kenobi'},
                 'when': [
                     {'attribute': 'source',
                      'operator': 'match',
