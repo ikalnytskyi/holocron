@@ -93,10 +93,7 @@ class Page(Document):
       ===================  ========================  ==============
 
     """
-
-    def __init__(self, *args, **kwargs):
-        super(Page, self).__init__(*args, **kwargs)
-        self['author'] = self._app.conf['site.author']
+    pass
 
 
 class Post(Page):

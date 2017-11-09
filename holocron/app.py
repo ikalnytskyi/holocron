@@ -145,12 +145,12 @@ def create_app(confpath=None):
         # expression world
         extensions = [ext.lstrip('.') for ext in sorted(app._converters)]
 
-        # Holocron behaviour has been changed in v0.4.0, and documents
-        # preserve its path in output directory. In other words, some
-        # 'a.mdown' will be rendered as 'a.html' instead of 'a/index.html'.
-        # In order to do not break the world, let's inject the processor
-        # that keeps old behaviour in-place.
-        app.conf['processors'].append(
+        app.conf['processors'].extend([
+            # Holocron behaviour has been changed in v0.4.0, and documents
+            # preserve its path in output directory. In other words, some
+            # 'a.mdown' will be rendered as 'a.html' instead of 'a/index.html'.
+            # In order to do not break the world, let's inject the processor
+            # that keeps old behaviour in-place.
             {
                 'name': 'prettyuri',
                 'when': [{
@@ -159,7 +159,35 @@ def create_app(confpath=None):
                     'pattern': r'.*\.(%s)$' % '|'.join(extensions),
                 }],
             },
-        )
+            # Holocron does not set 'author' and 'template' attributes on
+            # documents out of box. One need to use "metadata" processor
+            # to do so. Let's set them to preserve backward compatibility
+            # for upcoming release.
+            {
+                'name': 'metadata',
+                'metadata': {
+                    'template': 'page.j2',
+                    'author': app.conf.get('site.author', 'Obi-Wan Kenobi'),
+                },
+                'when': [{
+                    'operator': 'match',
+                    'attribute': 'source',
+                    'pattern': r'.*\.(%s)$' % '|'.join(extensions),
+                }],
+            },
+            {
+                'name': 'metadata',
+                'metadata': {
+                    'template': 'post.j2',
+                },
+                'when': [{
+                    'operator': 'match',
+                    'attribute': 'source',
+                    'pattern': r'\d{2,4}/\d{1,2}/\d{1,2}.*\.(%s)$'
+                    % '|'.join(extensions),
+                }],
+            }
+        ])
 
         if 'feed' in app.conf.get('ext.enabled', ['feed']):
             app.conf['processors'].append(dict(
@@ -216,36 +244,13 @@ def create_app(confpath=None):
                 **app.conf.get('ext.tags', {})
             ))
 
-        app.conf['processors'].extend([
-            {
-                'name': 'metadata',
-                'metadata': {
-                    'template': 'page.j2',
-                },
-                'when': [{
-                    'operator': 'match',
-                    'attribute': 'source',
-                    'pattern': r'.*\.(%s)$' % '|'.join(extensions),
-                }],
-            },
-            {
-                'name': 'metadata',
-                'metadata': {
-                    'template': 'post.j2',
-                },
-                'when': [{
-                    'operator': 'match',
-                    'attribute': 'source',
-                    'pattern': r'\d{2,4}/\d{1,2}/\d{1,2}.*\.(%s)$'
-                    % '|'.join(extensions),
-                }],
-            },
+        app.conf['processors'].append(
             {
                 'name': 'commit',
                 'path': app.conf.get('paths.output', '_build'),
                 'encoding': app.conf.get('encoding.output', 'utf-8'),
             },
-        ])
+        )
 
         warnings.warn(
             (

@@ -87,13 +87,6 @@ class TestPage(DocumentTestCase):
         """
         super(TestPage, self).setUp()
 
-    def test_default_attributes(self):
-        """
-        The page instance has to has a set of default attributes with
-        valid values.
-        """
-        self.assertEqual(self.doc['author'], self.app.conf['site.author'])
-
 
 class TestPost(TestPage):
     """

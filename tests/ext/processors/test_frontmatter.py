@@ -139,6 +139,7 @@ def test_document_overwrite_false(testapp):
         testapp,
         [
             _get_document(
+                author='Obi-Wan Kenobi',
                 content=textwrap.dedent('''\
                     ---
                     author: Yoda
