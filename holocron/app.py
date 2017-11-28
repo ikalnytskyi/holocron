@@ -199,6 +199,7 @@ def create_app(confpath=None):
                         'pattern': r'\d{2,4}/\d{1,2}/\d{1,2}.*\.(%s)$'
                             % '|'.join(extensions),
                     }],
+                    'encoding': 'utf-8',
                     'save_as': 'feed.xml',
                 },
                 **app.conf.get('ext.feed', {})
