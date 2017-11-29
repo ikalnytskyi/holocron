@@ -468,6 +468,7 @@ class TestCreateApp(HolocronTestCase):
                      'operator': 'match',
                      'pattern': '\\d{2,4}/\\d{1,2}/\\d{1,2}.*'
                                 '\\.(markdown|md|mdown|mkd|rest|rst)$'}],
+                'encoding': 'utf-8',
             },
             {
                 'name': 'tags',
@@ -577,6 +578,7 @@ class TestCreateApp(HolocronTestCase):
                      'operator': 'match',
                      'pattern': '\\d{2,4}/\\d{1,2}/\\d{1,2}.*'
                                 '\\.(markdown|md|mdown|mkd)$'}],
+                'encoding': 'utf-8',
             },
             {
                 'name': 'commit',
@@ -720,6 +722,7 @@ class TestCreateApp(HolocronTestCase):
                      'operator': 'match',
                      'pattern': '\\d{2,4}/\\d{1,2}/\\d{1,2}.*'
                                 '\\.(markdown|md|mdown|mkd|rest|rst)$'}],
+                'encoding': 'utf-8',
             },
             {
                 'name': 'tags',

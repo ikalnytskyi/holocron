@@ -40,6 +40,7 @@ def test_document(testapp):
 
     assert documents[-1]['source'] == 'virtual://index'
     assert documents[-1]['destination'] == 'index.html'
+    assert documents[-1]['encoding'] == 'utf-8'
 
     soup = bs4.BeautifulSoup(documents[-1]['content'], 'html.parser')
     entries = soup.find(class_='index').find_all(recursive=False)
