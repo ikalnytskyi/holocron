@@ -45,7 +45,7 @@ setup(
         'watchdog >= 0.8.0',    # deps of serve command
     ],
     tests_require=['mock >= 1.1.0'],
-    python_requires='>=3.3',
+    python_requires='>=3.4',
 
     entry_points={
         'console_scripts': [
@@ -89,7 +89,6 @@ setup(
 
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
