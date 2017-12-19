@@ -199,6 +199,7 @@ def create_app(confpath=None):
                         'pattern': r'\d{2,4}/\d{1,2}/\d{1,2}.*\.(%s)$'
                             % '|'.join(extensions),
                     }],
+                    'encoding': app.conf.get('encoding.output', 'utf-8'),
                     'save_as': 'feed.xml',
                 },
                 **app.conf.get('ext.feed', {})
@@ -226,6 +227,7 @@ def create_app(confpath=None):
                         'pattern': r'\d{2,4}/\d{1,2}/\d{1,2}.*\.(%s)$'
                             % '|'.join(extensions),
                     }],
+                    'encoding': app.conf.get('encoding.output', 'utf-8'),
                 },
             )
 
@@ -287,11 +289,6 @@ class Holocron(object):
             'title': "Kenobi's Thoughts",
             'author': 'Obi-Wan Kenobi',
             'url': 'http://obi-wan.jedi',
-        },
-
-        'encoding': {
-            'content': 'utf-8',
-            'output': 'utf-8',
         },
 
         'paths': {
@@ -365,7 +362,6 @@ class Holocron(object):
         self._theme_ctx = {
             'site': self.conf['site'],
             'theme': self.conf['theme'],
-            'encoding': self.conf['encoding.output'],
         }
 
         # discover and execute all found extensions

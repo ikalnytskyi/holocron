@@ -8,7 +8,7 @@ import jinja2
 import pkg_resources
 
 from ._misc import iterdocuments
-from holocron import content
+from holocron.content import Document
 
 
 _template = jinja2.Template(textwrap.dedent('''\
@@ -67,8 +67,8 @@ def process(app, documents, **options):
     app.add_theme_ctx(feedurl=url)
 
     # Produce a virtual document with Feed.
-    feed = content.Document(app)
-    feed['content'] = _template.render(
+    feed = Document(app)
+    content = _template.render(
         documents=selected,
         siteurl_self=url,
         siteurl_alt=app.conf['site.url'],
@@ -77,6 +77,7 @@ def process(app, documents, **options):
         site=app.conf['site'],
         date=datetime.datetime.utcnow().replace(microsecond=0),
         encoding=encoding)
+    feed['content'] = content.encode(encoding)
     feed['source'] = 'virtual://feed'
     feed['destination'] = save_as
 
