@@ -1,7 +1,7 @@
 """Generate index page."""
 
 from ._misc import iterdocuments
-from holocron import content
+from holocron.content import Document
 
 
 def process(app, documents, **options):
@@ -12,10 +12,12 @@ def process(app, documents, **options):
     selected = iterdocuments(documents, when)
     template = app.jinja_env.get_template(template)
 
-    index = content.Document(app)
+    content = template.render(posts=selected, encoding=encoding)
+
+    index = Document(app)
     index['source'] = 'virtual://index'
     index['destination'] = 'index.html'
-    index['content'] = template.render(posts=selected, encoding=encoding)
+    index['content'] = content.encode(encoding)
     index['encoding'] = encoding
 
     return documents + [index]

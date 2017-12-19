@@ -32,7 +32,8 @@ def test_document(testapp):
                 title='the way of the Force',
                 destination=os.path.join('posts', '1.html'),
                 published=datetime.date(2017, 10, 4)),
-        ])
+        ],
+        encoding='cp1251')
 
     assert documents[0]['title'] == 'the way of the Force'
     assert documents[0]['destination'] == os.path.join('posts', '1.html')
@@ -40,9 +41,11 @@ def test_document(testapp):
 
     assert documents[-1]['source'] == 'virtual://index'
     assert documents[-1]['destination'] == 'index.html'
-    assert documents[-1]['encoding'] == 'utf-8'
+    assert documents[-1]['encoding'] == 'cp1251'
 
     soup = bs4.BeautifulSoup(documents[-1]['content'], 'html.parser')
+    assert soup.original_encoding == 'cp1251'
+
     entries = soup.find(class_='index').find_all(recursive=False)
 
     assert 'year' in entries[0].attrs['class']
