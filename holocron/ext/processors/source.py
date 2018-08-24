@@ -4,7 +4,7 @@ import re
 import os
 import datetime
 
-from dooku.datetime import UTC, Local
+from dooku.datetime import UTC
 
 from holocron import content
 from ._misc import iterdocuments
@@ -44,9 +44,6 @@ def _createdocument(app, path, basepath, encoding):
     document['updated'] = \
         datetime.datetime.fromtimestamp(os.path.getmtime(path), UTC)
 
-    document['created_local'] = document['created'].astimezone(Local)
-    document['updated_local'] = document['updated'].astimezone(Local)
-
     try:
         with open(path, 'rt', encoding=encoding) as f:
             document['content'] = f.read()
@@ -69,18 +66,7 @@ def _getinstance(filename, app):
 
     _, ext = os.path.splitext(filename)
 
-    # Previously Holocron used to have multiple document classes, so these
-    # lines are attempt to keep these classes. They are not required anymore,
-    # and is recommended to do not rely on them 'cause they are deprecated
-    # and will gone in future releases.
-    cls = content.Document
-    if ext in app._converters:
-        cls = content.Page
-        if published:
-            cls = content.Post
-
-    # Create appropriate document class and assign published date if found.
-    document = cls(app)
+    document = content.Document(app)
     if published:
         document['published'] = published.date()
     return document

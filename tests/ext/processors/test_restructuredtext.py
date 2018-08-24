@@ -10,8 +10,8 @@ from holocron import app, content
 from holocron.ext.processors import restructuredtext
 
 
-def _get_document(cls=content.Page, **kwargs):
-    document = cls(app.Holocron({}))
+def _get_document(**kwargs):
+    document = content.Document(app.Holocron({}))
     document['destination'] = 'about/cv.rst'
     document.update(kwargs)
     return document

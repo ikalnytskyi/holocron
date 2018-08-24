@@ -13,7 +13,7 @@ from dooku.conf import Conf
 from holocron.app import Holocron
 from holocron import content
 
-from tests import HolocronTestCase, FakeConverter
+from tests import HolocronTestCase
 
 
 class DocumentTestCase(HolocronTestCase):
@@ -43,7 +43,6 @@ class DocumentTestCase(HolocronTestCase):
         Prepares a document instance with a fake config.
         """
         self.app = Holocron(self._conf)
-        self.app.add_converter(FakeConverter())
         self.doc = self.document_class(self.app)
         self.doc['destination'] = self.document_filename
 
@@ -68,29 +67,3 @@ class TestDocument(DocumentTestCase):
         The abs_url property has to be an absolute url to the resource.
         """
         self.assertEqual(self.doc.abs_url, 'http://example.com/about/cv.mdown')
-
-
-class TestPage(DocumentTestCase):
-    """
-    Tests Page document.
-    """
-
-    _open_fn = 'holocron.content.open'
-
-    document_class = content.Page
-    document_filename = 'about/cv.mdown'
-
-    def setUp(self):
-        """
-        Prepares a document instance with a fake config. We need to mock
-        open function to simulate reading from the file.
-        """
-        super(TestPage, self).setUp()
-
-
-class TestPost(TestPage):
-    """
-    Tests Post document.
-    """
-
-    document_class = content.Post

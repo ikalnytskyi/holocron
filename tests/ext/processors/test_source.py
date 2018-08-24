@@ -12,18 +12,11 @@ from holocron.ext.processors import source
 @pytest.fixture(scope='function')
 def testapp():
     instance = app.Holocron({})
-
-    # Create a fake converter for "*.md" files so source processor can
-    # specially treat such files and create a convertible document.
-    instance._converters['.md'] = None
     return instance
 
 
 @pytest.mark.parametrize('path, cls', [
     (['about', 'cv.pdf'], content.Document),
-    (['about', 'cv.md'], content.Page),
-    (['2017', '09', '17', 'cv.md'], content.Post),
-    (['2017', '09', '17', 'cv.rst'], content.Document),
     (['2017', '09', '17', 'cv.pdf'], content.Document),
 ])
 def test_document(testapp, tmpdir, path, cls):
@@ -86,14 +79,14 @@ def test_documents(testapp, tmpdir):
     """Source processor has to ignore non-matched documents."""
 
     structure = sorted([
-        (['2017', '09', '20', 'the-force.md'], content.Post),
-        (['2017', '09', '20', 'yoda.jpg'], content.Document),
-        (['about', 'index.md'], content.Page),
-        (['about', 'me.png'], content.Document),
-        (['cv.pdf'], content.Document),
+        ['2017', '09', '20', 'the-force.md'],
+        ['2017', '09', '20', 'yoda.jpg'],
+        ['about', 'index.md'],
+        ['about', 'me.png'],
+        ['cv.pdf'],
     ])
 
-    for path, _ in structure:
+    for path in structure:
         tmpdir.ensure(*path)
     tmpdir.ensure('_config.yml')
 
@@ -110,11 +103,10 @@ def test_documents(testapp, tmpdir):
         ])
     documents = sorted(documents, key=lambda document: document['source'])
 
-    for document, (path, cls) in zip(documents, structure):
+    for document, path in zip(documents, structure):
         assert document['source'] == os.path.join(*path)
         assert document['destination'] == os.path.join(*path)
         assert document['created'].timestamp() \
             == pytest.approx(tmpdir.join(*path).stat().ctime, 0.00001)
         assert document['updated'].timestamp() \
             == pytest.approx(tmpdir.join(*path).stat().mtime, 0.00001)
-        assert isinstance(document, cls)
