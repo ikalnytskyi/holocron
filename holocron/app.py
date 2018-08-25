@@ -100,7 +100,7 @@ class Holocron(object):
 
         'theme': {},
 
-        'processors': [],
+        'pipelines': {},
 
         'commands': {
             'serve': {
@@ -239,7 +239,7 @@ class Holocron(object):
 
     def run(self):
         """
-        Starts build process.
+        (DEPRECATED) Starts build process.
         """
         documents = []
 
@@ -254,6 +254,7 @@ class Holocron(object):
                 'pattern': r'^static/',
             }])
 
-        documents = self.invoke_processors(documents, self.conf['processors'])
+        processors = self.conf['pipelines.build']
+        documents = self.invoke_processors(documents, processors)
 
         print('Documents were built successfully')

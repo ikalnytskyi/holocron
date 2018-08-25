@@ -1,13 +1,4 @@
-"""
-    holocron.main
-    ~~~~~~~~~~~~~
-
-    This module provides a command line interface and an entry point for
-    end users.
-
-    :copyright: (c) 2014 by the Holocron Team, see AUTHORS for details.
-    :license: 3-clause BSD, see LICENSE for details.
-"""
+"""Yo! Holocron CLI is here!"""
 
 import sys
 import logging
