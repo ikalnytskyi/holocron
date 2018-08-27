@@ -11,8 +11,8 @@ from holocron import app, content
 from holocron.ext.processors import sitemap
 
 
-def _get_document(cls=content.Page, **kwargs):
-    document = cls(app.Holocron({}))
+def _get_document(**kwargs):
+    document = content.Document(app.Holocron({}))
     document.update(kwargs)
     return document
 

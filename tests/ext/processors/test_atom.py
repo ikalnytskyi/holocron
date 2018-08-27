@@ -11,8 +11,8 @@ from holocron import app, content
 from holocron.ext.processors import atom
 
 
-def _get_document(cls=content.Page, **kwargs):
-    document = cls(app.Holocron({}))
+def _get_document(**kwargs):
+    document = content.Document(app.Holocron({}))
     document['author'] = 'Obi-Wan Kenobi'
     document.update(kwargs)
     return document
