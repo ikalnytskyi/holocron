@@ -19,7 +19,7 @@ written by {{ document.author }} on
 </time>
 
 
-{% if show_tags and document.tags %}
+{% if metadata.show_tags and document.tags %}
 <div class="post-tags">
 tagged with
 {% for tag in document.tags %}

@@ -187,21 +187,6 @@ class Holocron(object):
 
         self._processors[name] = processor
 
-    def add_theme_ctx(self, **kwargs):
-        """
-        Pass given keyword arguments to theme templates.
-
-        :param kwargs: key-value argumnets to be passed to theme templates
-        """
-        overwritten = set(kwargs.keys()) & set(self.jinja_env.globals.keys())
-        if overwritten:
-            logger.warning(
-                'the following theme context is going to be overwritten: %s',
-                ', '.join(overwritten))
-
-        self._theme_ctx.update(**kwargs)
-        self.jinja_env.globals.update(**kwargs)
-
     def add_theme(self, theme_path):
         """
         Registers a given theme in the application instance.

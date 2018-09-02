@@ -64,7 +64,7 @@ def process(app, documents, **options):
     # These two lines will be gone once state mechanism is implemented to
     # share parameters between pipeline processors.
     url = os.path.join(app.metadata['url'], save_as)
-    app.add_theme_ctx(feedurl=url)
+    app.metadata['feedurl'] = url
 
     # Produce a virtual document with Feed.
     feed = Document(app)
