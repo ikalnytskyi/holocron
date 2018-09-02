@@ -89,12 +89,6 @@ class Holocron(object):
 
     #: Default settings.
     default_conf = {
-        'site': {
-            'title': "Kenobi's Thoughts",
-            'author': 'Obi-Wan Kenobi',
-            'url': 'http://obi-wan.jedi',
-        },
-
         'paths': {
             'content': '.',
             'output': '_build',
@@ -163,7 +157,7 @@ class Holocron(object):
         #:
         #: .. versionadded:: 0.3.0
         self._theme_ctx = {
-            'site': self.conf['site'],
+            'metadata': self.metadata,
             'theme': self.conf['theme'],
         }
 

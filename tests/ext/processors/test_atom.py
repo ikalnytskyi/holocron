@@ -12,7 +12,9 @@ from holocron.ext.processors import atom
 
 
 def _get_document(**kwargs):
-    document = content.Document(app.Holocron({}))
+    document = content.Document(app.Holocron({}, metadata={
+        'url': 'http://obi-wan.jedi',
+    }))
     document['author'] = 'Obi-Wan Kenobi'
     document.update(kwargs)
     return document
@@ -20,7 +22,10 @@ def _get_document(**kwargs):
 
 @pytest.fixture(scope='function')
 def testapp():
-    instance = app.Holocron({})
+    instance = app.Holocron({}, metadata={
+        'title': "Kenobi's Thoughts",
+        'url': 'http://obi-wan.jedi',
+    })
     return instance
 
 
