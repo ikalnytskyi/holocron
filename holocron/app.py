@@ -10,6 +10,7 @@
 
 import os
 import logging
+import collections
 
 import yaml
 import jinja2
@@ -61,7 +62,8 @@ def create_app(confpath=None):
         logger.error('%s: %s', confpath, str(exc))
         return None
 
-    app = Holocron(conf)
+    metadata = conf.pop('metadata', None) if conf else None
+    app = Holocron(conf, metadata)
 
     for name, ext in ExtensionManager(namespace='holocron.ext.processors'):
         app.add_processor(name, ext)
@@ -111,9 +113,19 @@ class Holocron(object):
         },
     }
 
-    def __init__(self, conf=None):
+    def __init__(self, conf=None, metadata=None):
         #: The configuration dictionary.
         self.conf = Conf(self.default_conf, conf or {})
+
+        #: metadata store
+        #:
+        #: The metadata dictionary is a kv store shared across processors of a
+        #: pipeline, and that is designed to contain application level (i.e.
+        #: site level) data. A chain map is used in order to is to separate
+        #: initial metadata from possible overwrites.
+        #:
+        #: .. versionadded:: 0.4.0
+        self.metadata = collections.ChainMap({}, metadata or {})
 
         #: name -> extension instance
         #:
