@@ -48,10 +48,6 @@ class TestHolocron(HolocronTestCase):
         conf['sitename'] = 'Luke Skywalker'
         conf['paths']['content'] = 'path/to/content'
 
-        # Processors are injected automatically by adopting converters, so
-        # in the sake of sanity let's do not test it here.
-        app.conf['processors'] = []
-
         self.assertEqual(app.conf, conf)
 
     def test_add_processor(self):
@@ -75,7 +71,7 @@ class TestHolocron(HolocronTestCase):
         """
         Tests build process.
         """
-        self.app.conf['processors'] = []
+        self.app.conf['pipelines.build'] = []
         self.app.run()
 
 
@@ -238,7 +234,7 @@ def test_theme_static(testapp, monkeypatch, tmpdir):
     monkeypatch.chdir(tmpdir)
 
     testapp.add_processor('commit', commit.process)
-    testapp.conf['processors'] = [{'name': 'commit'}]
+    testapp.conf['pipelines.build'] = [{'name': 'commit'}]
 
     testapp.run()
 
@@ -264,7 +260,7 @@ def test_user_theme_static(testapp, monkeypatch, tmpdir):
 
     testapp.add_theme(tmpdir.join('_theme').strpath)
     testapp.add_processor('commit', commit.process)
-    testapp.conf['processors'] = [{'name': 'commit'}]
+    testapp.conf['pipelines.build'] = [{'name': 'commit'}]
 
     testapp.run()
 
@@ -281,3 +277,73 @@ def test_user_theme_static(testapp, monkeypatch, tmpdir):
 
     assert tmpdir.join('_site', 'static', 'style.css').read() == 'overwritten'
     assert tmpdir.join('_site', 'static', 'marker.txt').read() == 'skywalker'
+
+
+@pytest.mark.parametrize('processor_options', [
+    {'a': 1},
+    {'b': 1.13},
+    {'a': 1, 'b': 1.13},
+    {'a': {'x': [1, 2]}, 'b': ['1', 2]},
+])
+def test_invoke_processors_propagates_options(testapp, processor_options):
+    def processor(app, documents, **options):
+        assert options == processor_options
+    testapp.add_processor('processor', processor)
+    testapp.invoke_processors([], [dict(processor_options, name='processor')])
+
+
+@pytest.mark.parametrize('initial_documents', [
+    [{'a': 1}],
+    [{'a': 1, 'b': 1.13}],
+    [{'a': 1}, {'b': 1.13}],
+    [{'a': {'x': [1, 2]}, 'b': ['1', 2]}],
+])
+def test_invoke_processors_initial_documents(testapp, initial_documents):
+    def processor(app, documents):
+        assert documents == initial_documents
+    testapp.add_processor('processor', processor)
+    testapp.invoke_processors(initial_documents, [{'name': 'processor'}])
+
+
+@pytest.mark.parametrize('documents', [
+    [{'a': 1}],
+    [{'a': 1, 'b': 1.13}],
+    [{'a': 1}, {'b': 1.13}],
+    [{'a': {'x': [1, 2]}, 'b': ['1', 2]}],
+])
+def test_invoke_processors_empty_pipeline(testapp, documents):
+    assert testapp.invoke_processors(documents, []) == documents
+
+
+def test_invoke_processors_pipeline(testapp):
+    def processor_a(app, documents):
+        assert documents == [{'a': 'b'}]
+        documents[0]['x'] = 42
+        return documents
+
+    def processor_b(app, documents):
+        assert documents == [{'a': 'b', 'x': 42}]
+        documents.append({'z': 13})
+        return documents
+
+    def processor_c(app, documents):
+        assert documents == [{'a': 'b', 'x': 42}, {'z': 13}]
+        return documents
+
+    testapp.add_processor('processor_a', processor_a)
+    testapp.add_processor('processor_b', processor_b)
+    testapp.add_processor('processor_c', processor_c)
+
+    pipeline = [{'name': 'processor_a'},
+                {'name': 'processor_b'}]
+    assert testapp.invoke_processors([{'a': 'b'}], pipeline) \
+        == [{'a': 'b', 'x': 42}, {'z': 13}]
+
+
+def test_invoke_processors_processor_errors(testapp):
+    def processor(app, documents):
+        raise ValueError('something bad happened')
+    testapp.add_processor('processor', processor)
+
+    with pytest.raises(ValueError, match='something bad happened'):
+        testapp.invoke_processors([], [{'name': 'processor'}])
