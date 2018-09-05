@@ -63,18 +63,18 @@ def process(app, documents, **options):
 
     # These two lines will be gone once state mechanism is implemented to
     # share parameters between pipeline processors.
-    url = os.path.join(app.conf['site.url'], save_as)
-    app.add_theme_ctx(feedurl=url)
+    url = os.path.join(app.metadata['url'], save_as)
+    app.metadata['feedurl'] = url
 
     # Produce a virtual document with Feed.
     feed = Document(app)
     content = _template.render(
         documents=selected,
         siteurl_self=url,
-        siteurl_alt=app.conf['site.url'],
+        siteurl_alt=app.metadata['url'],
         app_uri='https://holocron.readthedocs.io',
         app_version=pkg_resources.get_distribution('holocron').version,
-        site=app.conf['site'],
+        site=app.metadata,
         date=datetime.datetime.utcnow().replace(microsecond=0),
         encoding=encoding)
     feed['content'] = content.encode(encoding)

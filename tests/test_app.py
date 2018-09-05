@@ -149,6 +149,10 @@ class TestCreateApp(HolocronTestCase):
         Tests that custom conf overrides default one.
         """
         conf_raw = textwrap.dedent('''\
+            metadata:
+                skywalker: jedi
+                yoda:
+                    rank: master
             site:
                 name: MySite
                 author: User
@@ -158,6 +162,9 @@ class TestCreateApp(HolocronTestCase):
         self.assertIsNotNone(app)
         self.assertEqual(app.conf['site.name'], 'MySite')
         self.assertEqual(app.conf['site.author'], 'User')
+
+        self.assertEqual(app.metadata['skywalker'], 'jedi')
+        self.assertEqual(app.metadata['yoda'], {'rank': 'master'})
 
     def test_illformed_conf(self):
         """
@@ -226,6 +233,25 @@ class TestCreateApp(HolocronTestCase):
 @pytest.fixture(scope='function')
 def testapp():
     return Holocron({})
+
+
+def test_metadata_empty(testapp):
+    with pytest.raises(KeyError, match='skywalker'):
+        testapp.metadata['skywalker']
+    assert testapp.metadata.get('skywalker', 'yoda') == 'yoda'
+
+    testapp.metadata['skywalker'] = 'jedi'
+    assert testapp.metadata['skywalker'] == 'jedi'
+
+
+def test_metadata():
+    testapp = Holocron({}, {'skywalker': 'jedi', 'yoda': 'master'})
+    assert testapp.metadata['skywalker'] == 'jedi'
+    assert testapp.metadata['yoda'] == 'master'
+
+    testapp.metadata['skywalker'] = 'luke'
+    assert testapp.metadata['skywalker'] == 'luke'
+    assert testapp.metadata['yoda'] == 'master'
 
 
 def test_theme_static(testapp, monkeypatch, tmpdir):

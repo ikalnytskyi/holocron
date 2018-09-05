@@ -22,9 +22,6 @@ class DocumentTestCase(HolocronTestCase):
     """
 
     _conf = Conf({
-        'site': {
-            'url': 'http://example.com',
-        },
         'encoding': {
             'content': 'utf-8',
             'output': 'out-enc',
@@ -34,6 +31,9 @@ class DocumentTestCase(HolocronTestCase):
             'output': './_output',
         }
     })
+    _metadata = {
+        'url': 'http://example.com',
+    }
 
     document_class = None       # a document constructor
     document_filename = None    # a document filename, relative to the content
@@ -42,7 +42,7 @@ class DocumentTestCase(HolocronTestCase):
         """
         Prepares a document instance with a fake config.
         """
-        self.app = Holocron(self._conf)
+        self.app = Holocron(self._conf, self._metadata)
         self.doc = self.document_class(self.app)
         self.doc['destination'] = self.document_filename
 

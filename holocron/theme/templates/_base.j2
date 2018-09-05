@@ -17,11 +17,11 @@
   <link rel="stylesheet" type="text/css" href="/static/style.css">
   <link rel="stylesheet" type="text/css" href="/static/pygments.css">
 
-  {% if feedurl -%}
-  <link rel="alternate" type="application/atom+xml" href="{{ feedurl }}" title="{{ site.title }}">
+  {% if metadata.feedurl -%}
+  <link rel="alternate" type="application/atom+xml" href="{{ metadata.feedurl }}" title="{{ metadata.title }}">
   {%- endif %}
 
-  <title>{% block title %}{{ site.title }}{% endblock %}</title>
+  <title>{% block title %}{{ metadata.title }}{% endblock %}</title>
 {%- endblock %}
 
 <body>
@@ -29,7 +29,7 @@
   <div class="header-wrapper">
   <header class="header">
     <img src="/static/logo.svg" alt="Logotype" class="logo">
-    <a href="/" class="title">{{ site.title }}</a>
+    <a href="/" class="title">{{ metadata.title }}</a>
 
     <nav>
       {% for name, url in theme.get('navigation', []) -%}

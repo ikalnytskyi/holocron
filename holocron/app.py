@@ -10,6 +10,7 @@
 
 import os
 import logging
+import collections
 
 import yaml
 import jinja2
@@ -61,7 +62,8 @@ def create_app(confpath=None):
         logger.error('%s: %s', confpath, str(exc))
         return None
 
-    app = Holocron(conf)
+    metadata = conf.pop('metadata', None) if conf else None
+    app = Holocron(conf, metadata)
 
     for name, ext in ExtensionManager(namespace='holocron.ext.processors'):
         app.add_processor(name, ext)
@@ -87,12 +89,6 @@ class Holocron(object):
 
     #: Default settings.
     default_conf = {
-        'site': {
-            'title': "Kenobi's Thoughts",
-            'author': 'Obi-Wan Kenobi',
-            'url': 'http://obi-wan.jedi',
-        },
-
         'paths': {
             'content': '.',
             'output': '_build',
@@ -111,9 +107,19 @@ class Holocron(object):
         },
     }
 
-    def __init__(self, conf=None):
+    def __init__(self, conf=None, metadata=None):
         #: The configuration dictionary.
         self.conf = Conf(self.default_conf, conf or {})
+
+        #: metadata store
+        #:
+        #: The metadata dictionary is a kv store shared across processors of a
+        #: pipeline, and that is designed to contain application level (i.e.
+        #: site level) data. A chain map is used in order to is to separate
+        #: initial metadata from possible overwrites.
+        #:
+        #: .. versionadded:: 0.4.0
+        self.metadata = collections.ChainMap({}, metadata or {})
 
         #: name -> extension instance
         #:
@@ -151,7 +157,7 @@ class Holocron(object):
         #:
         #: .. versionadded:: 0.3.0
         self._theme_ctx = {
-            'site': self.conf['site'],
+            'metadata': self.metadata,
             'theme': self.conf['theme'],
         }
 
@@ -180,21 +186,6 @@ class Holocron(object):
             return
 
         self._processors[name] = processor
-
-    def add_theme_ctx(self, **kwargs):
-        """
-        Pass given keyword arguments to theme templates.
-
-        :param kwargs: key-value argumnets to be passed to theme templates
-        """
-        overwritten = set(kwargs.keys()) & set(self.jinja_env.globals.keys())
-        if overwritten:
-            logger.warning(
-                'the following theme context is going to be overwritten: %s',
-                ', '.join(overwritten))
-
-        self._theme_ctx.update(**kwargs)
-        self.jinja_env.globals.update(**kwargs)
 
     def add_theme(self, theme_path):
         """

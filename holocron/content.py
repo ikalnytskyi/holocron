@@ -31,4 +31,4 @@ class Document(dict):
 
     @property
     def abs_url(self):
-        return self._app.conf['site.url'] + self.url
+        return self._app.metadata['url'] + self.url

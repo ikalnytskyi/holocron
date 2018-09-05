@@ -12,14 +12,18 @@ from holocron.ext.processors import sitemap
 
 
 def _get_document(**kwargs):
-    document = content.Document(app.Holocron({}))
+    document = content.Document(app.Holocron({}, metadata={
+        'url': 'http://obi-wan.jedi',
+    }))
     document.update(kwargs)
     return document
 
 
 @pytest.fixture(scope='function')
 def testapp():
-    instance = app.Holocron({})
+    instance = app.Holocron({}, metadata={
+        'url': 'http://obi-wan.jedi',
+    })
     return instance
 
 

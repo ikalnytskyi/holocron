@@ -11,7 +11,7 @@ def process(app, documents, **options):
     template = options.pop('template', 'index.j2')
     output = options.pop('output', 'tags/{tag}.html')
 
-    app.add_theme_ctx(show_tags=True)
+    app.metadata['show_tags'] = True
 
     # map: tag -> [posts]
     tags = collections.defaultdict(list)
