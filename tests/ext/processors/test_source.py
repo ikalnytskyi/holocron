@@ -75,6 +75,46 @@ def test_document_content_types(testapp, tmpdir, data, cls):
     assert isinstance(documents[0]['content'], cls)
 
 
+@pytest.mark.parametrize('timezone, tzname', [
+    ('UTC', 'UTC'),
+    ('Europe/Kiev', 'EEST'),
+])
+def test_timezone(testapp, tmpdir, timezone, tzname):
+    tmpdir.ensure('cv.md').write_text('text', encoding='utf-8')
+
+    documents = source.process(
+        testapp,
+        [],
+        path=tmpdir.strpath,
+        timezone=timezone)
+
+    created = documents[0]['created']
+    updated = documents[0]['updated']
+
+    assert created.tzinfo.tzname(created) == tzname
+    assert updated.tzinfo.tzname(updated) == tzname
+
+
+def test_timezone_in_action(testapp, tmpdir):
+    tmpdir.ensure('cv.md').write_text('text', encoding='utf-8')
+
+    created_utc = source.process(
+        testapp, [], path=tmpdir.strpath, timezone='UTC')[0]['created']
+    created_kie = source.process(
+        testapp, [], path=tmpdir.strpath, timezone='Europe/Kiev')[0]['created']
+
+    assert created_kie.tzinfo.utcoffset(created_kie) \
+        >= created_utc.tzinfo.utcoffset(created_utc)
+    assert created_kie.isoformat() > created_utc.isoformat()
+    assert created_kie.isoformat().split('+')[-1] in ('02:00', '03:00')
+
+
+def test_no_such_timezone(testapp, tmpdir):
+    with pytest.raises(ValueError, match='Europe/Kharkiv: no such timezone'):
+        source.process(
+            testapp, [], path=tmpdir.strpath, timezone='Europe/Kharkiv')
+
+
 def test_documents(testapp, tmpdir):
     """Source processor has to ignore non-matched documents."""
 

@@ -4,7 +4,7 @@ import re
 import os
 import datetime
 
-from dooku.datetime import UTC
+import dateutil.tz
 
 from holocron import content
 from ._misc import iterdocuments
@@ -14,22 +14,30 @@ def process(app, documents, **options):
     path = options.pop('path', '.')
     when = options.pop('when', None)
     encoding = options.pop('encoding', 'utf-8')
+    timezone = options.pop('timezone', 'UTC')
 
-    documents.extend(iterdocuments(_finddocuments(app, path, encoding), when))
+    tzinfo = dateutil.tz.gettz(timezone)
+
+    if tzinfo is None:
+        raise ValueError('%s: no such timezone' % timezone)
+
+    documents.extend(
+        iterdocuments(_finddocuments(app, path, encoding, tzinfo), when))
     return documents
 
 
-def _finddocuments(app, path, encoding):
+def _finddocuments(app, path, encoding, tzinfo):
     for root, dirnames, filenames in os.walk(path, topdown=True):
         for filename in filenames:
             yield _createdocument(
                 app,
                 os.path.join(root, filename),
                 basepath=path,
-                encoding=encoding)
+                encoding=encoding,
+                tzinfo=tzinfo)
 
 
-def _createdocument(app, path, basepath, encoding):
+def _createdocument(app, path, basepath, encoding, tzinfo):
     source = os.path.relpath(path, basepath)
     document = _getinstance(source, app)
 
@@ -40,9 +48,9 @@ def _createdocument(app, path, basepath, encoding):
     document['destination'] = source
 
     document['created'] = \
-        datetime.datetime.fromtimestamp(os.path.getctime(path), UTC)
+        datetime.datetime.fromtimestamp(os.path.getctime(path), tzinfo)
     document['updated'] = \
-        datetime.datetime.fromtimestamp(os.path.getmtime(path), UTC)
+        datetime.datetime.fromtimestamp(os.path.getmtime(path), tzinfo)
 
     try:
         with open(path, 'rt', encoding=encoding) as f:
