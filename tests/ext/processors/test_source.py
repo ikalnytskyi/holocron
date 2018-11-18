@@ -75,11 +75,11 @@ def test_document_content_types(testapp, tmpdir, data, cls):
     assert isinstance(documents[0]['content'], cls)
 
 
-@pytest.mark.parametrize('timezone, tzname', [
-    ('UTC', 'UTC'),
-    ('Europe/Kiev', 'EEST'),
+@pytest.mark.parametrize('timezone, tznames', [
+    ('UTC', ['UTC']),
+    ('Europe/Kiev', ['EET', 'EEST']),
 ])
-def test_timezone(testapp, tmpdir, timezone, tzname):
+def test_timezone(testapp, tmpdir, timezone, tznames):
     tmpdir.ensure('cv.md').write_text('text', encoding='utf-8')
 
     documents = source.process(
@@ -91,8 +91,8 @@ def test_timezone(testapp, tmpdir, timezone, tzname):
     created = documents[0]['created']
     updated = documents[0]['updated']
 
-    assert created.tzinfo.tzname(created) == tzname
-    assert updated.tzinfo.tzname(updated) == tzname
+    assert created.tzinfo.tzname(created) in tznames
+    assert updated.tzinfo.tzname(updated) in tznames
 
 
 def test_timezone_in_action(testapp, tmpdir):
