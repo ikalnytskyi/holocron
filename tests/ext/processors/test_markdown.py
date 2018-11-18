@@ -38,7 +38,7 @@ def test_document(testapp):
 
     assert re.match(
         (
-            '<p>text with <strong>bold</strong></p>'
+            r'<p>text with <strong>bold</strong></p>'
         ),
         documents[0]['content'])
 
@@ -63,7 +63,7 @@ def test_document_with_alt_title_syntax(testapp):
 
     assert re.match(
         (
-            '<p>text with <strong>bold</strong></p>'
+            r'<p>text with <strong>bold</strong></p>'
         ),
         documents[0]['content'])
 
@@ -89,7 +89,7 @@ def test_document_with_newlines_at_the_beginning(testapp):
 
     assert re.match(
         (
-            '<p>text with <strong>bold</strong></p>'
+            r'<p>text with <strong>bold</strong></p>'
         ),
         documents[0]['content'])
 
@@ -111,7 +111,7 @@ def test_document_without_title(testapp):
 
     assert re.match(
         (
-            '<p>text with <strong>bold</strong></p>'
+            r'<p>text with <strong>bold</strong></p>'
         ),
         documents[0]['content'])
 
@@ -133,7 +133,7 @@ def test_document_title_is_not_overwritten(testapp):
 
     assert re.match(
         (
-            '<p>text with <strong>bold</strong></p>'
+            r'<p>text with <strong>bold</strong></p>'
         ),
         documents[0]['content'])
 
@@ -159,9 +159,9 @@ def test_document_title_ignored_in_the_middle_of_text(testapp):
 
     assert re.match(
         (
-            '<p>text</p>\s*'
-            '<h1>some title</h1>\s*'
-            '<p>text with <strong>bold</strong></p>'
+            r'<p>text</p>\s*'
+            r'<h1>some title</h1>\s*'
+            r'<p>text with <strong>bold</strong></p>'
         ),
         documents[0]['content'])
 
@@ -204,11 +204,11 @@ def test_document_with_sections(testapp):
 
     assert re.match(
         (
-            '<p>aaa</p>\s*'
-            '<h2>some section 1</h2>\s*<p>bbb</p>\s*'
-            '<h2>some section 2</h2>\s*<p>ccc</p>\s*'
-            '<h1>some title 2</h1>\s*<p>xxx</p>\s*'
-            '<h2>some section 3</h2>\s*<p>yyy</p>\s*'
+            r'<p>aaa</p>\s*'
+            r'<h2>some section 1</h2>\s*<p>bbb</p>\s*'
+            r'<h2>some section 2</h2>\s*<p>ccc</p>\s*'
+            r'<h1>some title 2</h1>\s*<p>xxx</p>\s*'
+            r'<h2>some section 3</h2>\s*<p>yyy</p>\s*'
         ),
         documents[0]['content'])
 
@@ -233,7 +233,7 @@ def test_document_with_code(testapp):
 
     assert re.match(
         (
-            '<p>test codeblock</p>\s*.*codehilite.*<pre>[\s\S]+</pre>.*'
+            r'<p>test codeblock</p>\s*.*codehilite.*<pre>[\s\S]+</pre>.*'
         ),
         documents[0]['content'])
 
@@ -257,7 +257,7 @@ def test_document_with_fenced_code(testapp):
 
     assert re.match(
         (
-            '.*codehilite.*<pre>[\s\S]+</pre>.*'
+            r'.*codehilite.*<pre>[\s\S]+</pre>.*'
         ),
         documents[0]['content'])
 
@@ -326,7 +326,7 @@ def test_document_with_custom_extensions(testapp):
     # when no extensions are passed, syntax highlighting is turned off
     assert re.match(
         (
-            '<p><code>lambda x: pass</code></p>'
+            r'<p><code>lambda x: pass</code></p>'
         ),
         documents[0]['content'])
 

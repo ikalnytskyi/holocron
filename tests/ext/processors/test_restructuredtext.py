@@ -39,7 +39,7 @@ def test_document(testapp):
 
     assert re.match(
         (
-            '<p>text with <strong>bold</strong></p>\s*'
+            r'<p>text with <strong>bold</strong></p>\s*'
         ),
         documents[0]['content'])
 
@@ -69,9 +69,9 @@ def test_document_with_subsection(testapp):
 
     assert re.match(
         (
-            '<p>abstract</p>\s*'
-            '<h2>some section</h2>\s*'
-            '<p>text with <strong>bold</strong></p>\s*'
+            r'<p>abstract</p>\s*'
+            r'<h2>some section</h2>\s*'
+            r'<p>text with <strong>bold</strong></p>\s*'
         ),
         documents[0]['content'])
 
@@ -93,7 +93,7 @@ def test_document_without_title(testapp):
 
     assert re.match(
         (
-            '<p>text with <strong>bold</strong></p>\s*'
+            r'<p>text with <strong>bold</strong></p>\s*'
         ),
         documents[0]['content'])
 
@@ -138,16 +138,16 @@ def test_document_with_sections(testapp):
 
     assert re.match(
         (
-            '<h2>some title 1</h2>\s*'
-            '<p>aaa</p>\s*'
-            '<h3>some section 1</h3>\s*'
-            '<p>bbb</p>\s*'
-            '<h3>some section 2</h3>\s*'
-            '<p>ccc</p>\s*'
-            '<h2>some title 2</h2>\s*'
-            '<p>xxx</p>\s*'
-            '<h3>some section 3</h3>\s*'
-            '<p>yyy</p>\s*'
+            r'<h2>some title 1</h2>\s*'
+            r'<p>aaa</p>\s*'
+            r'<h3>some section 1</h3>\s*'
+            r'<p>bbb</p>\s*'
+            r'<h3>some section 2</h3>\s*'
+            r'<p>ccc</p>\s*'
+            r'<h2>some title 2</h2>\s*'
+            r'<p>xxx</p>\s*'
+            r'<h3>some section 3</h3>\s*'
+            r'<p>yyy</p>\s*'
         ),
         documents[0]['content'])
 
@@ -195,7 +195,7 @@ def test_document_with_inline_code(testapp):
 
     assert re.match(
         (
-            '<p>test <code>code</code></p>'
+            r'<p>test <code>code</code></p>'
         ),
         documents[0]['content'])
 
@@ -230,10 +230,10 @@ def test_document_with_setting(testapp):
     # start with <h2>
     assert re.match(
         (
-            '<h3>section 1</h3>\s*'
-            '<p>aaa</p>\s*'
-            '<h3>section 2</h3>\s*'
-            '<p>bbb</p>\s*'
+            r'<h3>section 1</h3>\s*'
+            r'<p>aaa</p>\s*'
+            r'<h3>section 2</h3>\s*'
+            r'<p>bbb</p>\s*'
         ),
         documents[0]['content'])
     assert documents[0]['destination'].endswith('.html')
