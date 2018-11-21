@@ -4,8 +4,9 @@ import os
 import re
 
 import markdown
+import schema
 
-from ._misc import iterdocuments
+from ._misc import iterdocuments, parameters
 
 
 _top_heading_re = re.compile(
@@ -28,16 +29,21 @@ _top_heading_re = re.compile(
     re.DOTALL)
 
 
-def process(app, documents, **options):
+@parameters(
+    schema={
+        'when': schema.Or([{str: object}], None, error='unsupported value'),
+        'extensions': schema.Schema([str]),
+    }
+)
+def process(app, documents, when=None, extensions=None):
     markdown_ = markdown.Markdown(
         # No one use pure Markdown nowadays, so let's enhance it with some
         # popular and widely used extensions such as tables, footnotes and
         # syntax highlighting.
-        extensions=options.pop('extensions', [
+        extensions=extensions if extensions is not None else [
             'markdown.extensions.codehilite',
             'markdown.extensions.extra',
-        ]))
-    when = options.pop('when', None)
+        ])
 
     for document in iterdocuments(documents, when):
         # We need to strip top level heading out of the document because
