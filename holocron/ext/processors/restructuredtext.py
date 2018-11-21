@@ -2,14 +2,21 @@
 
 import os
 
+import schema
 from docutils.core import publish_parts
 from docutils.writers import html5_polyglot
 from docutils import nodes
 
-from ._misc import iterdocuments
+from ._misc import iterdocuments, parameters
 
 
-def process(app, documents, **options):
+@parameters(
+    schema={
+        'when': schema.Or([{str: object}], None, error='unsupported value'),
+        'docutils': schema.Schema({str: object}),
+    }
+)
+def process(app, documents, when=None, docutils={}):
     settings = dict(
         {
             # We need to start heading level with <h2> in case there are
@@ -32,8 +39,7 @@ def process(app, documents, **options):
             # simplify customization flow.
             'syntax_highlight': 'short',
         },
-        **options.pop('docutils', {}))
-    when = options.pop('when', None)
+        **docutils)
 
     for document in iterdocuments(documents, when):
         # Writer is mutable so we can't share the same instance between
