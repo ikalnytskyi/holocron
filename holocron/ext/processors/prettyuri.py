@@ -1,13 +1,17 @@
 """Strip .HTML extension from URIs."""
 
 import os
+import schema
 
-from ._misc import iterdocuments
+from ._misc import iterdocuments, parameters
 
 
-def process(app, documents, **options):
-    when = options.pop('when', None)
-
+@parameters(
+    schema={
+        'when': schema.Or([{str: object}], None, error='unsupported value'),
+    }
+)
+def process(app, documents, when=None):
     for document in iterdocuments(documents, when):
         destination = os.path.basename(document['destination'])
 
