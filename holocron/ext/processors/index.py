@@ -1,14 +1,20 @@
 """Generate index page."""
 
-from ._misc import iterdocuments
+import codecs
+import schema
+
+from ._misc import iterdocuments, parameters
 from holocron.content import Document
 
 
-def process(app, documents, **options):
-    when = options.pop('when', None)
-    template = options.pop('template', 'index.j2')
-    encoding = options.pop('encoding', 'utf-8')
-
+@parameters(
+    schema={
+        'when': schema.Or([{str: object}], None, error='unsupported value'),
+        'template': schema.Schema(str),
+        'encoding': schema.Schema(codecs.lookup, 'unsupported encoding'),
+    }
+)
+def process(app, documents, when=None, template='index.j2', encoding='UTF-8'):
     selected = iterdocuments(documents, when)
     template = app.jinja_env.get_template(template)
 
