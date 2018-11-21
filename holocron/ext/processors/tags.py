@@ -1,16 +1,24 @@
 """Generate tags page."""
 
 import collections
+import schema
 
-from ._misc import iterdocuments
+from ._misc import iterdocuments, parameters
 from holocron import content
 
 
-def process(app, documents, **options):
-    when = options.pop('when', None)
-    template = options.pop('template', 'index.j2')
-    output = options.pop('output', 'tags/{tag}.html')
-
+@parameters(
+    schema={
+        'when': schema.Or([{str: object}], None, error='unsupported value'),
+        'template': schema.Schema(str),
+        'output': schema.Schema(str),
+    }
+)
+def process(app,
+            documents,
+            when=None,
+            template='index.j2',
+            output='tags/{tag}.html'):
     app.metadata['show_tags'] = True
 
     # map: tag -> [posts]
