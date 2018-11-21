@@ -8,6 +8,7 @@ import urllib.parse
 
 import jsonpointer
 import schema
+import dooku.conf
 
 
 _evaluators = {
@@ -74,6 +75,11 @@ class parameters:
             for name, value in arguments.items():
                 value = resolve_json_references(
                     value, {':application:': app.conf})
+
+                # this is a temporary hack to workaround schema error
+                # that dooku.conf.Conf is not a dict
+                if isinstance(value, dooku.conf.Conf):
+                    value = dict(value)
 
                 if name in self._schema:
                     try:

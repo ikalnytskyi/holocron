@@ -1,13 +1,18 @@
 """Set given metadata on document instances."""
 
-from ._misc import iterdocuments
+import schema
+
+from ._misc import iterdocuments, parameters
 
 
-def process(app, documents, **options):
-    metadata = options.pop('metadata', {})
-    overwrite = options.pop('overwrite', True)
-    when = options.pop('when', None)
-
+@parameters(
+    schema={
+        'when': schema.Or([{str: object}], None, error='unsupported value'),
+        'metadata': schema.Schema({str: object}),
+        'overwrite': schema.Schema(bool),
+    }
+)
+def process(app, documents, when=None, metadata={}, overwrite=True):
     for document in iterdocuments(documents, when):
         for key, value in metadata.items():
             if overwrite or key not in document:
