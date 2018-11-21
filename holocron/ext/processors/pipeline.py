@@ -1,13 +1,17 @@
 """Run separate processors pipeline on selected documents."""
 
+import schema
 
-from ._misc import iterdocuments_ex
+from ._misc import iterdocuments_ex, parameters
 
 
-def process(app, documents, **options):
-    processors = options.pop('processors', [])
-    when = options.pop('when', None)
-
+@parameters(
+    schema={
+        'when': schema.Or([{str: object}], None, error='unsupported value'),
+        'processors': schema.Schema([{str: object}]),
+    }
+)
+def process(app, documents, when=None, processors=[]):
     kept = []
     selected = []
 
