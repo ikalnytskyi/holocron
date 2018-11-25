@@ -2,11 +2,12 @@
 
 import os
 import textwrap
-import gzip
+import gzip as _gzip
 
 import jinja2
+import schema
 
-from ._misc import iterdocuments
+from ._misc import iterdocuments, parameters
 from holocron.content import Document
 
 
@@ -35,11 +36,14 @@ def _check_documents_urls(sitemap, documents):
                 "include %s." % (sitemap.abs_url, owned_url, document.abs_url))
 
 
-def process(app, documents, **options):
-    use_gzip = options.pop('gzip', False)
-    save_as = options.pop('save_as', 'sitemap.xml')
-    when = options.pop('when', None)
-
+@parameters(
+    schema={
+        'when': schema.Or([{str: object}], None, error='unsupported value'),
+        'gzip': schema.Schema(bool),
+        'save_as': schema.Schema(str),
+    }
+)
+def process(app, documents, when=None, gzip=False, save_as='sitemap.xml'):
     # According to the Sitemap protocol, the output encoding must be UTF-8.
     # Since this processor does not perform any I/O, the only thing we can
     # do here is to provide bytes representing UTF-8 encoded XML.
@@ -48,8 +52,8 @@ def process(app, documents, **options):
 
     # According to the Sitemap protocol, the sitemap.xml can be compressed
     # using gzip to reduce bandwidth requirements.
-    if use_gzip:
-        content = gzip.compress(content)
+    if gzip:
+        content = _gzip.compress(content)
         save_as += '.gz'
 
     sitemap = Document(app)

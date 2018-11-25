@@ -2,7 +2,6 @@
 
 import os
 
-import mock
 import pytest
 
 from holocron import app, content
@@ -17,7 +16,7 @@ def _get_document(**kwargs):
 
 @pytest.fixture(scope='function')
 def testapp():
-    return mock.Mock()
+    return app.Holocron()
 
 
 def test_document(testapp):
@@ -71,3 +70,24 @@ def test_documents(testapp):
     assert documents[1]['destination'] == '1/index.html'
     assert documents[2]['destination'] == '2.html'
     assert documents[3]['destination'] == '3/index.html'
+
+
+@pytest.mark.parametrize('options, error', [
+    ({'when': [42]}, 'when: unsupported value'),
+])
+def test_parameters_schema(testapp, options, error):
+    with pytest.raises(ValueError, match=error):
+        prettyuri.process(testapp, [], **options)
+
+
+@pytest.mark.parametrize('option_name, option_value, error', [
+    ('when', [42], 'when: unsupported value'),
+])
+def test_parameters_jsonref_schema(testapp, option_name, option_value, error):
+    testapp.conf.update({'test': {option_name: option_value}})
+
+    with pytest.raises(ValueError, match=error):
+        prettyuri.process(
+            testapp,
+            [],
+            **{option_name: {'$ref': ':application:#/test/%s' % option_name}})

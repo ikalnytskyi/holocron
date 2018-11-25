@@ -1,16 +1,27 @@
 """Unload pipeline by committing documents."""
 
 import os
+import codecs
 
-from ._misc import iterdocuments
+import schema
+
+from ._misc import iterdocuments, parameters
 
 
-def process(app, documents, **options):
-    path = options.pop('path', '_site')
-    when = options.pop('when', None)
-    unload = options.pop('unload', True)
-    encoding = options.pop('encoding', 'UTF-8')
-
+@parameters(
+    schema={
+        'path': str,
+        'when': schema.Or([{str: object}], None, error='unsupported value'),
+        'encoding': schema.Schema(codecs.lookup, 'unsupported encoding'),
+        'unload': schema.Schema(bool),
+    }
+)
+def process(app,
+            documents,
+            path='_site',
+            when=None,
+            unload=True,
+            encoding='UTF-8'):
     to_remove = []
 
     for document in iterdocuments(list(documents), when):

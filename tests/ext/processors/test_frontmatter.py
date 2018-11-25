@@ -2,7 +2,6 @@
 
 import textwrap
 
-import mock
 import pytest
 import yaml
 
@@ -18,7 +17,7 @@ def _get_document(**kwargs):
 
 @pytest.fixture(scope='function')
 def testapp():
-    return mock.Mock()
+    return app.Holocron()
 
 
 def test_document(testapp):
@@ -240,3 +239,58 @@ def test_documents(testapp):
     assert documents[3]['master']
     assert documents[3]['labels'] == ['force', 'motto']
     assert documents[3]['content'] == 'May the Force be with you!\n'
+
+
+def test_parameters_jsonref(testapp):
+    testapp.conf.update({
+        'extra': {'delimiter': '>-<'},
+        'ow': False,
+    })
+
+    content = textwrap.dedent('''\
+        >-<
+        master: true
+        labels: [force, motto]
+        >-<
+
+        May the Force be with you!
+    ''')
+
+    documents = frontmatter.process(
+        testapp,
+        [
+            _get_document(content=content, master=False),
+        ],
+        delimiter={'$ref': ':application:#/extra/delimiter'},
+        overwrite={'$ref': ':application:#/ow'})
+
+    assert len(documents) == 1
+
+    assert not documents[0]['master']
+    assert documents[0]['labels'] == ['force', 'motto']
+    assert documents[0]['content'] == 'May the Force be with you!\n'
+
+
+@pytest.mark.parametrize('options, error', [
+    ({'when': [42]}, 'when: unsupported value'),
+    ({'delimiter': 42}, "delimiter: 42 should be instance of 'str'"),
+    ({'overwrite': 'true'}, "overwrite: 'true' should be instance of 'bool'"),
+])
+def test_parameters_schema(testapp, options, error):
+    with pytest.raises(ValueError, match=error):
+        frontmatter.process(testapp, [], **options)
+
+
+@pytest.mark.parametrize('option_name, option_value, error', [
+    ('when', [42], 'when: unsupported value'),
+    ('delimiter', 42, "delimiter: 42 should be instance of 'str'"),
+    ('overwrite', 'true', "overwrite: 'true' should be instance of 'bool'"),
+])
+def test_parameters_jsonref_schema(testapp, option_name, option_value, error):
+    testapp.conf.update({'test': {option_name: option_value}})
+
+    with pytest.raises(ValueError, match=error):
+        frontmatter.process(
+            testapp,
+            [],
+            **{option_name: {'$ref': ':application:#/test/%s' % option_name}})

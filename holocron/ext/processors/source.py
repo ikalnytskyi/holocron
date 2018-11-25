@@ -3,24 +3,30 @@
 import re
 import os
 import datetime
+import codecs
 
 import dateutil.tz
+import schema
 
 from holocron import content
-from ._misc import iterdocuments
+from ._misc import iterdocuments, parameters
 
 
-def process(app, documents, **options):
-    path = options.pop('path', '.')
-    when = options.pop('when', None)
-    encoding = options.pop('encoding', 'utf-8')
-    timezone = options.pop('timezone', 'UTC')
-
+@parameters(
+    schema={
+        'path': str,
+        'when': schema.Or([{str: object}], None, error='unsupported value'),
+        'encoding': schema.Schema(codecs.lookup, 'unsupported encoding'),
+        'timezone': schema.Schema(dateutil.tz.gettz, 'unsupported timezone'),
+    }
+)
+def process(app,
+            documents,
+            path='.',
+            when=None,
+            encoding='UTF-8',
+            timezone='UTC'):
     tzinfo = dateutil.tz.gettz(timezone)
-
-    if tzinfo is None:
-        raise ValueError('%s: no such timezone' % timezone)
-
     documents.extend(
         iterdocuments(_finddocuments(app, path, encoding, tzinfo), when))
     return documents
