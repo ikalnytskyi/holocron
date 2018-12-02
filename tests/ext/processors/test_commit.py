@@ -179,29 +179,6 @@ def test_documents(testapp, monkeypatch, tmpdir):
     assert tmpdir.join('_site', 'posts', '3.html').read() == 'the Force #3'
 
 
-def test_parameters_jsonref(testapp, tmpdir):
-    testapp.conf.update({
-        'extra': {'path': tmpdir.strpath},
-        'unload': False,
-        'encoding': 'CP1251',
-    })
-
-    documents = commit.process(
-        testapp,
-        [
-            {
-                'content': 'оби-ван',
-                'destination': 'test.txt',
-            },
-        ],
-        path={'$ref': ':application:#/extra/path'},
-        unload={'$ref': ':application:#/unload'},
-        encoding={'$ref': ':application:#/encoding'})
-
-    assert len(documents) == 1
-    assert tmpdir.join('test.txt').read_text('CP1251') == 'оби-ван'
-
-
 @pytest.mark.parametrize('options, error', [
     ({'path': 42}, "path: 42 should be instance of 'str'"),
     ({'when': [42]}, 'when: unsupported value'),
@@ -211,19 +188,3 @@ def test_parameters_jsonref(testapp, tmpdir):
 def test_parameters_schema(testapp, options, error):
     with pytest.raises(ValueError, match=error):
         commit.process(testapp, [], **options)
-
-
-@pytest.mark.parametrize('option_name, option_value, error', [
-    ('path', 42, "path: 42 should be instance of 'str'"),
-    ('when', [42], 'when: unsupported value'),
-    ('encoding', 'UTF-42', 'encoding: unsupported encoding'),
-    ('unload', 42, "unload: 42 should be instance of 'bool'"),
-])
-def test_parameters_jsonref_schema(testapp, option_name, option_value, error):
-    testapp.conf.update({'test': {option_name: option_value}})
-
-    with pytest.raises(ValueError, match=error):
-        commit.process(
-            testapp,
-            [],
-            **{option_name: {'$ref': ':application:#/test/%s' % option_name}})

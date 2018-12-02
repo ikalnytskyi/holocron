@@ -385,32 +385,6 @@ def test_documents(testapp):
     assert documents[3]['title'] == 'wookiee'
 
 
-def test_parameters_jsonref(testapp):
-    testapp.conf.update({'extra': {'ext': []}})
-
-    documents = markdown.process(
-        testapp,
-        [
-            _get_document(
-                content=textwrap.dedent('''\
-                    ```
-                    lambda x: pass
-                    ```
-                '''))
-        ],
-        extensions={'$ref': ':application:#/extra/ext'})
-
-    # when no extensions are passed, syntax highlighting is turned off
-    assert re.match(
-        (
-            r'<p><code>lambda x: pass</code></p>'
-        ),
-        documents[0]['content'])
-
-    assert documents[0]['destination'].endswith('.html')
-    assert 'title' not in documents[0]
-
-
 @pytest.mark.parametrize('options, error', [
     ({'when': [42]}, 'when: unsupported value'),
     ({'extensions': 42}, "extensions: 42 should be instance of 'list'"),
@@ -418,17 +392,3 @@ def test_parameters_jsonref(testapp):
 def test_parameters_schema(testapp, options, error):
     with pytest.raises(ValueError, match=error):
         markdown.process(testapp, [], **options)
-
-
-@pytest.mark.parametrize('option_name, option_value, error', [
-    ('when', [42], 'when: unsupported value'),
-    ('extensions', 42, "extensions: 42 should be instance of 'list'"),
-])
-def test_parameters_jsonref_schema(testapp, option_name, option_value, error):
-    testapp.conf.update({'test': {option_name: option_value}})
-
-    with pytest.raises(ValueError, match=error):
-        markdown.process(
-            testapp,
-            [],
-            **{option_name: {'$ref': ':application:#/test/%s' % option_name}})

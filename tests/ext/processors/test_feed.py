@@ -669,20 +669,3 @@ def test_documents(testapp, syndication_format):
 def test_parameter_schema(testapp, options, error):
     with pytest.raises(ValueError, match=error):
         feed.process(testapp, [], **options)
-
-
-@pytest.mark.parametrize('option_name, option_value, error', [
-    ('when', [42], 'when: unsupported value'),
-    ('encoding', 'UTF-42', 'encoding: unsupported encoding'),
-    ('limit', '42', "limit: must be null or positive integer"),
-    ('save_as', 42, "save_as: 42 should be instance of 'str'"),
-    ('pretty', 42, "pretty: 42 should be instance of 'bool'"),
-])
-def test_parameter_jsonref_schema(testapp, option_name, option_value, error):
-    testapp.conf.update({'test': {option_name: option_value}})
-
-    with pytest.raises(ValueError, match=error):
-        feed.process(
-            testapp,
-            [],
-            **{option_name: {'$ref': ':application:#/test/%s' % option_name}})

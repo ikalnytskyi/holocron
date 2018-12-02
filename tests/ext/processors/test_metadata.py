@@ -128,26 +128,6 @@ def test_documents(testapp):
     assert 'author' not in documents[3]
 
 
-def test_parameters_jsonref(testapp):
-    testapp.conf.update({
-        'extra': {'master': 'luke', 'yoda': 'dead'},
-        'ow': False,
-    })
-
-    documents = metadata.process(
-        testapp,
-        [
-            _get_document(yoda='alive'),
-        ],
-        metadata={'$ref': ':application:#/extra'},
-        overwrite={'$ref': ':application:#/ow'})
-
-    assert len(documents) == 1
-
-    assert documents[0]['master'] == 'luke'
-    assert documents[0]['yoda'] == 'alive'
-
-
 @pytest.mark.parametrize('options, error', [
     ({'when': [42]}, 'when: unsupported value'),
     ({'metadata': 42}, "metadata: 42 should be instance of 'dict'"),
@@ -156,18 +136,3 @@ def test_parameters_jsonref(testapp):
 def test_parameters_schema(testapp, options, error):
     with pytest.raises(ValueError, match=error):
         metadata.process(testapp, [], **options)
-
-
-@pytest.mark.parametrize('option_name, option_value, error', [
-    ('when', [42], 'when: unsupported value'),
-    ('metadata', 42, "metadata: 42 should be instance of 'dict'"),
-    ('overwrite', 'true', "overwrite: 'true' should be instance of 'bool'"),
-])
-def test_parameters_jsonref_schema(testapp, option_name, option_value, error):
-    testapp.conf.update({'test': {option_name: option_value}})
-
-    with pytest.raises(ValueError, match=error):
-        metadata.process(
-            testapp,
-            [],
-            **{option_name: {'$ref': ':application:#/test/%s' % option_name}})

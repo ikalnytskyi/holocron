@@ -179,22 +179,6 @@ def test_documents(testapp):
     }
 
 
-def test_parameters_jsonref(testapp):
-    testapp.conf.update({
-        'extra': {'compression': True},
-        'save_sitemap_as': 'foo.xml',
-    })
-
-    documents = sitemap.process(
-        testapp,
-        [],
-        gzip={'$ref': ':application:#/extra/compression'},
-        save_as={'$ref': ':application:#/save_sitemap_as'})
-
-    assert len(documents) == 1
-    assert documents[0]['destination'] == 'foo.xml.gz'
-
-
 @pytest.mark.parametrize('options, error', [
     ({'when': 42}, 'when: unsupported value'),
     ({'gzip': 'true'}, "gzip: 'true' should be instance of 'bool'"),
@@ -203,18 +187,3 @@ def test_parameters_jsonref(testapp):
 def test_parameters_schema(testapp, options, error):
     with pytest.raises(ValueError, match=error):
         sitemap.process(testapp, [], **options)
-
-
-@pytest.mark.parametrize('option_name, option_value, error', [
-    ('when', 42, 'when: unsupported value'),
-    ('gzip', 'true', "gzip: 'true' should be instance of 'bool'"),
-    ('save_as', 42, "save_as: 42 should be instance of 'str'"),
-])
-def test_parameters_jsonref_schema(testapp, option_name, option_value, error):
-    testapp.conf.update({'test': {option_name: option_value}})
-
-    with pytest.raises(ValueError, match=error):
-        sitemap.process(
-            testapp,
-            [],
-            **{option_name: {'$ref': ':application:#/test/%s' % option_name}})

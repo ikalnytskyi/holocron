@@ -151,18 +151,6 @@ def test_documents(testapp):
     assert documents[4]['content'] == 'rice'
 
 
-def test_parameters_jsonref(testapp):
-    testapp.conf.update({'extra': {'procs': [{'name': 'rice'}]}})
-
-    documents = pipeline.process(
-        testapp,
-        [],
-        processors={'$ref': ':application:#/extra/procs'})
-
-    assert len(documents) == 1
-    assert documents[0]['content'] == 'rice'
-
-
 @pytest.mark.parametrize('options, error', [
     ({'when': [42]}, 'when: unsupported value'),
     ({'processors': 42}, "processors: 42 should be instance of 'list'"),
@@ -170,17 +158,3 @@ def test_parameters_jsonref(testapp):
 def test_parameters_schema(testapp, options, error):
     with pytest.raises(ValueError, match=error):
         pipeline.process(testapp, [], **options)
-
-
-@pytest.mark.parametrize('option_name, option_value, error', [
-    ('when', [42], 'when: unsupported value'),
-    ('processors', 42, "processors: 42 should be instance of 'list'"),
-])
-def test_parameters_jsonref_schema(testapp, option_name, option_value, error):
-    testapp.conf.update({'test': {option_name: option_value}})
-
-    with pytest.raises(ValueError, match=error):
-        pipeline.process(
-            testapp,
-            [],
-            **{option_name: {'$ref': ':application:#/test/%s' % option_name}})

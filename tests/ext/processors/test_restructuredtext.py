@@ -291,41 +291,6 @@ def test_documents(testapp):
     assert documents[3]['title'] == 'wookiee'
 
 
-def test_parameters_jsonref(testapp):
-    testapp.conf.update({'extra': {'initial_header_level': 3}})
-
-    documents = restructuredtext.process(
-        testapp,
-        [
-            _get_document(
-                content=textwrap.dedent('''\
-                    section 1
-                    =========
-
-                    aaa
-
-                    section 2
-                    =========
-
-                    bbb
-                '''))
-        ],
-        docutils={'$ref': ':application:#/extra'})
-
-    # by default, initial header level is 2 and so the sections would
-    # start with <h2>
-    assert re.match(
-        (
-            r'<h3>section 1</h3>\s*'
-            r'<p>aaa</p>\s*'
-            r'<h3>section 2</h3>\s*'
-            r'<p>bbb</p>\s*'
-        ),
-        documents[0]['content'])
-    assert documents[0]['destination'].endswith('.html')
-    assert 'title' not in documents[0]
-
-
 @pytest.mark.parametrize('options, error', [
     ({'when': [42]}, 'when: unsupported value'),
     ({'docutils': 42}, "docutils: 42 should be instance of 'dict'"),
@@ -333,17 +298,3 @@ def test_parameters_jsonref(testapp):
 def test_parameters_schema(testapp, options, error):
     with pytest.raises(ValueError, match=error):
         restructuredtext.process(testapp, [], **options)
-
-
-@pytest.mark.parametrize('option_name, option_value, error', [
-    ('when', [42], 'when: unsupported value'),
-    ('docutils', 42, "docutils: 42 should be instance of 'dict'"),
-])
-def test_parameters_jsonref_schema(testapp, option_name, option_value, error):
-    testapp.conf.update({'test': {option_name: option_value}})
-
-    with pytest.raises(ValueError, match=error):
-        restructuredtext.process(
-            testapp,
-            [],
-            **{option_name: {'$ref': ':application:#/test/%s' % option_name}})
