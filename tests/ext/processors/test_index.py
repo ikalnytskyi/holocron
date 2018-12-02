@@ -163,34 +163,6 @@ def test_documents(testapp):
     assert entries[2].a.attrs['href'] == '/posts/1.html'
 
 
-def test_parameters_jsonref(testapp):
-    testapp.conf.update({
-        'extra': {'template': 'index.j2'},
-        'enc': 'CP1251',
-    })
-
-    documents = index.process(
-        testapp,
-        [
-            _get_document(
-                title='история оби-вана',
-                destination=os.path.join('posts', '1.html'),
-                published=datetime.date(2017, 10, 4)),
-        ],
-        template={'$ref': ':application:#/extra/template'},
-        encoding={'$ref': ':application:#/enc'})
-
-    assert len(documents) == 2
-
-    assert documents[0]['title'] == 'история оби-вана'
-    assert documents[0]['destination'] == os.path.join('posts', '1.html')
-    assert documents[0]['published'] == datetime.date(2017, 10, 4)
-
-    assert documents[-1]['source'] == 'virtual://index'
-    assert documents[-1]['destination'] == 'index.html'
-    assert documents[-1]['encoding'] == 'CP1251'
-
-
 @pytest.mark.parametrize('options, error', [
     ({'when': 42}, 'when: unsupported value'),
     ({'template': 42}, "template: 42 should be instance of 'str'"),
@@ -199,18 +171,3 @@ def test_parameters_jsonref(testapp):
 def test_parameters_schema(testapp, options, error):
     with pytest.raises(ValueError, match=error):
         index.process(testapp, [], **options)
-
-
-@pytest.mark.parametrize('option_name, option_value, error', [
-    ('when', 42, 'when: unsupported value'),
-    ('template', 42, "template: 42 should be instance of 'str'"),
-    ('encoding', 'UTF-42', 'encoding: unsupported encoding'),
-])
-def test_parameters_jsonref_schema(testapp, option_name, option_value, error):
-    testapp.conf.update({'test': {option_name: option_value}})
-
-    with pytest.raises(ValueError, match=error):
-        index.process(
-            testapp,
-            [],
-            **{option_name: {'$ref': ':application:#/test/%s' % option_name}})

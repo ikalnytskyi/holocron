@@ -146,32 +146,6 @@ def test_documents(testapp, tmpdir):
             == pytest.approx(tmpdir.join(*path).stat().mtime, 0.00001)
 
 
-def test_parameters_jsonref(testapp, tmpdir):
-    testapp.conf.update({
-        'extra': {'path': tmpdir.strpath},
-        'encoding': 'CP1251',
-        'source': {'tz': 'EET'},
-    })
-    tmpdir.ensure('cv.md').write_text('оби-ван', encoding='CP1251')
-
-    documents = source.process(
-        testapp,
-        [],
-        path={'$ref': ':application:#/extra/path'},
-        encoding={'$ref': ':application:#/encoding'},
-        timezone={'$ref': ':application:#/source/tz'})
-
-    assert len(documents) == 1
-
-    assert documents[0]['content'] == 'оби-ван'
-
-    created = documents[0]['created']
-    updated = documents[0]['updated']
-
-    assert created.tzinfo.tzname(created) == 'EET'
-    assert updated.tzinfo.tzname(updated) == 'EET'
-
-
 @pytest.mark.parametrize('options, error', [
     ({'path': 42}, "path: 42 should be instance of 'str'"),
     ({'when': 42}, 'when: unsupported value'),
@@ -181,19 +155,3 @@ def test_parameters_jsonref(testapp, tmpdir):
 def test_parameters_schema(testapp, options, error):
     with pytest.raises(ValueError, match=error):
         source.process(testapp, [], **options)
-
-
-@pytest.mark.parametrize('option_name, option_value, error', [
-    ('path', 42, "path: 42 should be instance of 'str'"),
-    ('when', 42, 'when: unsupported value'),
-    ('encoding', 'UTF-42', 'encoding: unsupported encoding'),
-    ('timezone', 'Europe/Kharkiv', 'timezone: unsupported timezone'),
-])
-def test_parameters_jsonref_schema(testapp, option_name, option_value, error):
-    testapp.conf.update({'test': {option_name: option_value}})
-
-    with pytest.raises(ValueError, match=error):
-        source.process(
-            testapp,
-            [],
-            **{option_name: {'$ref': ':application:#/test/%s' % option_name}})

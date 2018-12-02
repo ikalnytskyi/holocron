@@ -256,24 +256,6 @@ def test_documents(testapp):
     assert entries[2].a.attrs['href'] == '/posts/1.html'
 
 
-def test_parameters_jsonref(testapp):
-    testapp.conf.update({'extra': {'outpattern': 'mytags/{tag}/index.html'}})
-
-    documents = tags.process(
-        testapp,
-        [
-            _get_document(
-                title='the way of the Force',
-                destination=os.path.join('posts', '1.html'),
-                published=datetime.date(2017, 10, 4),
-                tags=['kenobi', 'skywalker']),
-        ],
-        output={'$ref': ':application:#/extra/outpattern'})
-
-    assert documents[-2]['source'] == 'virtual://tags/kenobi'
-    assert documents[-2]['destination'] == 'mytags/kenobi/index.html'
-
-
 @pytest.mark.parametrize('options, error', [
     ({'when': 42}, 'when: unsupported value'),
     ({'template': 42}, "template: 42 should be instance of 'str'"),
@@ -282,18 +264,3 @@ def test_parameters_jsonref(testapp):
 def test_parameters_schema(testapp, options, error):
     with pytest.raises(ValueError, match=error):
         tags.process(testapp, [], **options)
-
-
-@pytest.mark.parametrize('option_name, option_value, error', [
-    ('when', 42, 'when: unsupported value'),
-    ('template', 42, "template: 42 should be instance of 'str'"),
-    ('output', 42, "output: 42 should be instance of 'str'"),
-])
-def test_parameters_jsonref_schema(testapp, option_name, option_value, error):
-    testapp.conf.update({'test': {option_name: option_value}})
-
-    with pytest.raises(ValueError, match=error):
-        tags.process(
-            testapp,
-            [],
-            **{option_name: {'$ref': ':application:#/test/%s' % option_name}})

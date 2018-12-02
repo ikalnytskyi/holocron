@@ -78,9 +78,6 @@ class parameters:
             documents = arguments.pop('documents')
 
             for name, value in arguments.items():
-                value = resolve_json_references(
-                    value, {':application:': app.conf})
-
                 # this is a temporary hack to workaround schema error
                 # that dooku.conf.Conf is not a dict
                 if isinstance(value, dooku.conf.Conf):

@@ -318,6 +318,27 @@ def test_invoke_processors_propagates_options(testapp, processor_options):
     testapp.invoke_processors([], [dict(processor_options, name='processor')])
 
 
+@pytest.mark.parametrize('options, resolved', [
+    ({'a': {'$ref': ':metadata:#/is_yoda_master'}}, {'a': True}),
+    ({'a': {'$ref': ':metadata:#/extra/0/luke'}}, {'a': 'skywalker'}),
+    ({'a': {'$ref': ':metadata:#/is_yoda_master'},
+      'b': {'$ref': ':metadata:#/extra/0/luke'}},
+     {'a': True, 'b': 'skywalker'}),
+    ({'a': {'$ref': ':document:#/content'}},
+     {'a': {'$ref': ':document:#/content'}}),
+])
+def test_invoke_processors_resolves_jsonref(testapp, options, resolved):
+    testapp.metadata.update({
+        'extra': [{'luke': 'skywalker'}],
+        'is_yoda_master': True,
+    })
+
+    def processor(app, documents, **options):
+        assert options == resolved
+    testapp.add_processor('processor', processor)
+    testapp.invoke_processors([], [dict(options, name='processor')])
+
+
 @pytest.mark.parametrize('initial_documents', [
     [{'a': 1}],
     [{'a': 1, 'b': 1.13}],

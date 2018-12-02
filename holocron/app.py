@@ -19,7 +19,7 @@ from dooku.conf import Conf
 from dooku.decorator import cached_property
 from dooku.ext import ExtensionManager
 
-from .ext.processors import source
+from .ext.processors import source, _misc
 
 
 logger = logging.getLogger(__name__)
@@ -225,6 +225,14 @@ class Holocron(object):
         for processor in pipeline:
             processor = processor.copy()
             processfn = self._processors[processor.pop('name')]
+
+            # Resolve every JSON reference we encounter in a processor's
+            # parameters. Please note, we're doing this so late because we
+            # want to take into account metadata and other changes produced
+            # by previous processors in the pipeline.
+            processor = _misc.resolve_json_references(
+                processor, {':metadata:': self.metadata})
+
             documents = processfn(self, documents, **processor)
         return documents
 
