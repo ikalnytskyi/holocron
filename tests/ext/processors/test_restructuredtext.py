@@ -36,12 +36,12 @@ def test_document(testapp):
                 '''))
         ])
 
+    assert len(documents) == 1
     assert re.match(
         (
             r'<p>text with <strong>bold</strong></p>\s*'
         ),
         documents[0]['content'])
-
     assert documents[0]['destination'].endswith('.html')
     assert documents[0]['title'] == 'some title'
 
@@ -66,6 +66,7 @@ def test_document_with_subsection(testapp):
                 '''))
         ])
 
+    assert len(documents) == 1
     assert re.match(
         (
             r'<p>abstract</p>\s*'
@@ -73,7 +74,6 @@ def test_document_with_subsection(testapp):
             r'<p>text with <strong>bold</strong></p>\s*'
         ),
         documents[0]['content'])
-
     assert documents[0]['destination'].endswith('.html')
     assert documents[0]['title'] == 'some title'
 
@@ -90,12 +90,12 @@ def test_document_without_title(testapp):
                 '''))
         ])
 
+    assert len(documents) == 1
     assert re.match(
         (
             r'<p>text with <strong>bold</strong></p>\s*'
         ),
         documents[0]['content'])
-
     assert documents[0]['destination'].endswith('.html')
     assert 'title' not in documents[0]
 
@@ -135,6 +135,7 @@ def test_document_with_sections(testapp):
                 '''))
         ])
 
+    assert len(documents) == 1
     assert re.match(
         (
             r'<h2>some title 1</h2>\s*'
@@ -149,7 +150,6 @@ def test_document_with_sections(testapp):
             r'<p>yyy</p>\s*'
         ),
         documents[0]['content'])
-
     assert documents[0]['destination'].endswith('.html')
     assert 'title' not in documents[0]
 
@@ -170,12 +170,12 @@ def test_document_with_code(testapp):
                 '''))
         ])
 
+    assert len(documents) == 1
     assert re.match(
         (
             r'<p>test codeblock</p>\s*<pre.*python[^>]*>[\s\S]+</pre>'
         ),
         documents[0]['content'])
-
     assert documents[0]['destination'].endswith('.html')
     assert 'title' not in documents[0]
 
@@ -192,17 +192,17 @@ def test_document_with_inline_code(testapp):
                 '''))
         ])
 
+    assert len(documents) == 1
     assert re.match(
         (
             r'<p>test <code>code</code></p>'
         ),
         documents[0]['content'])
-
     assert documents[0]['destination'].endswith('.html')
     assert 'title' not in documents[0]
 
 
-def test_document_with_setting(testapp):
+def test_param_docutils(testapp):
     """reStructuredText processor has to respect custom settings."""
 
     documents = restructuredtext.process(
@@ -225,10 +225,11 @@ def test_document_with_setting(testapp):
             'initial_header_level': 3,
         })
 
-    # by default, initial header level is 2 and so the sections would
-    # start with <h2>
+    assert len(documents) == 1
     assert re.match(
         (
+            # by default, initial header level is 2 and so the sections would
+            # start with <h2>
             r'<h3>section 1</h3>\s*'
             r'<p>aaa</p>\s*'
             r'<h3>section 2</h3>\s*'
@@ -239,7 +240,7 @@ def test_document_with_setting(testapp):
     assert 'title' not in documents[0]
 
 
-def test_documents(testapp):
+def test_param_when(testapp):
     """reStructuredText processor has to ignore non-targeted documents."""
 
     documents = restructuredtext.process(
@@ -270,6 +271,8 @@ def test_documents(testapp):
             },
         ])
 
+    assert len(documents) == 4
+
     assert documents[0]['source'] == '0.txt'
     assert documents[0]['content'] == '**wookiee**'
     assert documents[0]['destination'].endswith('0.txt')
@@ -291,10 +294,12 @@ def test_documents(testapp):
     assert documents[3]['title'] == 'wookiee'
 
 
-@pytest.mark.parametrize('options, error', [
+@pytest.mark.parametrize('params, error', [
     ({'when': [42]}, 'when: unsupported value'),
     ({'docutils': 42}, "docutils: 42 should be instance of 'dict'"),
 ])
-def test_parameters_schema(testapp, options, error):
+def test_param_bad_value(testapp, params, error):
+    """reStructuredText processor has to validate input parameters."""
+
     with pytest.raises(ValueError, match=error):
-        restructuredtext.process(testapp, [], **options)
+        restructuredtext.process(testapp, [], **params)

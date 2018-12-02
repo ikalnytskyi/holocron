@@ -77,7 +77,6 @@ def test_document_processor_with_option(testapp):
         ])
 
     assert len(documents) == 1
-
     assert documents[0]['content'] == 'the Force'
     assert documents[0]['author'] == 'skywalker'
     assert documents[0]['spam'] == 1
@@ -93,13 +92,12 @@ def test_document_no_processors(testapp):
         ])
 
     assert len(documents) == 1
-
     assert documents[0]['content'] == 'the Force'
     assert documents[0]['author'] == 'skywalker'
 
 
-def test_documents(testapp):
-    """Metadata processor has to ignore non-targeted documents."""
+def test_param_when(testapp):
+    """Pipeline processor has to ignore non-targeted documents."""
 
     documents = pipeline.process(
         testapp,
@@ -151,10 +149,12 @@ def test_documents(testapp):
     assert documents[4]['content'] == 'rice'
 
 
-@pytest.mark.parametrize('options, error', [
+@pytest.mark.parametrize('params, error', [
     ({'when': [42]}, 'when: unsupported value'),
     ({'processors': 42}, "processors: 42 should be instance of 'list'"),
 ])
-def test_parameters_schema(testapp, options, error):
+def test_param_bad_value(testapp, params, error):
+    """Pipeline processor has to validate input parameters."""
+
     with pytest.raises(ValueError, match=error):
-        pipeline.process(testapp, [], **options)
+        pipeline.process(testapp, [], **params)

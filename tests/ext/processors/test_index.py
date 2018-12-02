@@ -32,8 +32,9 @@ def test_document(testapp):
                 title='the way of the Force',
                 destination=os.path.join('posts', '1.html'),
                 published=datetime.date(2017, 10, 4)),
-        ],
-        encoding='cp1251')
+        ])
+
+    assert len(documents) == 2
 
     assert documents[0]['title'] == 'the way of the Force'
     assert documents[0]['destination'] == os.path.join('posts', '1.html')
@@ -41,10 +42,8 @@ def test_document(testapp):
 
     assert documents[-1]['source'] == 'virtual://index'
     assert documents[-1]['destination'] == 'index.html'
-    assert documents[-1]['encoding'] == 'cp1251'
 
     soup = bs4.BeautifulSoup(documents[-1]['content'], 'html.parser')
-    assert soup.original_encoding == 'cp1251'
 
     entries = soup.find(class_='index').find_all(recursive=False)
 
@@ -56,7 +55,7 @@ def test_document(testapp):
     assert entries[1].a.attrs['href'] == '/posts/1.html'
 
 
-def test_documents_multiple_years(testapp):
+def test_groups(testapp):
     """Index processor has to group documents by year."""
 
     documents = index.process(
@@ -84,6 +83,8 @@ def test_documents_multiple_years(testapp):
                 published=datetime.date(2017, 10, 4)),
         ])
 
+    assert len(documents) == 5
+
     assert documents[-1]['source'] == 'virtual://index'
     assert documents[-1]['destination'] == 'index.html'
 
@@ -106,7 +107,34 @@ def test_documents_multiple_years(testapp):
     assert entries[5].a.attrs['href'] == '/posts/1.html'
 
 
-def test_documents(testapp):
+@pytest.mark.parametrize('encoding', ['CP1251', 'UTF-16'])
+def test_param_encoding(testapp, encoding):
+    """Index processor has to to respect encoding parameter."""
+
+    documents = index.process(
+        testapp,
+        [
+            _get_document(
+                title='оби-ван',
+                destination=os.path.join('posts', '1.html'),
+                published=datetime.date(2017, 10, 4)),
+        ],
+        encoding=encoding)
+
+    assert len(documents) == 2
+
+    assert documents[0]['title'] == 'оби-ван'
+    assert documents[0]['destination'] == os.path.join('posts', '1.html')
+    assert documents[0]['published'] == datetime.date(2017, 10, 4)
+
+    assert documents[-1]['source'] == 'virtual://index'
+    assert documents[-1]['destination'] == 'index.html'
+    assert documents[-1]['encoding'] == encoding
+
+    assert documents[-1]['content'].decode(encoding)
+
+
+def test_param_when(testapp):
     """Index processor has to ignore non-relevant documents."""
 
     documents = index.process(
@@ -141,6 +169,8 @@ def test_documents(testapp):
             },
         ])
 
+    assert len(documents) == 5
+
     for i, document in enumerate(documents[:-1]):
         assert document['source'].endswith('%d.md' % (i + 1))
         assert document['title'] == 'the way of the Force #%d' % (i + 1)
@@ -163,11 +193,13 @@ def test_documents(testapp):
     assert entries[2].a.attrs['href'] == '/posts/1.html'
 
 
-@pytest.mark.parametrize('options, error', [
+@pytest.mark.parametrize('params, error', [
     ({'when': 42}, 'when: unsupported value'),
     ({'template': 42}, "template: 42 should be instance of 'str'"),
     ({'encoding': 'UTF-42'}, 'encoding: unsupported encoding'),
 ])
-def test_parameters_schema(testapp, options, error):
+def test_param_bad_value(testapp, params, error):
+    """Index processor has to validate input parameters."""
+
     with pytest.raises(ValueError, match=error):
-        index.process(testapp, [], **options)
+        index.process(testapp, [], **params)

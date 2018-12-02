@@ -20,7 +20,7 @@ def testapp():
 
 
 def test_document(testapp):
-    """Destination has to be changed to produce a pretty URI."""
+    """Prettyuri processor has to work!"""
 
     documents = prettyuri.process(
         testapp,
@@ -28,6 +28,7 @@ def test_document(testapp):
             _get_document(destination='about/cv.html'),
         ])
 
+    assert len(documents) == 1
     assert documents[0]['destination'] == 'about/cv/index.html'
 
 
@@ -44,10 +45,11 @@ def test_document_index(testapp, index):
             _get_document(destination=os.path.join('about', 'cv', index)),
         ])
 
+    assert len(documents) == 1
     assert documents[0]['destination'] == os.path.join('about', 'cv', index)
 
 
-def test_documents(testapp):
+def test_param_when(testapp):
     """Prettyuri processor has to ignore non-targeted documents."""
 
     documents = prettyuri.process(
@@ -66,15 +68,18 @@ def test_documents(testapp):
             },
         ])
 
+    assert len(documents) == 4
     assert documents[0]['destination'] == '0.txt'
     assert documents[1]['destination'] == '1/index.html'
     assert documents[2]['destination'] == '2.html'
     assert documents[3]['destination'] == '3/index.html'
 
 
-@pytest.mark.parametrize('options, error', [
+@pytest.mark.parametrize('params, error', [
     ({'when': [42]}, 'when: unsupported value'),
 ])
-def test_parameters_schema(testapp, options, error):
+def test_param_bad_value(testapp, params, error):
+    """Prettyuri processor has to validate input parameters."""
+
     with pytest.raises(ValueError, match=error):
-        prettyuri.process(testapp, [], **options)
+        prettyuri.process(testapp, [], **params)
