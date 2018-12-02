@@ -426,8 +426,8 @@ def test_document_rss_feed_metadata(testapp):
 
 @pytest.mark.parametrize('syndication_format', ['atom', 'rss'])
 @pytest.mark.parametrize('encoding', ['CP1251', 'UTF-16'])
-def test_parameter_encoding(testapp, syndication_format, encoding):
-    """Feed processor has to respect encoding option."""
+def test_param_encoding(testapp, syndication_format, encoding):
+    """Feed processor has to respect encoding parameter."""
 
     documents = feed.process(
         testapp,
@@ -463,8 +463,8 @@ def test_parameter_encoding(testapp, syndication_format, encoding):
 
 @pytest.mark.parametrize('syndication_format', ['atom', 'rss'])
 @pytest.mark.parametrize('save_as', ['foo.xml', 'bar.xml'])
-def test_parameter_save_as(testapp, syndication_format, save_as):
-    """Feed processor has to respect save_as option."""
+def test_param_save_as(testapp, syndication_format, save_as):
+    """Feed processor has to respect save_as parameter."""
 
     documents = feed.process(
         testapp,
@@ -498,8 +498,8 @@ def test_parameter_save_as(testapp, syndication_format, save_as):
 
 @pytest.mark.parametrize('syndication_format', ['atom', 'rss'])
 @pytest.mark.parametrize('limit', (2, 5))
-def test_parameter_limit(testapp, syndication_format, limit):
-    """Feed processor has to respect limit option."""
+def test_param_limit(testapp, syndication_format, limit):
+    """Feed processor has to respect limit parameter."""
 
     documents = feed.process(
         testapp,
@@ -556,8 +556,8 @@ def test_parameter_limit(testapp, syndication_format, limit):
     (False, lambda x: x == 2),
     (True, lambda x: x > 10),
 ))
-def test_parameter_pretty(testapp, syndication_format, pretty, check_fn):
-    """Feed processor has to respect pretty option."""
+def test_param_pretty(testapp, syndication_format, pretty, check_fn):
+    """Feed processor has to respect pretty parameter."""
 
     documents = feed.process(
         testapp,
@@ -590,7 +590,7 @@ def test_parameter_pretty(testapp, syndication_format, pretty, check_fn):
 
 
 @pytest.mark.parametrize('syndication_format', ['atom', 'rss'])
-def test_documents(testapp, syndication_format):
+def test_param_when(testapp, syndication_format):
     """Feed processor has to ignore non-relevant documents."""
 
     documents = feed.process(
@@ -659,13 +659,15 @@ def test_documents(testapp, syndication_format):
         assert parsed.rss.channel.item[1].title == 'Essay #1'
 
 
-@pytest.mark.parametrize('options, error', [
+@pytest.mark.parametrize('params, error', [
     ({'when': [42]}, 'when: unsupported value'),
     ({'encoding': 'UTF-42'}, 'encoding: unsupported encoding'),
     ({'limit': '42'}, "limit: must be null or positive integer"),
     ({'save_as': 42}, "save_as: 42 should be instance of 'str'"),
     ({'pretty': 42}, "pretty: 42 should be instance of 'bool'"),
 ])
-def test_parameter_schema(testapp, options, error):
+def test_param_bad_value(testapp, params, error):
+    """Feed processor has to validate input parameters."""
+
     with pytest.raises(ValueError, match=error):
-        feed.process(testapp, [], **options)
+        feed.process(testapp, [], **params)

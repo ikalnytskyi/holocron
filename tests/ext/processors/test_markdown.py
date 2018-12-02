@@ -35,12 +35,12 @@ def test_document(testapp):
                 '''))
         ])
 
+    assert len(documents) == 1
     assert re.match(
         (
             r'<p>text with <strong>bold</strong></p>'
         ),
         documents[0]['content'])
-
     assert documents[0]['destination'].endswith('.html')
     assert documents[0]['title'] == 'some title'
 
@@ -60,12 +60,12 @@ def test_document_with_alt_title_syntax(testapp):
                 '''))
         ])
 
+    assert len(documents) == 1
     assert re.match(
         (
             r'<p>text with <strong>bold</strong></p>'
         ),
         documents[0]['content'])
-
     assert documents[0]['destination'].endswith('.html')
     assert documents[0]['title'] == 'some title'
 
@@ -86,12 +86,12 @@ def test_document_with_newlines_at_the_beginning(testapp):
                 '''))
         ])
 
+    assert len(documents) == 1
     assert re.match(
         (
             r'<p>text with <strong>bold</strong></p>'
         ),
         documents[0]['content'])
-
     assert documents[0]['destination'].endswith('.html')
     assert documents[0]['title'] == 'some title'
 
@@ -108,12 +108,12 @@ def test_document_without_title(testapp):
                 '''))
         ])
 
+    assert len(documents) == 1
     assert re.match(
         (
             r'<p>text with <strong>bold</strong></p>'
         ),
         documents[0]['content'])
-
     assert documents[0]['destination'].endswith('.html')
     assert 'title' not in documents[0]
 
@@ -130,12 +130,12 @@ def test_document_title_is_not_overwritten(testapp):
     document['title'] = 'another title'
     documents = markdown.process(testapp, [document])
 
+    assert len(documents) == 1
     assert re.match(
         (
             r'<p>text with <strong>bold</strong></p>'
         ),
         documents[0]['content'])
-
     assert documents[0]['destination'].endswith('.html')
     assert documents[0]['title'] == 'another title'
 
@@ -156,6 +156,7 @@ def test_document_title_ignored_in_the_middle_of_text(testapp):
                 '''))
         ])
 
+    assert len(documents) == 1
     assert re.match(
         (
             r'<p>text</p>\s*'
@@ -163,7 +164,6 @@ def test_document_title_ignored_in_the_middle_of_text(testapp):
             r'<p>text with <strong>bold</strong></p>'
         ),
         documents[0]['content'])
-
     assert documents[0]['destination'].endswith('.html')
     assert 'title' not in documents[0]
 
@@ -201,6 +201,7 @@ def test_document_with_sections(testapp):
                 '''))
         ])
 
+    assert len(documents) == 1
     assert re.match(
         (
             r'<p>aaa</p>\s*'
@@ -210,7 +211,6 @@ def test_document_with_sections(testapp):
             r'<h2>some section 3</h2>\s*<p>yyy</p>\s*'
         ),
         documents[0]['content'])
-
     assert documents[0]['destination'].endswith('.html')
     assert documents[0]['title'] == 'some title 1'
 
@@ -230,12 +230,12 @@ def test_document_with_code(testapp):
                 '''))
         ])
 
+    assert len(documents) == 1
     assert re.match(
         (
             r'<p>test codeblock</p>\s*.*codehilite.*<pre>[\s\S]+</pre>.*'
         ),
         documents[0]['content'])
-
     assert documents[0]['destination'].endswith('.html')
     assert 'title' not in documents[0]
 
@@ -254,12 +254,12 @@ def test_document_with_fenced_code(testapp):
                 '''))
         ])
 
+    assert len(documents) == 1
     assert re.match(
         (
             r'.*codehilite.*<pre>[\s\S]+</pre>.*'
         ),
         documents[0]['content'])
-
     assert documents[0]['destination'].endswith('.html')
     assert 'title' not in documents[0]
 
@@ -278,14 +278,12 @@ def test_document_with_table(testapp):
                 '''))
         ])
 
+    assert len(documents) == 1
     assert 'table' in documents[0]['content']
-
     assert '<th>column a</th>' in documents[0]['content']
     assert '<th>column b</th>' in documents[0]['content']
-
     assert '<td>foo</td>' in documents[0]['content']
     assert '<td>bar</td>' in documents[0]['content']
-
     assert documents[0]['destination'].endswith('.html')
     assert 'title' not in documents[0]
 
@@ -302,13 +300,14 @@ def test_document_with_inline_code(testapp):
                 '''))
         ])
 
+    assert len(documents) == 1
     assert documents[0]['content'] == '<p>test <code>code</code></p>'
     assert documents[0]['destination'].endswith('.html')
     assert 'title' not in documents[0]
 
 
-def test_document_with_custom_extensions(testapp):
-    """Markdown processor has to respect custom extensions."""
+def test_param_extensions(testapp):
+    """Markdown processor has to respect extensions parameter."""
 
     documents = markdown.process(
         testapp,
@@ -322,18 +321,18 @@ def test_document_with_custom_extensions(testapp):
         ],
         extensions=[])
 
-    # when no extensions are passed, syntax highlighting is turned off
+    assert len(documents) == 1
     assert re.match(
         (
+            # when no extensions are passed, syntax highlighting is turned off
             r'<p><code>lambda x: pass</code></p>'
         ),
         documents[0]['content'])
-
     assert documents[0]['destination'].endswith('.html')
     assert 'title' not in documents[0]
 
 
-def test_documents(testapp):
+def test_param_when(testapp):
     """Markdown processor has to ignore non-markdown documents."""
 
     documents = markdown.process(
@@ -364,6 +363,8 @@ def test_documents(testapp):
             },
         ])
 
+    assert len(documents) == 4
+
     assert documents[0]['source'] == '0.txt'
     assert documents[0]['content'] == '**wookiee**'
     assert documents[0]['destination'].endswith('0.txt')
@@ -385,10 +386,12 @@ def test_documents(testapp):
     assert documents[3]['title'] == 'wookiee'
 
 
-@pytest.mark.parametrize('options, error', [
+@pytest.mark.parametrize('params, error', [
     ({'when': [42]}, 'when: unsupported value'),
     ({'extensions': 42}, "extensions: 42 should be instance of 'list'"),
 ])
-def test_parameters_schema(testapp, options, error):
+def test_param_bad_value(testapp, params, error):
+    """Markdown processor has to validate input parameters."""
+
     with pytest.raises(ValueError, match=error):
-        markdown.process(testapp, [], **options)
+        markdown.process(testapp, [], **params)

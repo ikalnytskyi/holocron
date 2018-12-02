@@ -38,6 +38,7 @@ def test_document(testapp):
                 '''))
         ])
 
+    assert len(documents) == 1
     assert documents[0]['author'] == 'Yoda'
     assert documents[0]['master']
     assert documents[0]['labels'] == ['force', 'motto']
@@ -62,6 +63,7 @@ def test_document_without_frontmatter(testapp):
                 '''))
         ])
 
+    assert len(documents) == 1
     assert documents[0]['content'] == textwrap.dedent('''\
         ---
         author: Yoda
@@ -93,6 +95,7 @@ def text_document_with_frontmatter_in_text(testapp):
                 '''))
         ])
 
+    assert len(documents) == 1
     assert documents[0]['content'] == textwrap.dedent('''\
         I am a Jedi, like my father before me.
 
@@ -104,57 +107,6 @@ def text_document_with_frontmatter_in_text(testapp):
 
         May the Force be with you!
     ''')
-
-
-def test_document_custom_delimiter(testapp):
-    """YAML front matter has to be extracted even with custom delimiter."""
-
-    documents = frontmatter.process(
-        testapp,
-        [
-            _get_document(
-                content=textwrap.dedent('''\
-                    +++
-                    author: Yoda
-                    master: true
-                    labels: [force, motto]
-                    +++
-
-                    May the Force be with you!
-                '''))
-        ],
-        delimiter='+++')
-
-    assert documents[0]['author'] == 'Yoda'
-    assert documents[0]['master']
-    assert documents[0]['labels'] == ['force', 'motto']
-    assert documents[0]['content'] == 'May the Force be with you!\n'
-
-
-def test_document_overwrite_false(testapp):
-    """Frontmatter processor has to respect 'overwrite' option."""
-
-    documents = frontmatter.process(
-        testapp,
-        [
-            _get_document(
-                author='Obi-Wan Kenobi',
-                content=textwrap.dedent('''\
-                    ---
-                    author: Yoda
-                    master: true
-                    labels: [force, motto]
-                    ---
-
-                    May the Force be with you!
-                '''))
-        ],
-        overwrite=False)
-
-    assert documents[0]['author'] == 'Obi-Wan Kenobi'
-    assert documents[0]['master']
-    assert documents[0]['labels'] == ['force', 'motto']
-    assert documents[0]['content'] == 'May the Force be with you!\n'
 
 
 def test_document_invalid_yaml(testapp):
@@ -196,7 +148,66 @@ def test_document_with_exploit(testapp):
             ])
 
 
-def test_documents(testapp):
+@pytest.mark.parametrize('delimiter', ['+++', '***'])
+def test_param_delimiter(testapp, delimiter):
+    """Frontmatter processor has to respect delimiter parameter."""
+
+    documents = frontmatter.process(
+        testapp,
+        [
+            _get_document(
+                content=textwrap.dedent('''\
+                    %s
+                    author: Yoda
+                    master: true
+                    labels: [force, motto]
+                    %s
+
+                    May the Force be with you!
+                ''' % (delimiter, delimiter)))
+        ],
+        delimiter=delimiter)
+
+    assert len(documents) == 1
+    assert documents[0]['author'] == 'Yoda'
+    assert documents[0]['master']
+    assert documents[0]['labels'] == ['force', 'motto']
+    assert documents[0]['content'] == 'May the Force be with you!\n'
+
+
+@pytest.mark.parametrize('overwrite', [False, True])
+def test_param_overwrite(testapp, overwrite):
+    """Frontmatter processor has to respect overwrite parameter."""
+
+    documents = frontmatter.process(
+        testapp,
+        [
+            _get_document(
+                author='Obi-Wan Kenobi',
+                content=textwrap.dedent('''\
+                    ---
+                    author: Yoda
+                    master: true
+                    labels: [force, motto]
+                    ---
+
+                    May the Force be with you!
+                '''))
+        ],
+        overwrite=overwrite)
+
+    assert len(documents) == 1
+    assert documents[0]['master']
+    assert documents[0]['labels'] == ['force', 'motto']
+    assert documents[0]['content'] == 'May the Force be with you!\n'
+
+    if overwrite:
+        assert documents[0]['author'] == 'Yoda'
+    else:
+        assert documents[0]['author'] == 'Obi-Wan Kenobi'
+
+
+def test_param_when(testapp):
     """Frontmatter processor has to ignore non-targeted documents."""
 
     content = textwrap.dedent('''\
@@ -224,6 +235,8 @@ def test_documents(testapp):
             },
         ])
 
+    assert len(documents) == 4
+
     assert 'master' not in documents[0]
     assert 'labels' not in documents[0]
     assert documents[0]['content'] == content
@@ -241,11 +254,13 @@ def test_documents(testapp):
     assert documents[3]['content'] == 'May the Force be with you!\n'
 
 
-@pytest.mark.parametrize('options, error', [
+@pytest.mark.parametrize('params, error', [
     ({'when': [42]}, 'when: unsupported value'),
     ({'delimiter': 42}, "delimiter: 42 should be instance of 'str'"),
     ({'overwrite': 'true'}, "overwrite: 'true' should be instance of 'bool'"),
 ])
-def test_parameters_schema(testapp, options, error):
+def test_param_bad_value(testapp, params, error):
+    """Frontmatter processor has to validate input parameters."""
+
     with pytest.raises(ValueError, match=error):
-        frontmatter.process(testapp, [], **options)
+        frontmatter.process(testapp, [], **params)

@@ -22,7 +22,7 @@ def testapp():
 def test_document(testapp, tmpdir, path, cls):
     """Source processor has to work."""
 
-    tmpdir.ensure(*path).write_text('text', encoding='utf-8')
+    tmpdir.ensure(*path).write_text('text', encoding='UTF-8')
 
     preserved = content.Document(testapp)
     preserved['source'] = os.path.join('images', 'me.png')
@@ -68,9 +68,11 @@ def test_document_content_types(testapp, tmpdir, data, cls):
     if isinstance(data, bytes):
         localpath.write_binary(data)
     else:
-        localpath.write_text(data, encoding='utf-8')
+        localpath.write_text(data, encoding='UTF-8')
 
     documents = source.process(testapp, [], path=tmpdir.strpath)
+
+    assert len(documents) == 1
     assert documents[0]['content'] == data
     assert isinstance(documents[0]['content'], cls)
 
@@ -79,14 +81,18 @@ def test_document_content_types(testapp, tmpdir, data, cls):
     ('UTC', ['UTC']),
     ('Europe/Kiev', ['EET', 'EEST']),
 ])
-def test_timezone(testapp, tmpdir, timezone, tznames):
-    tmpdir.ensure('cv.md').write_text('text', encoding='utf-8')
+def test_param_timezone(testapp, tmpdir, timezone, tznames):
+    """Source processor has to respect timezone parameter."""
+
+    tmpdir.ensure('cv.md').write_text('text', encoding='UTF-8')
 
     documents = source.process(
         testapp,
         [],
         path=tmpdir.strpath,
         timezone=timezone)
+
+    assert len(documents) == 1
 
     created = documents[0]['created']
     updated = documents[0]['updated']
@@ -95,8 +101,10 @@ def test_timezone(testapp, tmpdir, timezone, tznames):
     assert updated.tzinfo.tzname(updated) in tznames
 
 
-def test_timezone_in_action(testapp, tmpdir):
-    tmpdir.ensure('cv.md').write_text('text', encoding='utf-8')
+def test_param_timezone_in_action(testapp, tmpdir):
+    """Source processor has to respect timezone parameter."""
+
+    tmpdir.ensure('cv.md').write_text('text', encoding='UTF-8')
 
     created_utc = source.process(
         testapp, [], path=tmpdir.strpath, timezone='UTC')[0]['created']
@@ -109,7 +117,7 @@ def test_timezone_in_action(testapp, tmpdir):
     assert created_kie.isoformat().split('+')[-1] in ('02:00', '03:00')
 
 
-def test_documents(testapp, tmpdir):
+def test_param_when(testapp, tmpdir):
     """Source processor has to ignore non-matched documents."""
 
     structure = sorted([
@@ -135,6 +143,9 @@ def test_documents(testapp, tmpdir):
                 'pattern': r'^(?!_).*$',
             },
         ])
+
+    assert len(documents) == 5
+
     documents = sorted(documents, key=lambda document: document['source'])
 
     for document, path in zip(documents, structure):
@@ -146,12 +157,14 @@ def test_documents(testapp, tmpdir):
             == pytest.approx(tmpdir.join(*path).stat().mtime, 0.00001)
 
 
-@pytest.mark.parametrize('options, error', [
+@pytest.mark.parametrize('params, error', [
     ({'path': 42}, "path: 42 should be instance of 'str'"),
     ({'when': 42}, 'when: unsupported value'),
     ({'encoding': 'UTF-42'}, 'encoding: unsupported encoding'),
     ({'timezone': 'Europe/Kharkiv'}, 'timezone: unsupported timezone'),
 ])
-def test_parameters_schema(testapp, options, error):
+def test_param_bad_value(testapp, params, error):
+    """Source processor has to validate input parameters."""
+
     with pytest.raises(ValueError, match=error):
-        source.process(testapp, [], **options)
+        source.process(testapp, [], **params)

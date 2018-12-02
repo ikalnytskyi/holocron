@@ -35,54 +35,7 @@ def test_document(testapp):
                 tags=['kenobi', 'skywalker']),
         ])
 
-    assert documents[0]['title'] == 'the way of the Force'
-    assert documents[0]['destination'] == os.path.join('posts', '1.html')
-    assert documents[0]['published'] == datetime.date(2017, 10, 4)
-
-    # - / -
-
-    assert documents[-2]['source'] == 'virtual://tags/kenobi'
-    assert documents[-2]['destination'] == 'tags/kenobi.html'
-
-    soup = bs4.BeautifulSoup(documents[-2]['content'], 'html.parser')
-    entries = soup.find(class_='index').find_all(recursive=False)
-
-    assert 'year' in entries[0].attrs['class']
-    assert 'index-entry' in entries[1].attrs['class']
-
-    assert entries[0].string == '2017'
-    assert entries[1].time.attrs['datetime'] == '2017-10-04'
-    assert entries[1].a.attrs['href'] == '/posts/1.html'
-
-    # - / -
-
-    assert documents[-1]['source'] == 'virtual://tags/skywalker'
-    assert documents[-1]['destination'] == 'tags/skywalker.html'
-
-    soup = bs4.BeautifulSoup(documents[-1]['content'], 'html.parser')
-    entries = soup.find(class_='index').find_all(recursive=False)
-
-    assert 'year' in entries[0].attrs['class']
-    assert 'index-entry' in entries[1].attrs['class']
-
-    assert entries[0].string == '2017'
-    assert entries[1].time.attrs['datetime'] == '2017-10-04'
-    assert entries[1].a.attrs['href'] == '/posts/1.html'
-
-
-def test_document_options(testapp):
-    """Tags processor has to respect custom options."""
-
-    documents = tags.process(
-        testapp,
-        [
-            _get_document(
-                title='the way of the Force',
-                destination=os.path.join('posts', '1.html'),
-                published=datetime.date(2017, 10, 4),
-                tags=['kenobi', 'skywalker']),
-        ],
-        output='mytags/{tag}/index.html')
+    assert len(documents) == 3
 
     assert documents[0]['title'] == 'the way of the Force'
     assert documents[0]['destination'] == os.path.join('posts', '1.html')
@@ -90,10 +43,10 @@ def test_document_options(testapp):
 
     # - / -
 
-    assert documents[-2]['source'] == 'virtual://tags/kenobi'
-    assert documents[-2]['destination'] == 'mytags/kenobi/index.html'
+    assert documents[1]['source'] == 'virtual://tags/kenobi'
+    assert documents[1]['destination'] == 'tags/kenobi.html'
 
-    soup = bs4.BeautifulSoup(documents[-2]['content'], 'html.parser')
+    soup = bs4.BeautifulSoup(documents[1]['content'], 'html.parser')
     entries = soup.find(class_='index').find_all(recursive=False)
 
     assert 'year' in entries[0].attrs['class']
@@ -105,10 +58,10 @@ def test_document_options(testapp):
 
     # - / -
 
-    assert documents[-1]['source'] == 'virtual://tags/skywalker'
-    assert documents[-1]['destination'] == 'mytags/skywalker/index.html'
+    assert documents[2]['source'] == 'virtual://tags/skywalker'
+    assert documents[2]['destination'] == 'tags/skywalker.html'
 
-    soup = bs4.BeautifulSoup(documents[-1]['content'], 'html.parser')
+    soup = bs4.BeautifulSoup(documents[2]['content'], 'html.parser')
     entries = soup.find(class_='index').find_all(recursive=False)
 
     assert 'year' in entries[0].attrs['class']
@@ -136,6 +89,8 @@ def test_documents_cross_tags(testapp):
                 published=datetime.date(2017, 10, 2),
                 tags=['yoda', 'skywalker']),
         ])
+
+    assert len(documents) == 5
 
     assert documents[0]['title'] == 'the way of the Force #1'
     assert documents[0]['destination'] == os.path.join('posts', '1.html')
@@ -193,7 +148,56 @@ def test_documents_cross_tags(testapp):
     assert entries[1].a.attrs['href'] == '/posts/2.html'
 
 
-def test_documents(testapp):
+def test_param_output(testapp):
+    """Tags processor has to respect output parameter."""
+
+    documents = tags.process(
+        testapp,
+        [
+            _get_document(
+                title='the way of the Force',
+                destination=os.path.join('posts', '1.html'),
+                published=datetime.date(2017, 10, 4),
+                tags=['kenobi', 'skywalker']),
+        ],
+        output='mytags/{tag}/index.html')
+
+    assert documents[0]['title'] == 'the way of the Force'
+    assert documents[0]['destination'] == os.path.join('posts', '1.html')
+    assert documents[0]['published'] == datetime.date(2017, 10, 4)
+
+    # - / -
+
+    assert documents[-2]['source'] == 'virtual://tags/kenobi'
+    assert documents[-2]['destination'] == 'mytags/kenobi/index.html'
+
+    soup = bs4.BeautifulSoup(documents[-2]['content'], 'html.parser')
+    entries = soup.find(class_='index').find_all(recursive=False)
+
+    assert 'year' in entries[0].attrs['class']
+    assert 'index-entry' in entries[1].attrs['class']
+
+    assert entries[0].string == '2017'
+    assert entries[1].time.attrs['datetime'] == '2017-10-04'
+    assert entries[1].a.attrs['href'] == '/posts/1.html'
+
+    # - / -
+
+    assert documents[-1]['source'] == 'virtual://tags/skywalker'
+    assert documents[-1]['destination'] == 'mytags/skywalker/index.html'
+
+    soup = bs4.BeautifulSoup(documents[-1]['content'], 'html.parser')
+    entries = soup.find(class_='index').find_all(recursive=False)
+
+    assert 'year' in entries[0].attrs['class']
+    assert 'index-entry' in entries[1].attrs['class']
+
+    assert entries[0].string == '2017'
+    assert entries[1].time.attrs['datetime'] == '2017-10-04'
+    assert entries[1].a.attrs['href'] == '/posts/1.html'
+
+
+def test_param_when(testapp):
     """Tags processor has to ignore non-relevant documents."""
 
     documents = tags.process(
@@ -232,6 +236,8 @@ def test_documents(testapp):
             },
         ])
 
+    assert len(documents) == 5
+
     for i, document in enumerate(documents[:-1]):
         assert document['source'].endswith('%d.md' % (i + 1))
         assert document['title'] == 'the way of the Force #%d' % (i + 1)
@@ -256,11 +262,13 @@ def test_documents(testapp):
     assert entries[2].a.attrs['href'] == '/posts/1.html'
 
 
-@pytest.mark.parametrize('options, error', [
+@pytest.mark.parametrize('params, error', [
     ({'when': 42}, 'when: unsupported value'),
     ({'template': 42}, "template: 42 should be instance of 'str'"),
     ({'output': 42}, "output: 42 should be instance of 'str'"),
 ])
-def test_parameters_schema(testapp, options, error):
+def test_param_bad_value(testapp, params, error):
+    """Tags processor has to validate input parameters."""
+
     with pytest.raises(ValueError, match=error):
-        tags.process(testapp, [], **options)
+        tags.process(testapp, [], **params)

@@ -33,7 +33,6 @@ def test_document(testapp):
         })
 
     assert len(documents) == 1
-
     assert documents[0]['content'] == 'the Force'
     assert documents[0]['author'] == 'yoda'
     assert documents[0]['type'] == 'memoire'
@@ -49,7 +48,6 @@ def test_document_untouched(testapp):
         ])
 
     assert len(documents) == 1
-
     assert documents[0]['content'] == 'the Force'
     assert documents[0]['author'] == 'skywalker'
 
@@ -58,7 +56,7 @@ def test_document_untouched(testapp):
     (True, 'yoda'),
     (False, 'skywalker'),
 ])
-def test_document_overwrite(testapp, overwrite, author):
+def test_param_overwrite(testapp, overwrite, author):
     """Metadata processor has to respect overwrite option."""
 
     documents = metadata.process(
@@ -73,13 +71,12 @@ def test_document_overwrite(testapp, overwrite, author):
         overwrite=overwrite)
 
     assert len(documents) == 1
-
     assert documents[0]['content'] == 'the Force'
     assert documents[0]['author'] == author
     assert documents[0]['type'] == 'memoire'
 
 
-def test_documents(testapp):
+def test_param_when(testapp):
     """Metadata processor has to ignore non-targeted documents."""
 
     documents = metadata.process(
@@ -128,11 +125,13 @@ def test_documents(testapp):
     assert 'author' not in documents[3]
 
 
-@pytest.mark.parametrize('options, error', [
+@pytest.mark.parametrize('params, error', [
     ({'when': [42]}, 'when: unsupported value'),
     ({'metadata': 42}, "metadata: 42 should be instance of 'dict'"),
     ({'overwrite': 'true'}, "overwrite: 'true' should be instance of 'bool'"),
 ])
-def test_parameters_schema(testapp, options, error):
+def test_param_bad_value(testapp, params, error):
+    """Metadata processor has to validate input parameters."""
+
     with pytest.raises(ValueError, match=error):
-        metadata.process(testapp, [], **options)
+        metadata.process(testapp, [], **params)
