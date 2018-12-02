@@ -15,7 +15,7 @@ from ._misc import iterdocuments, parameters
         'overwrite': schema.Schema(bool),
     }
 )
-def process(app, documents, when=None, delimiter='---', overwrite=True):
+def process(app, documents, *, when=None, delimiter='---', overwrite=True):
     delimiter = re.escape(delimiter)
 
     for document in iterdocuments(documents, when):

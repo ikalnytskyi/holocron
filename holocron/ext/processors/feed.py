@@ -23,6 +23,7 @@ from holocron.content import Document
 )
 def process(app,
             documents,
+            *,
             feed,
             item,
             syndication_format='atom',

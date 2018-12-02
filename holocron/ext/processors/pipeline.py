@@ -11,7 +11,7 @@ from ._misc import iterdocuments_ex, parameters
         'processors': schema.Schema([{str: object}]),
     }
 )
-def process(app, documents, when=None, processors=[]):
+def process(app, documents, *, when=None, processors=[]):
     kept = []
     selected = []
 

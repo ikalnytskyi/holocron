@@ -11,7 +11,7 @@ from ._misc import iterdocuments, parameters
         'when': schema.Or([{str: object}], None, error='unsupported value'),
     }
 )
-def process(app, documents, when=None):
+def process(app, documents, *, when=None):
     for document in iterdocuments(documents, when):
         destination = os.path.basename(document['destination'])
 

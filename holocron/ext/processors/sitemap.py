@@ -43,7 +43,7 @@ def _check_documents_urls(sitemap, documents):
         'save_as': schema.Schema(str),
     }
 )
-def process(app, documents, when=None, gzip=False, save_as='sitemap.xml'):
+def process(app, documents, *, when=None, gzip=False, save_as='sitemap.xml'):
     # According to the Sitemap protocol, the output encoding must be UTF-8.
     # Since this processor does not perform any I/O, the only thing we can
     # do here is to provide bytes representing UTF-8 encoded XML.

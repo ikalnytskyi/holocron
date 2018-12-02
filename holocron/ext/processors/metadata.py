@@ -12,7 +12,7 @@ from ._misc import iterdocuments, parameters
         'overwrite': schema.Schema(bool),
     }
 )
-def process(app, documents, when=None, metadata={}, overwrite=True):
+def process(app, documents, *, when=None, metadata={}, overwrite=True):
     for document in iterdocuments(documents, when):
         for key, value in metadata.items():
             if overwrite or key not in document:

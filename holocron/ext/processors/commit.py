@@ -18,6 +18,7 @@ from ._misc import iterdocuments, parameters
 )
 def process(app,
             documents,
+            *,
             path='_site',
             when=None,
             unload=True,
