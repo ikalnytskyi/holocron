@@ -42,11 +42,16 @@ def iterdocuments_ex(documents, when):
         yield document, is_matched
 
 
-def resolve_json_references(value, context):
+def resolve_json_references(value, context, keep_unknown=True):
     def _do_resolve(node):
         if isinstance(node, collections.Mapping) and '$ref' in node:
             uri, fragment = urllib.parse.urldefrag(node['$ref'])
-            return jsonpointer.resolve_pointer(context[uri], fragment)
+            try:
+                return jsonpointer.resolve_pointer(context[uri], fragment)
+            except KeyError:
+                if keep_unknown:
+                    return node
+                raise
         elif isinstance(node, collections.Mapping):
             for k, v in node.items():
                 node[k] = _do_resolve(v)

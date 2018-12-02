@@ -45,6 +45,7 @@ setup(
 
         'Markdown >= 2.4',      # deps of markdown converter
         'docutils >= 0.12',     # deps of restructuredtext converter
+        'feedgen  >= 0.7',      # deps of feed processor
         'watchdog >= 0.8.0',    # deps of serve command
     ],
     tests_require=['mock >= 1.1.0'],
@@ -66,7 +67,7 @@ setup(
             'markdown = holocron.ext.processors.markdown:process',
             'restructuredtext = '
             '   holocron.ext.processors.restructuredtext:process',
-            'atom = holocron.ext.processors.atom:process',
+            'feed = holocron.ext.processors.feed:process',
             'sitemap = holocron.ext.processors.sitemap:process',
             'index = holocron.ext.processors.index:process',
             'tags = holocron.ext.processors.tags:process',
