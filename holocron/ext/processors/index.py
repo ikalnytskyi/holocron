@@ -14,7 +14,12 @@ from holocron.content import Document
         'encoding': schema.Schema(codecs.lookup, 'unsupported encoding'),
     }
 )
-def process(app, documents, when=None, template='index.j2', encoding='UTF-8'):
+def process(app,
+            documents,
+            *,
+            when=None,
+            template='index.j2',
+            encoding='UTF-8'):
     selected = iterdocuments(documents, when)
     template = app.jinja_env.get_template(template)
 

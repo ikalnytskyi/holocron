@@ -22,6 +22,7 @@ from ._misc import iterdocuments, parameters
 )
 def process(app,
             documents,
+            *,
             path='.',
             when=None,
             encoding='UTF-8',

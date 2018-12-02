@@ -35,7 +35,7 @@ _top_heading_re = re.compile(
         'extensions': schema.Schema([str]),
     }
 )
-def process(app, documents, when=None, extensions=None):
+def process(app, documents, *, when=None, extensions=None):
     markdown_ = markdown.Markdown(
         # No one use pure Markdown nowadays, so let's enhance it with some
         # popular and widely used extensions such as tables, footnotes and

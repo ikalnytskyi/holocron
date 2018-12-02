@@ -16,6 +16,7 @@ from holocron import content
 )
 def process(app,
             documents,
+            *,
             when=None,
             template='index.j2',
             output='tags/{tag}.html'):

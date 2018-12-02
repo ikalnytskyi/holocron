@@ -16,7 +16,7 @@ from ._misc import iterdocuments, parameters
         'docutils': schema.Schema({str: object}),
     }
 )
-def process(app, documents, when=None, docutils={}):
+def process(app, documents, *, when=None, docutils={}):
     settings = dict(
         {
             # We need to start heading level with <h2> in case there are
