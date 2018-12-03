@@ -13,6 +13,10 @@ from ._misc import iterdocuments, parameters
 
 
 @parameters(
+    fallback={
+        'encoding': ':metadata:#/encoding',
+        'timezone': ':metadata:#/timezone',
+    },
     schema={
         'path': str,
         'when': schema.Or([{str: object}], None, error='unsupported value'),
