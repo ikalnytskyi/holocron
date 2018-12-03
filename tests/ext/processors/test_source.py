@@ -77,6 +77,38 @@ def test_document_content_types(testapp, tmpdir, data, cls):
     assert isinstance(documents[0]['content'], cls)
 
 
+@pytest.mark.parametrize('encoding', ['CP1251', 'UTF-16'])
+def test_param_encoding(testapp, tmpdir, encoding):
+    """Source processor has to respect encoding parameter."""
+
+    tmpdir.ensure('cv.md').write_text('оби-ван', encoding=encoding)
+
+    documents = source.process(
+        testapp,
+        [],
+        path=tmpdir.strpath,
+        encoding=encoding)
+
+    assert len(documents) == 1
+    assert documents[0]['content'] == 'оби-ван'
+
+
+@pytest.mark.parametrize('encoding', ['CP1251', 'UTF-16'])
+def test_param_encoding_fallback(testapp, tmpdir, encoding):
+    """Source processor has to respect encoding parameter (fallback)."""
+
+    tmpdir.ensure('cv.md').write_text('оби-ван', encoding=encoding)
+    testapp.metadata.update({'encoding': encoding})
+
+    documents = source.process(
+        testapp,
+        [],
+        path=tmpdir.strpath)
+
+    assert len(documents) == 1
+    assert documents[0]['content'] == 'оби-ван'
+
+
 @pytest.mark.parametrize('timezone, tznames', [
     ('UTC', ['UTC']),
     ('Europe/Kiev', ['EET', 'EEST']),
@@ -91,6 +123,30 @@ def test_param_timezone(testapp, tmpdir, timezone, tznames):
         [],
         path=tmpdir.strpath,
         timezone=timezone)
+
+    assert len(documents) == 1
+
+    created = documents[0]['created']
+    updated = documents[0]['updated']
+
+    assert created.tzinfo.tzname(created) in tznames
+    assert updated.tzinfo.tzname(updated) in tznames
+
+
+@pytest.mark.parametrize('timezone, tznames', [
+    ('UTC', ['UTC']),
+    ('Europe/Kiev', ['EET', 'EEST']),
+])
+def test_param_timezone_fallback(testapp, tmpdir, timezone, tznames):
+    """Source processor has to respect timezone parameter (fallback)."""
+
+    tmpdir.ensure('cv.md').write_text('text', encoding='UTF-8')
+    testapp.metadata.update({'timezone': timezone})
+
+    documents = source.process(
+        testapp,
+        [],
+        path=tmpdir.strpath)
 
     assert len(documents) == 1
 

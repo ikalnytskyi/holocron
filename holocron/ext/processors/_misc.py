@@ -65,7 +65,8 @@ def resolve_json_references(value, context, keep_unknown=True):
 
 class parameters:
 
-    def __init__(self, *, schema=None):
+    def __init__(self, *, fallback=None, schema=None):
+        self._fallback = fallback or {}
         self._schema = schema
 
     def __call__(self, fn):
@@ -74,21 +75,33 @@ class parameters:
             signature = inspect.signature(fn)
             arguments = signature.bind_partial(app, *args, **kwargs).arguments
 
-            app = arguments.pop('app')
-            documents = arguments.pop('documents')
+            # First two parameters are an application instance and a collection
+            # of documents, and they are guaranteed to be passed as positional
+            # arguments. Therefore, there's no need to check their schema or
+            # resolve their fallback values. That's why we just ignore them and
+            # start iterating from third parameter.
+            for param in list(signature.parameters)[2:]:
+                try:
+                    value = arguments[param]
+                except KeyError:
+                    try:
+                        value = resolve_json_references(
+                            {'$ref': self._fallback[param]},
+                            {':metadata:': app.metadata})
+                    except (jsonpointer.JsonPointerException, KeyError):
+                        continue
 
-            for name, value in arguments.items():
                 # this is a temporary hack to workaround schema error
                 # that dooku.conf.Conf is not a dict
                 if isinstance(value, dooku.conf.Conf):
                     value = dict(value)
 
-                if name in self._schema:
+                if param in self._schema:
                     try:
-                        schema.Schema(self._schema[name]).validate(value)
-                    except schema.SchemaError as e:
-                        raise ValueError('%s: %s' % (name, str(e)))
+                        schema.Schema(self._schema[param]).validate(value)
+                    except schema.SchemaError as exc:
+                        raise ValueError('%s: %s' % (param, str(exc)))
 
-                kwargs[name] = value
-            return fn(app, documents, **kwargs)
+                kwargs[param] = value
+            return fn(app, *args, **kwargs)
         return wrapper

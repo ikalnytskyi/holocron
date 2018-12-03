@@ -134,6 +134,34 @@ def test_param_encoding(testapp, encoding):
     assert documents[-1]['content'].decode(encoding)
 
 
+@pytest.mark.parametrize('encoding', ['CP1251', 'UTF-16'])
+def test_param_encoding_fallback(testapp, encoding):
+    """Index processor has to to respect encoding parameter (fallback)."""
+
+    testapp.metadata.update({'encoding': encoding})
+
+    documents = index.process(
+        testapp,
+        [
+            _get_document(
+                title='оби-ван',
+                destination=os.path.join('posts', '1.html'),
+                published=datetime.date(2017, 10, 4)),
+        ])
+
+    assert len(documents) == 2
+
+    assert documents[0]['title'] == 'оби-ван'
+    assert documents[0]['destination'] == os.path.join('posts', '1.html')
+    assert documents[0]['published'] == datetime.date(2017, 10, 4)
+
+    assert documents[-1]['source'] == 'virtual://index'
+    assert documents[-1]['destination'] == 'index.html'
+    assert documents[-1]['encoding'] == encoding
+
+    assert documents[-1]['content'].decode(encoding)
+
+
 def test_param_when(testapp):
     """Index processor has to ignore non-relevant documents."""
 

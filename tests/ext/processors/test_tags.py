@@ -197,6 +197,71 @@ def test_param_output(testapp):
     assert entries[1].a.attrs['href'] == '/posts/1.html'
 
 
+@pytest.mark.parametrize('encoding', ['CP1251', 'UTF-16'])
+def test_param_encoding(testapp, encoding):
+    """Tags processor has to respect encoding parameter."""
+
+    documents = tags.process(
+        testapp,
+        [
+            _get_document(
+                title='the way of the Force',
+                destination=os.path.join('posts', '1.html'),
+                published=datetime.date(2017, 10, 4),
+                tags=['kenobi', 'skywalker']),
+        ],
+        encoding=encoding)
+
+    assert len(documents) == 3
+
+    assert documents[0]['title'] == 'the way of the Force'
+    assert documents[0]['destination'] == os.path.join('posts', '1.html')
+    assert documents[0]['published'] == datetime.date(2017, 10, 4)
+
+    assert documents[1]['source'] == 'virtual://tags/kenobi'
+    assert documents[1]['destination'] == 'tags/kenobi.html'
+    assert documents[1]['encoding'] == encoding
+    assert documents[1]['content'].decode(encoding)
+
+    assert documents[2]['source'] == 'virtual://tags/skywalker'
+    assert documents[2]['destination'] == 'tags/skywalker.html'
+    assert documents[2]['encoding'] == encoding
+    assert documents[2]['content'].decode(encoding)
+
+
+@pytest.mark.parametrize('encoding', ['CP1251', 'UTF-16'])
+def test_param_encoding_fallback(testapp, encoding):
+    """Tags processor has to respect encoding parameter (fallback)."""
+
+    testapp.metadata.update({'encoding': encoding})
+
+    documents = tags.process(
+        testapp,
+        [
+            _get_document(
+                title='the way of the Force',
+                destination=os.path.join('posts', '1.html'),
+                published=datetime.date(2017, 10, 4),
+                tags=['kenobi', 'skywalker']),
+        ])
+
+    assert len(documents) == 3
+
+    assert documents[0]['title'] == 'the way of the Force'
+    assert documents[0]['destination'] == os.path.join('posts', '1.html')
+    assert documents[0]['published'] == datetime.date(2017, 10, 4)
+
+    assert documents[1]['source'] == 'virtual://tags/kenobi'
+    assert documents[1]['destination'] == 'tags/kenobi.html'
+    assert documents[1]['encoding'] == encoding
+    assert documents[1]['content'].decode(encoding)
+
+    assert documents[2]['source'] == 'virtual://tags/skywalker'
+    assert documents[2]['destination'] == 'tags/skywalker.html'
+    assert documents[2]['encoding'] == encoding
+    assert documents[2]['content'].decode(encoding)
+
+
 def test_param_when(testapp):
     """Tags processor has to ignore non-relevant documents."""
 

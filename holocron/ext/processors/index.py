@@ -8,6 +8,9 @@ from holocron.content import Document
 
 
 @parameters(
+    fallback={
+        'encoding': ':metadata:#/encoding',
+    },
     schema={
         'when': schema.Or([{str: object}], None, error='unsupported value'),
         'template': schema.Schema(str),

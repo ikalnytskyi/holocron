@@ -69,7 +69,7 @@ def test_document_template(testapp, monkeypatch, tmpdir):
 
 @pytest.mark.parametrize('encoding', ['CP1251', 'UTF-16'])
 def test_param_encoding(testapp, monkeypatch, tmpdir, encoding):
-    """Commit processor has to respect encoding."""
+    """Commit processor has to respect encoding parameter."""
 
     monkeypatch.chdir(tmpdir)
 
@@ -79,6 +79,23 @@ def test_param_encoding(testapp, monkeypatch, tmpdir, encoding):
             _get_document(content='оби-ван', destination='1.html'),
         ],
         encoding=encoding)
+
+    assert len(documents) == 0
+    assert tmpdir.join('_site', '1.html').read_text(encoding) == 'оби-ван'
+
+
+@pytest.mark.parametrize('encoding', ['CP1251', 'UTF-16'])
+def test_param_encoding_fallback(testapp, monkeypatch, tmpdir, encoding):
+    """Commit processor has to respect encoding parameter (fallback)."""
+
+    monkeypatch.chdir(tmpdir)
+    testapp.metadata.update({'encoding': encoding})
+
+    documents = commit.process(
+        testapp,
+        [
+            _get_document(content='оби-ван', destination='1.html'),
+        ])
 
     assert len(documents) == 0
     assert tmpdir.join('_site', '1.html').read_text(encoding) == 'оби-ван'

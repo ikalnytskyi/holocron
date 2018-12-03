@@ -462,6 +462,44 @@ def test_param_encoding(testapp, syndication_format, encoding):
 
 
 @pytest.mark.parametrize('syndication_format', ['atom', 'rss'])
+@pytest.mark.parametrize('encoding', ['CP1251', 'UTF-16'])
+def test_param_encoding_fallback(testapp, syndication_format, encoding):
+    """Feed processor has to respect encoding parameter (fallback)."""
+
+    testapp.metadata.update({'encoding': encoding})
+
+    documents = feed.process(
+        testapp,
+        [
+            _get_document(
+                content='the way of the Force',
+                published=datetime.date(2017, 9, 25))
+        ],
+        syndication_format=syndication_format,
+        feed={
+            'id': 'kenobi-way',
+            'title': "Kenobi's Way",
+            'description': 'Labours of Obi-Wan',
+            'link': {'href': testapp.metadata['url']},
+        },
+        item={
+            'id': 'day-one',
+            'title': 'Day 1',
+            'content': 'Once upon a time',
+        })
+
+    assert len(documents) == 2
+
+    assert documents[0]['content'] == 'the way of the Force'
+    assert documents[0]['published'] == datetime.date(2017, 9, 25)
+
+    assert documents[-1]['source'] == 'virtual://feed'
+    assert documents[-1]['destination'] == 'feed.xml'
+
+    assert untangle.parse(documents[-1]['content'].decode(encoding))
+
+
+@pytest.mark.parametrize('syndication_format', ['atom', 'rss'])
 @pytest.mark.parametrize('save_as', ['foo.xml', 'bar.xml'])
 def test_param_save_as(testapp, syndication_format, save_as):
     """Feed processor has to respect save_as parameter."""
