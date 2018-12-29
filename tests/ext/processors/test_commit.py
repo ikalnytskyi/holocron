@@ -5,20 +5,13 @@ import os
 import py
 import pytest
 
-from holocron import app, content
+from holocron import app
 from holocron.ext.processors import commit
-
-
-def _get_document(cls=content.Document, **kwargs):
-    document = cls(app.Holocron({}))
-    document.update(kwargs)
-    return document
 
 
 @pytest.fixture(scope='function')
 def testapp():
-    instance = app.Holocron({})
-    return instance
+    return app.Holocron()
 
 
 def test_document(testapp, monkeypatch, tmpdir):
@@ -26,112 +19,19 @@ def test_document(testapp, monkeypatch, tmpdir):
 
     monkeypatch.chdir(tmpdir)
 
-    documents = commit.process(
+    stream = commit.process(
         testapp,
         [
-            _get_document(
-                content='the Force',
-                destination=os.path.join('posts', '1.html')),
+            {
+                'content': 'Obi-Wan',
+                'destination': '1.html',
+            },
         ])
 
-    assert len(documents) == 0
+    with pytest.raises(StopIteration):
+        next(stream)
 
-    text = tmpdir.join('_site', 'posts', '1.html').read()
-    assert text == 'the Force'
-
-
-@pytest.mark.parametrize('encoding', ['CP1251', 'UTF-16'])
-def test_param_encoding(testapp, monkeypatch, tmpdir, encoding):
-    """Commit processor has to respect encoding parameter."""
-
-    monkeypatch.chdir(tmpdir)
-
-    documents = commit.process(
-        testapp,
-        [
-            _get_document(content='оби-ван', destination='1.html'),
-        ],
-        encoding=encoding)
-
-    assert len(documents) == 0
-    assert tmpdir.join('_site', '1.html').read_text(encoding) == 'оби-ван'
-
-
-@pytest.mark.parametrize('encoding', ['CP1251', 'UTF-16'])
-def test_param_encoding_fallback(testapp, monkeypatch, tmpdir, encoding):
-    """Commit processor has to respect encoding parameter (fallback)."""
-
-    monkeypatch.chdir(tmpdir)
-    testapp.metadata.update({'encoding': encoding})
-
-    documents = commit.process(
-        testapp,
-        [
-            _get_document(content='оби-ван', destination='1.html'),
-        ])
-
-    assert len(documents) == 0
-    assert tmpdir.join('_site', '1.html').read_text(encoding) == 'оби-ван'
-
-
-@pytest.mark.parametrize('unload', [False, True])
-def test_param_unload(testapp, monkeypatch, tmpdir, unload):
-    """Commit processor has to respect unload parameter."""
-
-    monkeypatch.chdir(tmpdir)
-
-    documents = commit.process(
-        testapp,
-        [
-            _get_document(content='obi-wan', destination='1.html'),
-        ],
-        unload=unload)
-
-    assert len(documents) == int(not unload)
-
-    if not unload:
-        assert documents[0]['content'] == 'obi-wan'
-        assert documents[0]['destination'] == '1.html'
-
-
-@pytest.mark.parametrize('path', ['_build', '_public'])
-def test_param_path(testapp, monkeypatch, tmpdir, path):
-    """Commit processor has to respect path parameter."""
-
-    monkeypatch.chdir(tmpdir)
-
-    documents = commit.process(
-        testapp,
-        [
-            _get_document(content='obi-wan', destination='1.html'),
-        ],
-        path=path)
-
-    assert len(documents) == 0
-    assert tmpdir.join(path, '1.html').read() == 'obi-wan'
-
-
-def test_document_custom_encoding(testapp, monkeypatch, tmpdir):
-    """Commit processor has to respect suggested encoding."""
-
-    monkeypatch.chdir(tmpdir)
-
-    documents = commit.process(
-        testapp,
-        [
-            _get_document(
-                content='оби-ван',
-                encoding='CP1251',
-                destination='1.html'),
-            _get_document(
-                content='оби-ван',
-                destination='2.html'),
-        ],
-        encoding='UTF-8')
-
-    assert len(documents) == 0
-    assert tmpdir.join('_site', '1.html').read_text('CP1251') == 'оби-ван'
-    assert tmpdir.join('_site', '2.html').read_text('UTF-8') == 'оби-ван'
+    assert tmpdir.join('_site', '1.html').read_text('UTF-8') == 'Obi-Wan'
 
 
 @pytest.mark.parametrize('data, loader', [
@@ -143,16 +43,139 @@ def test_document_content_types(testapp, monkeypatch, tmpdir, data, loader):
 
     monkeypatch.chdir(tmpdir)
 
-    documents = commit.process(
+    stream = commit.process(
         testapp,
         [
-            _get_document(
-                content=data,
-                destination=os.path.join('cv.pdf')),
+            {
+                'content': data,
+                'destination': '1.dat',
+            },
         ])
 
-    assert len(documents) == 0
-    assert loader(tmpdir.join('_site', 'cv.pdf')) == data
+    with pytest.raises(StopIteration):
+        next(stream)
+
+    assert loader(tmpdir.join('_site', '1.dat')) == data
+
+
+@pytest.mark.parametrize('destination', [
+    os.path.join('1.txt'),
+    os.path.join('a', '2.txt'),
+    os.path.join('a', 'b', '3.txt'),
+    os.path.join('a', 'b', 'c', '4.txt'),
+])
+def test_document_destination(testapp, monkeypatch, tmpdir, destination):
+    """Commit processor has to properly use destination."""
+
+    monkeypatch.chdir(tmpdir)
+
+    stream = commit.process(
+        testapp,
+        [
+            {
+                'content': 'Obi-Wan',
+                'destination': destination,
+            },
+        ])
+
+    with pytest.raises(StopIteration):
+        next(stream)
+
+    assert tmpdir.join('_site', destination).read_text('UTF-8') == 'Obi-Wan'
+
+
+@pytest.mark.parametrize('encoding', ['CP1251', 'UTF-16'])
+def test_param_encoding(testapp, monkeypatch, tmpdir, encoding):
+    """Commit processor has to respect encoding parameter."""
+
+    monkeypatch.chdir(tmpdir)
+
+    stream = commit.process(
+        testapp,
+        [
+            {
+                'content': 'Оби-Ван',
+                'destination': '1.html',
+            },
+        ],
+        encoding=encoding)
+
+    with pytest.raises(StopIteration):
+        next(stream)
+
+    assert tmpdir.join('_site', '1.html').read_text(encoding) == 'Оби-Ван'
+
+
+@pytest.mark.parametrize('encoding', ['CP1251', 'UTF-16'])
+def test_param_encoding_fallback(testapp, monkeypatch, tmpdir, encoding):
+    """Commit processor has to respect encoding parameter (fallback)."""
+
+    monkeypatch.chdir(tmpdir)
+    testapp.metadata.update({'encoding': encoding})
+
+    stream = commit.process(
+        testapp,
+        [
+            {
+                'content': 'Оби-Ван',
+                'destination': '1.html',
+            },
+        ])
+
+    with pytest.raises(StopIteration):
+        next(stream)
+
+    assert tmpdir.join('_site', '1.html').read_text(encoding) == 'Оби-Ван'
+
+
+@pytest.mark.parametrize('unload', [False, True])
+def test_param_unload(testapp, monkeypatch, tmpdir, unload):
+    """Commit processor has to respect unload parameter."""
+
+    monkeypatch.chdir(tmpdir)
+
+    stream = commit.process(
+        testapp,
+        [
+            {
+                'content': 'Obi-Wan',
+                'destination': '1.html',
+            },
+        ],
+        unload=unload)
+
+    if not unload:
+        assert next(stream) == {
+            'content': 'Obi-Wan',
+            'destination': '1.html',
+        }
+
+    with pytest.raises(StopIteration):
+        next(stream)
+
+    assert tmpdir.join('_site', '1.html').read_text('UTF-8') == 'Obi-Wan'
+
+
+@pytest.mark.parametrize('path', ['_build', '_public'])
+def test_param_path(testapp, monkeypatch, tmpdir, path):
+    """Commit processor has to respect path parameter."""
+
+    monkeypatch.chdir(tmpdir)
+
+    stream = commit.process(
+        testapp,
+        [
+            {
+                'content': 'Obi-Wan',
+                'destination': '1.html',
+            },
+        ],
+        path=path)
+
+    with pytest.raises(StopIteration):
+        next(stream)
+
+    assert tmpdir.join(path, '1.html').read_text('UTF-8') == 'Obi-Wan'
 
 
 def test_param_when(testapp, monkeypatch, tmpdir):
@@ -160,46 +183,55 @@ def test_param_when(testapp, monkeypatch, tmpdir):
 
     monkeypatch.chdir(tmpdir)
 
-    documents = commit.process(
+    stream = commit.process(
         testapp,
         [
-            _get_document(
-                content='the Force #1',
-                source=os.path.join('posts', '1.md'),
-                destination=os.path.join('posts', '1.html')),
-            _get_document(
-                content='the Force #2',
-                source=os.path.join('pages', '2.md'),
-                destination=os.path.join('pages', '2.html')),
-            _get_document(
-                content='the Force #3',
-                source=os.path.join('posts', '3.md'),
-                destination=os.path.join('posts', '3.html')),
-            _get_document(
-                content='the Force #4',
-                source=os.path.join('pages', '4.md'),
-                destination=os.path.join('pages', '4.html')),
+            {
+                'content': 'Obi-Wan',
+                'source': '1.md',
+                'destination': '1.html',
+            },
+            {
+                'content': 'Luke',
+                'source': '2.rst',
+                'destination': '2.html',
+            },
+            {
+                'content': 'Yoda',
+                'source': '3.md',
+                'destination': '3.html',
+            },
+            {
+                'content': 'Vader',
+                'source': '4.rst',
+                'destination': '4.html',
+            },
         ],
         when=[
             {
                 'operator': 'match',
                 'attribute': 'source',
-                'pattern': r'^posts.*$',
+                'pattern': r'^.*\.md$',
             },
         ])
 
-    assert len(documents) == 2
+    assert next(stream) == {
+        'content': 'Luke',
+        'source': '2.rst',
+        'destination': '2.html',
+    }
 
-    assert documents[0]['content'] == 'the Force #2'
-    assert documents[0]['source'] == os.path.join('pages', '2.md')
-    assert documents[0]['destination'] == os.path.join('pages', '2.html')
+    assert next(stream) == {
+        'content': 'Vader',
+        'source': '4.rst',
+        'destination': '4.html',
+    }
 
-    assert documents[1]['content'] == 'the Force #4'
-    assert documents[1]['source'] == os.path.join('pages', '4.md')
-    assert documents[1]['destination'] == os.path.join('pages', '4.html')
+    with pytest.raises(StopIteration):
+        next(stream)
 
-    assert tmpdir.join('_site', 'posts', '1.html').read() == 'the Force #1'
-    assert tmpdir.join('_site', 'posts', '3.html').read() == 'the Force #3'
+    assert tmpdir.join('_site', '1.html').read_text('UTF-8') == 'Obi-Wan'
+    assert tmpdir.join('_site', '3.html').read_text('UTF-8') == 'Yoda'
 
 
 @pytest.mark.parametrize('params, error', [
@@ -212,4 +244,4 @@ def test_param_bad_value(testapp, params, error):
     """Commit processor has to validate input parameters."""
 
     with pytest.raises(ValueError, match=error):
-        commit.process(testapp, [], **params)
+        next(commit.process(testapp, [], **params))

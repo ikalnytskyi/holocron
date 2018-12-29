@@ -146,6 +146,8 @@ class Holocron(object):
         self._processors[name] = processor
 
     def invoke_processors(self, documents, pipeline):
+        stream = documents
+
         for processor in pipeline:
             processor = processor.copy()
             processfn = self._processors[processor.pop('name')]
@@ -157,16 +159,17 @@ class Holocron(object):
             processor = _misc.resolve_json_references(
                 processor, {':metadata:': self.metadata})
 
-            documents = processfn(self, documents, **processor)
-        return documents
+            stream = processfn(self, stream, **processor)
+
+        yield from stream
 
     def run(self):
         """
         (DEPRECATED) Starts build process.
         """
-        documents = []
-
         processors = self.conf['pipelines.build']
-        documents = self.invoke_processors(documents, processors)
 
-        print('Documents were built successfully')
+        # Since processors are generators and thus are lazy evaluated, we need
+        # to force evaluate them. Otherwise, the pipeline will produce nothing.
+        for _ in self.invoke_processors([], processors):
+            pass

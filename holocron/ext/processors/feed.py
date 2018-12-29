@@ -1,6 +1,7 @@
 """Generate RSS/Atom feed (with extensions if needed)."""
 
 import codecs
+import itertools
 
 import feedgen.feed
 import pkg_resources
@@ -35,7 +36,8 @@ def process(app,
             limit=10,
             encoding='UTF-8',
             pretty=True):
-    selected = iterdocuments(documents, when)
+    passthrough, documents = itertools.tee(documents)
+    selected = list(iterdocuments(documents, when))
 
     # In order to decrease amount of traffic required to deliver feed content
     # (and thus increase the throughput), the number of items in the feed is
@@ -47,13 +49,11 @@ def process(app,
 
     def _resolvefeed(name):
         return resolve_json_references(feed.get(name), {
-            ':application:': app.conf,
             ':feed:': feed,
         })
 
     def _resolveitem(name, document):
         return resolve_json_references(item.get(name), {
-            ':application:': app.conf,
             ':document:': document,
             ':feed:': feed,
         })
@@ -152,4 +152,5 @@ def process(app,
     feed_document['source'] = 'virtual://feed'
     feed_document['destination'] = save_as
 
-    return documents + [feed_document]
+    yield from passthrough
+    yield feed_document

@@ -1,25 +1,17 @@
 """Feed processor test suite."""
 
-import os
 import datetime
+import unittest.mock
 
 import pkg_resources
 import pytest
 import untangle
 
-from holocron import app, content
+from holocron import app
 from holocron.ext.processors import feed
 
 
 _HOLOCRON_VERSION = pkg_resources.get_distribution('holocron').version
-
-
-def _get_document(**kwargs):
-    document = content.Document(app.Holocron({}, metadata={
-        'url': 'http://obi-wan.jedi',
-    }))
-    document.update(kwargs)
-    return document
 
 
 @pytest.fixture(scope='function')
@@ -32,12 +24,13 @@ def testapp():
 def test_document_atom(testapp):
     """Feed (atom) processor has to work with minimum amount of metadata!"""
 
-    documents = feed.process(
+    stream = feed.process(
         testapp,
         [
-            _get_document(
-                content='the way of the Force',
-                published=datetime.date(2017, 9, 25)),
+            {
+                'content': 'the way of the Force',
+                'published': datetime.date(2017, 9, 25),
+            },
         ],
         feed={
             'id': 'kenobi-way',
@@ -51,16 +44,21 @@ def test_document_atom(testapp):
             'content': 'Once upon a time',
         })
 
-    assert len(documents) == 2
+    assert next(stream) == \
+        {
+            'content': 'the way of the Force',
+            'published': datetime.date(2017, 9, 25),
+        }
 
-    assert documents[0]['content'] == 'the way of the Force'
-    assert documents[0]['published'] == datetime.date(2017, 9, 25)
+    document = next(stream)
+    assert document == \
+        {
+            'source': 'virtual://feed',
+            'destination': 'feed.xml',
+            'content': unittest.mock.ANY,
+        }
 
-    assert documents[1]['source'] == 'virtual://feed'
-    assert documents[1]['destination'] == 'feed.xml'
-
-    parsed = untangle.parse(documents[1]['content'].decode('UTF-8'))
-
+    parsed = untangle.parse(document['content'].decode('UTF-8'))
     assert set(dir(parsed.feed)) == {
         'id',
         'title',
@@ -90,15 +88,21 @@ def test_document_atom(testapp):
     assert parsed.feed.entry.content == 'Once upon a time'
     assert parsed.feed.entry.content['type'] == 'html'
 
+    with pytest.raises(StopIteration):
+        next(stream)
+
 
 def test_document_atom_feed_metadata(testapp):
     """Feed (atom) processor has to work with full metadata set!"""
 
     published = datetime.datetime(2017, 9, 25, tzinfo=datetime.timezone.utc)
-    documents = feed.process(
+    stream = feed.process(
         testapp,
         [
-            _get_document(content='the way of the Force', published=published),
+            {
+                'content': 'the way of the Force',
+                'published': published,
+            },
         ],
         feed={
             'id': 'kenobi-way',
@@ -124,16 +128,21 @@ def test_document_atom_feed_metadata(testapp):
             'rights': '(c) Obi-Wan and the Jedi Order',
         })
 
-    assert len(documents) == 2
+    assert next(stream) == \
+        {
+            'content': 'the way of the Force',
+            'published': published,
+        }
 
-    assert documents[0]['content'] == 'the way of the Force'
-    assert documents[0]['published'] == published
+    document = next(stream)
+    assert document == \
+        {
+            'source': 'virtual://feed',
+            'destination': 'feed.xml',
+            'content': unittest.mock.ANY,
+        }
 
-    assert documents[1]['source'] == 'virtual://feed'
-    assert documents[1]['destination'] == 'feed.xml'
-
-    parsed = untangle.parse(documents[1]['content'].decode('UTF-8'))
-
+    parsed = untangle.parse(document['content'].decode('UTF-8'))
     assert set(dir(parsed.feed)) == {
         'id',
         'title',
@@ -191,16 +200,20 @@ def test_document_atom_feed_metadata(testapp):
     assert parsed.feed.entry.published == published.isoformat()
     assert parsed.feed.entry.rights == '(c) Obi-Wan and the Jedi Order'
 
+    with pytest.raises(StopIteration):
+        next(stream)
+
 
 def test_document_rss(testapp):
     """Feed (rss) processor has to work with minimum amount of metadata!"""
 
-    documents = feed.process(
+    stream = feed.process(
         testapp,
         [
-            _get_document(
-                content='the way of the Force',
-                published=datetime.date(2017, 9, 25)),
+            {
+                'content': 'the way of the Force',
+                'published': datetime.date(2017, 9, 25),
+            },
         ],
         syndication_format='rss',
         feed={
@@ -213,16 +226,21 @@ def test_document_rss(testapp):
             'content': 'Once upon a time',
         })
 
-    assert len(documents) == 2
+    assert next(stream) == \
+        {
+            'content': 'the way of the Force',
+            'published': datetime.date(2017, 9, 25),
+        }
 
-    assert documents[0]['content'] == 'the way of the Force'
-    assert documents[0]['published'] == datetime.date(2017, 9, 25)
+    document = next(stream)
+    assert document == \
+        {
+            'source': 'virtual://feed',
+            'destination': 'feed.xml',
+            'content': unittest.mock.ANY,
+        }
 
-    assert documents[1]['source'] == 'virtual://feed'
-    assert documents[1]['destination'] == 'feed.xml'
-
-    parsed = untangle.parse(documents[1]['content'].decode('UTF-8'))
-
+    parsed = untangle.parse(document['content'].decode('UTF-8'))
     assert set(dir(parsed.rss.channel)) == {
         'title',
         'description',
@@ -249,15 +267,21 @@ def test_document_rss(testapp):
     assert parsed.rss.channel.item.title == 'Day 1'
     assert parsed.rss.channel.item.description == 'Once upon a time'
 
+    with pytest.raises(StopIteration):
+        next(stream)
+
 
 def test_document_rss_feed_metadata(testapp):
     """Feed (rss) processor has to work with full metadata set!"""
 
     published = datetime.datetime(2017, 9, 25, tzinfo=datetime.timezone.utc)
-    documents = feed.process(
+    stream = feed.process(
         testapp,
         [
-            _get_document(content='the way of the Force', published=published),
+            {
+                'content': 'the way of the Force',
+                'published': published,
+            },
         ],
         syndication_format='rss',
         feed={
@@ -306,16 +330,21 @@ def test_document_rss_feed_metadata(testapp):
             'itunes_summary': 'berry',
         })
 
-    assert len(documents) == 2
+    assert next(stream) == \
+        {
+            'content': 'the way of the Force',
+            'published': published,
+        }
 
-    assert documents[0]['content'] == 'the way of the Force'
-    assert documents[0]['published'] == published
+    document = next(stream)
+    assert document == \
+        {
+            'source': 'virtual://feed',
+            'destination': 'feed.xml',
+            'content': unittest.mock.ANY,
+        }
 
-    assert documents[1]['source'] == 'virtual://feed'
-    assert documents[1]['destination'] == 'feed.xml'
-
-    parsed = untangle.parse(documents[1]['content'].decode('UTF-8'))
-
+    parsed = untangle.parse(document['content'].decode('UTF-8'))
     assert set(dir(parsed.rss.channel)) == {
         'title',
         'description',
@@ -423,18 +452,23 @@ def test_document_rss_feed_metadata(testapp):
     assert parsed.rss.channel.item.itunes_subtitle == 'cherry'
     assert parsed.rss.channel.item.itunes_summary == 'berry'
 
+    with pytest.raises(StopIteration):
+        next(stream)
+
 
 @pytest.mark.parametrize('syndication_format', ['atom', 'rss'])
 @pytest.mark.parametrize('encoding', ['CP1251', 'UTF-16'])
 def test_param_encoding(testapp, syndication_format, encoding):
     """Feed processor has to respect encoding parameter."""
 
-    documents = feed.process(
+    published = datetime.datetime(2017, 9, 25, tzinfo=datetime.timezone.utc)
+    stream = feed.process(
         testapp,
         [
-            _get_document(
-                content='the way of the Force',
-                published=datetime.date(2017, 9, 25))
+            {
+                'content': 'the way of the Force',
+                'published': published,
+            },
         ],
         syndication_format=syndication_format,
         encoding=encoding,
@@ -450,15 +484,24 @@ def test_param_encoding(testapp, syndication_format, encoding):
             'content': 'Once upon a time',
         })
 
-    assert len(documents) == 2
+    assert next(stream) == \
+        {
+            'content': 'the way of the Force',
+            'published': published,
+        }
 
-    assert documents[0]['content'] == 'the way of the Force'
-    assert documents[0]['published'] == datetime.date(2017, 9, 25)
+    document = next(stream)
+    assert document == \
+        {
+            'source': 'virtual://feed',
+            'destination': 'feed.xml',
+            'content': unittest.mock.ANY,
+        }
 
-    assert documents[-1]['source'] == 'virtual://feed'
-    assert documents[-1]['destination'] == 'feed.xml'
+    assert untangle.parse(document['content'].decode(encoding))
 
-    assert untangle.parse(documents[-1]['content'].decode(encoding))
+    with pytest.raises(StopIteration):
+        next(stream)
 
 
 @pytest.mark.parametrize('syndication_format', ['atom', 'rss'])
@@ -468,12 +511,14 @@ def test_param_encoding_fallback(testapp, syndication_format, encoding):
 
     testapp.metadata.update({'encoding': encoding})
 
-    documents = feed.process(
+    published = datetime.datetime(2017, 9, 25, tzinfo=datetime.timezone.utc)
+    stream = feed.process(
         testapp,
         [
-            _get_document(
-                content='the way of the Force',
-                published=datetime.date(2017, 9, 25))
+            {
+                'content': 'the way of the Force',
+                'published': published,
+            },
         ],
         syndication_format=syndication_format,
         feed={
@@ -488,15 +533,24 @@ def test_param_encoding_fallback(testapp, syndication_format, encoding):
             'content': 'Once upon a time',
         })
 
-    assert len(documents) == 2
+    assert next(stream) == \
+        {
+            'content': 'the way of the Force',
+            'published': published,
+        }
 
-    assert documents[0]['content'] == 'the way of the Force'
-    assert documents[0]['published'] == datetime.date(2017, 9, 25)
+    document = next(stream)
+    assert document == \
+        {
+            'source': 'virtual://feed',
+            'destination': 'feed.xml',
+            'content': unittest.mock.ANY,
+        }
 
-    assert documents[-1]['source'] == 'virtual://feed'
-    assert documents[-1]['destination'] == 'feed.xml'
+    assert untangle.parse(document['content'].decode(encoding))
 
-    assert untangle.parse(documents[-1]['content'].decode(encoding))
+    with pytest.raises(StopIteration):
+        next(stream)
 
 
 @pytest.mark.parametrize('syndication_format', ['atom', 'rss'])
@@ -504,12 +558,13 @@ def test_param_encoding_fallback(testapp, syndication_format, encoding):
 def test_param_save_as(testapp, syndication_format, save_as):
     """Feed processor has to respect save_as parameter."""
 
-    documents = feed.process(
+    stream = feed.process(
         testapp,
         [
-            _get_document(
-                content='the way of the Force',
-                published=datetime.date(2017, 9, 25))
+            {
+                'content': 'the way of the Force',
+                'published': datetime.date(2017, 9, 25),
+            },
         ],
         syndication_format=syndication_format,
         save_as=save_as,
@@ -525,13 +580,22 @@ def test_param_save_as(testapp, syndication_format, save_as):
             'content': 'Once upon a time',
         })
 
-    assert len(documents) == 2
+    assert next(stream) == \
+        {
+            'content': 'the way of the Force',
+            'published': datetime.date(2017, 9, 25),
+        }
 
-    assert documents[0]['content'] == 'the way of the Force'
-    assert documents[0]['published'] == datetime.date(2017, 9, 25)
+    document = next(stream)
+    assert document == \
+        {
+            'source': 'virtual://feed',
+            'destination': save_as,
+            'content': unittest.mock.ANY,
+        }
 
-    assert documents[-1]['source'] == 'virtual://feed'
-    assert documents[-1]['destination'] == save_as
+    with pytest.raises(StopIteration):
+        next(stream)
 
 
 @pytest.mark.parametrize('syndication_format', ['atom', 'rss'])
@@ -539,12 +603,13 @@ def test_param_save_as(testapp, syndication_format, save_as):
 def test_param_limit(testapp, syndication_format, limit):
     """Feed processor has to respect limit parameter."""
 
-    documents = feed.process(
+    stream = feed.process(
         testapp,
         [
-            _get_document(
-                content='the way of the Force, part %d' % i,
-                published=datetime.date(2017, 9, i + 1))
+            {
+                'content': 'the way of the Force, part %d' % i,
+                'published': datetime.date(2017, 9, i + 1),
+            }
             for i in range(10)
         ],
         syndication_format=syndication_format,
@@ -561,16 +626,22 @@ def test_param_limit(testapp, syndication_format, limit):
             'content': {'$ref': ':document:#/content'},
         })
 
-    assert len(documents) == 11
+    for i, document in zip(range(10), stream):
+        assert document == \
+            {
+                'content': 'the way of the Force, part %d' % i,
+                'published': datetime.date(2017, 9, i + 1),
+            }
 
-    for i, document in enumerate(documents[:-1]):
-        assert documents[i]['content'] == 'the way of the Force, part %d' % i
-        assert documents[i]['published'] == datetime.date(2017, 9, i + 1)
+    document = next(stream)
+    assert document == \
+        {
+            'source': 'virtual://feed',
+            'destination': 'feed.xml',
+            'content': unittest.mock.ANY,
+        }
 
-    assert documents[-1]['source'] == 'virtual://feed'
-    assert documents[-1]['destination'] == 'feed.xml'
-
-    parsed = untangle.parse(documents[-1]['content'].decode('UTF-8'))
+    parsed = untangle.parse(document['content'].decode('UTF-8'))
 
     if syndication_format == 'atom':
         items = parsed.feed.entry
@@ -588,6 +659,9 @@ def test_param_limit(testapp, syndication_format, limit):
         assert item.title == 'Day 1'
         assert content == 'the way of the Force, part %d' % (9 - i)
 
+    with pytest.raises(StopIteration):
+        next(stream)
+
 
 @pytest.mark.parametrize('syndication_format', ['atom', 'rss'])
 @pytest.mark.parametrize('pretty, check_fn', (
@@ -597,12 +671,13 @@ def test_param_limit(testapp, syndication_format, limit):
 def test_param_pretty(testapp, syndication_format, pretty, check_fn):
     """Feed processor has to respect pretty parameter."""
 
-    documents = feed.process(
+    stream = feed.process(
         testapp,
         [
-            _get_document(
-                content='the way of the Force',
-                published=datetime.date(2017, 9, 25))
+            {
+                'content': 'the way of the Force',
+                'published': datetime.date(2017, 9, 25),
+            },
         ],
         syndication_format=syndication_format,
         pretty=pretty,
@@ -618,51 +693,58 @@ def test_param_pretty(testapp, syndication_format, pretty, check_fn):
             'content': 'Once upon a time',
         })
 
-    assert len(documents) == 2
+    assert next(stream) == \
+        {
+            'content': 'the way of the Force',
+            'published': datetime.date(2017, 9, 25),
+        }
 
-    assert documents[0]['content'] == 'the way of the Force'
-    assert documents[0]['published'] == datetime.date(2017, 9, 25)
+    document = next(stream)
+    assert document == \
+        {
+            'source': 'virtual://feed',
+            'destination': 'feed.xml',
+            'content': unittest.mock.ANY,
+        }
+    assert check_fn(len(document['content'].splitlines()))
 
-    assert documents[-1]['source'] == 'virtual://feed'
-    assert check_fn(len(documents[-1]['content'].splitlines()))
+    with pytest.raises(StopIteration):
+        next(stream)
 
 
 @pytest.mark.parametrize('syndication_format', ['atom', 'rss'])
 def test_param_when(testapp, syndication_format):
     """Feed processor has to ignore non-relevant documents."""
 
-    documents = feed.process(
+    stream = feed.process(
         testapp,
         [
-            _get_document(
-                title='Essay #1',
-                source=os.path.join('posts', '1.md'),
-                destination=os.path.join('posts', '1.html'),
-                published=datetime.date(2017, 9, 1)),
-            _get_document(
-                title='Essay #2',
-                source=os.path.join('pages', '2.md'),
-                destination=os.path.join('pages', '2.html'),
-                published=datetime.date(2017, 9, 2)),
-            _get_document(
-                title='Essay #3',
-                source=os.path.join('posts', '3.md'),
-                destination=os.path.join('posts', '3.html'),
-                published=datetime.date(2017, 9, 3)),
-            _get_document(
-                title='Essay #4',
-                source=os.path.join('pages', '4.md'),
-                destination=os.path.join('pages', '4.html'),
-                published=datetime.date(2017, 9, 4)),
-        ],
-        syndication_format=syndication_format,
-        when=[
             {
-                'operator': 'match',
-                'attribute': 'source',
-                'pattern': r'^posts.*$',
+                'title': 'Essay #1',
+                'source': '1.md',
+                'destination': '1.html',
+                'published': datetime.date(2017, 9, 1),
+            },
+            {
+                'title': 'Essay #2',
+                'source': '2.rst',
+                'destination': '2.html',
+                'published': datetime.date(2017, 9, 2),
+            },
+            {
+                'title': 'Essay #3',
+                'source': '3.md',
+                'destination': '3.html',
+                'published': datetime.date(2017, 9, 3),
+            },
+            {
+                'title': 'Essay #4',
+                'source': '4.rst',
+                'destination': '4.html',
+                'published': datetime.date(2017, 9, 4),
             },
         ],
+        syndication_format=syndication_format,
         feed={
             'id': 'kenobi-way',
             'title': "Kenobi's Way",
@@ -673,19 +755,33 @@ def test_param_when(testapp, syndication_format):
             'id': 'day-one',
             'title': {'$ref': ':document:#/title'},
             'content': 'Once upon a time',
-        })
+        },
+        when=[
+            {
+                'operator': 'match',
+                'attribute': 'source',
+                'pattern': r'^.*\.md$',
+            },
+        ])
 
-    assert len(documents) == 5
+    for i, document in zip(range(1, 5), stream):
+        assert document == \
+            {
+                'title': 'Essay #%d' % i,
+                'source': '%d.%s' % (i, 'md' if i % 2 else 'rst'),
+                'destination': '%d.html' % i,
+                'published': datetime.date(2017, 9, i)
+            }
 
-    for i, document in enumerate(documents[:-1]):
-        assert document['source'].endswith('%d.md' % (i + 1))
-        assert document['title'] == 'Essay #%d' % (i + 1)
-        assert document['published'] == datetime.date(2017, 9, i + 1)
+    document = next(stream)
+    assert document == \
+        {
+            'source': 'virtual://feed',
+            'destination': 'feed.xml',
+            'content': unittest.mock.ANY,
+        }
 
-    assert documents[-1]['source'] == 'virtual://feed'
-    assert documents[-1]['destination'] == 'feed.xml'
-
-    parsed = untangle.parse(documents[-1]['content'].decode('UTF-8'))
+    parsed = untangle.parse(document['content'].decode('UTF-8'))
 
     if syndication_format == 'atom':
         assert len(parsed.feed.entry) == 2
@@ -695,6 +791,9 @@ def test_param_when(testapp, syndication_format):
         assert len(parsed.rss.channel.item) == 2
         assert parsed.rss.channel.item[0].title == 'Essay #3'
         assert parsed.rss.channel.item[1].title == 'Essay #1'
+
+    with pytest.raises(StopIteration):
+        next(stream)
 
 
 @pytest.mark.parametrize('params, error', [
@@ -708,4 +807,4 @@ def test_param_bad_value(testapp, params, error):
     """Feed processor has to validate input parameters."""
 
     with pytest.raises(ValueError, match=error):
-        feed.process(testapp, [], **params)
+        next(feed.process(testapp, [], **params))

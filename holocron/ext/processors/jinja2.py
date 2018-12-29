@@ -7,7 +7,7 @@ import jsonpointer
 import schema
 
 from . import source
-from ._misc import iterdocuments, parameters
+from ._misc import iterdocuments_ex, parameters
 
 
 @parameters(
@@ -38,21 +38,21 @@ def process(app,
     ]))
     env.filters['jsonpointer'] = jsonpointer.resolve_pointer
 
-    for document in iterdocuments(documents, when):
-        template_name = document.get('template', template)
-        document['content'] = env.get_template(template_name).render(
-            document=document,
-            metadata=app.metadata,
-            **context)
+    for document, is_matched in iterdocuments_ex(documents, when):
+        if is_matched:
+            document['content'] = \
+                env.get_template(document.get('template', template)).render(
+                    document=document,
+                    metadata=app.metadata,
+                    **context)
+        yield document
 
     # Themes may optionally come with various statics (e.g. css, images) they
     # depend on. That's why we need to inject these statics to a documents
     # pipeline; otherwise rendered documents may look improperly.
     for theme in themes:
-        documents = source.process(app, documents, path=theme, when=[{
+        yield from source.process(app, [], path=theme, when=[{
             'operator': 'match',
             'attribute': 'source',
             'pattern': r'^static/',
         }])
-
-    return documents

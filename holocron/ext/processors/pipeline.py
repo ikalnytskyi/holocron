@@ -21,4 +21,5 @@ def process(app, documents, *, when=None, processors=[]):
         else:
             kept.append(document)
 
-    return kept + app.invoke_processors(selected, processors)
+    yield from kept
+    yield from app.invoke_processors(selected, processors)

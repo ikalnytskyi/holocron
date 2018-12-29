@@ -2,18 +2,25 @@
 
 import re
 import textwrap
+import unittest.mock
 
 import pytest
 
-from holocron import app, content
+from holocron import app
 from holocron.ext.processors import markdown
 
 
-def _get_document(**kwargs):
-    document = content.Document(app.Holocron({}))
-    document['destination'] = 'about/cv.md'
-    document.update(kwargs)
-    return document
+class _pytest_regex:
+    """Assert that a given string meets some expectations."""
+
+    def __init__(self, pattern, flags=0):
+        self._regex = re.compile(pattern, flags)
+
+    def __eq__(self, actual):
+        return bool(self._regex.match(actual))
+
+    def __repr__(self):
+        return self._regex.pattern
 
 
 @pytest.fixture(scope='function')
@@ -21,161 +28,183 @@ def testapp():
     return app.Holocron()
 
 
-def test_document(testapp):
+@pytest.fixture(scope='function')
+def run_processor():
+    streams = []
+
+    def run(*args, **kwargs):
+        streams.append(markdown.process(*args, **kwargs))
+        return streams[-1]
+
+    yield run
+
+    for stream in streams:
+        with pytest.raises(StopIteration):
+            next(stream)
+
+
+def test_document(testapp, run_processor):
     """Markdown processor has to work."""
 
-    documents = markdown.process(
+    stream = run_processor(
         testapp,
         [
-            _get_document(
-                content=textwrap.dedent('''\
+            {
+                'content': textwrap.dedent('''\
                     # some title
 
                     text with **bold**
-                '''))
+                '''),
+                'destination': '1.md',
+            },
         ])
 
-    assert len(documents) == 1
-    assert re.match(
-        (
-            r'<p>text with <strong>bold</strong></p>'
-        ),
-        documents[0]['content'])
-    assert documents[0]['destination'].endswith('.html')
-    assert documents[0]['title'] == 'some title'
+    assert next(stream) == \
+        {
+            'content': _pytest_regex(
+                r'<p>text with <strong>bold</strong></p>'),
+            'destination': '1.html',
+            'title': 'some title',
+        }
 
 
-def test_document_with_alt_title_syntax(testapp):
+def test_document_with_alt_title_syntax(testapp, run_processor):
     """Markdown processor has to work with alternative title syntax."""
 
-    documents = markdown.process(
+    stream = run_processor(
         testapp,
         [
-            _get_document(
-                content=textwrap.dedent('''\
+            {
+                'content': textwrap.dedent('''\
                     some title
                     ==========
 
                     text with **bold**
-                '''))
+                '''),
+                'destination': '1.md',
+            },
         ])
 
-    assert len(documents) == 1
-    assert re.match(
-        (
-            r'<p>text with <strong>bold</strong></p>'
-        ),
-        documents[0]['content'])
-    assert documents[0]['destination'].endswith('.html')
-    assert documents[0]['title'] == 'some title'
+    assert next(stream) == \
+        {
+            'content': _pytest_regex(
+                r'<p>text with <strong>bold</strong></p>'),
+            'destination': '1.html',
+            'title': 'some title',
+        }
 
 
-def test_document_with_newlines_at_the_beginning(testapp):
+def test_document_with_newlines_at_the_beginning(testapp, run_processor):
     """Markdown processor has to ignore newlines at the beginning."""
 
-    documents = markdown.process(
+    stream = run_processor(
         testapp,
         [
-            _get_document(
-                content=textwrap.dedent('''\
+            {
+                'content': textwrap.dedent('''\
 
 
                     # some title
 
                     text with **bold**
-                '''))
+                '''),
+                'destination': '1.md',
+            },
         ])
 
-    assert len(documents) == 1
-    assert re.match(
-        (
-            r'<p>text with <strong>bold</strong></p>'
-        ),
-        documents[0]['content'])
-    assert documents[0]['destination'].endswith('.html')
-    assert documents[0]['title'] == 'some title'
+    assert next(stream) == \
+        {
+            'content': _pytest_regex(
+                r'<p>text with <strong>bold</strong></p>'),
+            'destination': '1.html',
+            'title': 'some title',
+        }
 
 
-def test_document_without_title(testapp):
+def test_document_without_title(testapp, run_processor):
     """Markdown processor has to work process documents without title."""
 
-    documents = markdown.process(
+    stream = run_processor(
         testapp,
         [
-            _get_document(
-                content=textwrap.dedent('''\
+            {
+                'content': textwrap.dedent('''\
                     text with **bold**
-                '''))
+                '''),
+                'destination': '1.md',
+            },
         ])
 
-    assert len(documents) == 1
-    assert re.match(
-        (
-            r'<p>text with <strong>bold</strong></p>'
-        ),
-        documents[0]['content'])
-    assert documents[0]['destination'].endswith('.html')
-    assert 'title' not in documents[0]
+    assert next(stream) == \
+        {
+            'content': _pytest_regex(
+                r'<p>text with <strong>bold</strong></p>'),
+            'destination': '1.html',
+        }
 
 
-def test_document_title_is_not_overwritten(testapp):
+def test_document_title_is_not_overwritten(testapp, run_processor):
     """Markdown processor hasn't to set title if it's already set."""
 
-    document = _get_document(
-        content=textwrap.dedent('''\
-            # some title
-
-            text with **bold**
-        '''))
-    document['title'] = 'another title'
-    documents = markdown.process(testapp, [document])
-
-    assert len(documents) == 1
-    assert re.match(
-        (
-            r'<p>text with <strong>bold</strong></p>'
-        ),
-        documents[0]['content'])
-    assert documents[0]['destination'].endswith('.html')
-    assert documents[0]['title'] == 'another title'
-
-
-def test_document_title_ignored_in_the_middle_of_text(testapp):
-    """Markdown processor has to ignore title if it's in the middle of text."""
-
-    documents = markdown.process(
+    stream = run_processor(
         testapp,
         [
-            _get_document(
-                content=textwrap.dedent('''\
+            {
+                'content': textwrap.dedent('''\
+                    # some title
+
+                    text with **bold**
+                '''),
+                'destination': '1.md',
+                'title': 'another title',
+            },
+        ])
+
+    assert next(stream) == \
+        {
+            'content': _pytest_regex(
+                r'<p>text with <strong>bold</strong></p>'),
+            'destination': '1.html',
+            'title': 'another title',
+        }
+
+
+def test_document_title_ignored_in_the_middle_of_text(testapp, run_processor):
+    """Markdown processor has to ignore title if it's in the middle of text."""
+
+    stream = run_processor(
+        testapp,
+        [
+            {
+                'content': textwrap.dedent('''\
                     text
 
                     # some title
 
                     text with **bold**
-                '''))
+                '''),
+                'destination': '1.md',
+            },
         ])
 
-    assert len(documents) == 1
-    assert re.match(
-        (
-            r'<p>text</p>\s*'
-            r'<h1>some title</h1>\s*'
-            r'<p>text with <strong>bold</strong></p>'
-        ),
-        documents[0]['content'])
-    assert documents[0]['destination'].endswith('.html')
-    assert 'title' not in documents[0]
+    assert next(stream) == \
+        {
+            'content': _pytest_regex(
+                r'<p>text</p>\s*'
+                r'<h1>some title</h1>\s*'
+                r'<p>text with <strong>bold</strong></p>'),
+            'destination': '1.html',
+        }
 
 
-def test_document_with_sections(testapp):
+def test_document_with_sections(testapp, run_processor):
     """Markdown processor has to work even for complex documents."""
 
-    documents = markdown.process(
+    stream = run_processor(
         testapp,
         [
-            _get_document(
-                content=textwrap.dedent('''\
+            {
+                'content': textwrap.dedent('''\
                     some title 1
                     ============
 
@@ -198,162 +227,178 @@ def test_document_with_sections(testapp):
                     ## some section 3
 
                     yyy
-                '''))
+                '''),
+                'destination': '1.md',
+            },
         ])
 
-    assert len(documents) == 1
-    assert re.match(
-        (
-            r'<p>aaa</p>\s*'
-            r'<h2>some section 1</h2>\s*<p>bbb</p>\s*'
-            r'<h2>some section 2</h2>\s*<p>ccc</p>\s*'
-            r'<h1>some title 2</h1>\s*<p>xxx</p>\s*'
-            r'<h2>some section 3</h2>\s*<p>yyy</p>\s*'
-        ),
-        documents[0]['content'])
-    assert documents[0]['destination'].endswith('.html')
-    assert documents[0]['title'] == 'some title 1'
+    assert next(stream) == \
+        {
+            'content': _pytest_regex(
+                r'<p>aaa</p>\s*'
+                r'<h2>some section 1</h2>\s*<p>bbb</p>\s*'
+                r'<h2>some section 2</h2>\s*<p>ccc</p>\s*'
+                r'<h1>some title 2</h1>\s*<p>xxx</p>\s*'
+                r'<h2>some section 3</h2>\s*<p>yyy</p>\s*'),
+            'destination': '1.html',
+            'title': 'some title 1',
+        }
 
 
-def test_document_with_code(testapp):
+def test_document_with_code(testapp, run_processor):
     """Markdown processor has to highlight code with codehilite extension."""
 
-    documents = markdown.process(
+    stream = run_processor(
         testapp,
         [
-            _get_document(
-                content=textwrap.dedent('''\
+            {
+                'content': textwrap.dedent('''\
                     test codeblock
 
                         :::python
                         lambda x: pass
-                '''))
+                '''),
+                'destination': '1.md',
+            },
         ])
 
-    assert len(documents) == 1
-    assert re.match(
-        (
-            r'<p>test codeblock</p>\s*.*codehilite.*<pre>[\s\S]+</pre>.*'
-        ),
-        documents[0]['content'])
-    assert documents[0]['destination'].endswith('.html')
-    assert 'title' not in documents[0]
+    assert next(stream) == \
+        {
+            'content': _pytest_regex(
+                r'<p>test codeblock</p>\s*.*codehilite.*<pre>[\s\S]+</pre>.*'),
+            'destination': '1.html',
+        }
 
 
-def test_document_with_fenced_code(testapp):
+def test_document_with_fenced_code(testapp, run_processor):
     """Markdown processor has to support GitHub's fence code syntax."""
 
-    documents = markdown.process(
+    stream = run_processor(
         testapp,
         [
-            _get_document(
-                content=textwrap.dedent('''\
+            {
+                'content': textwrap.dedent('''\
+                    test codeblock
+
                     ```python
                     lambda x: pass
                     ```
-                '''))
+                '''),
+                'destination': '1.md',
+            },
         ])
 
-    assert len(documents) == 1
-    assert re.match(
-        (
-            r'.*codehilite.*<pre>[\s\S]+</pre>.*'
-        ),
-        documents[0]['content'])
-    assert documents[0]['destination'].endswith('.html')
-    assert 'title' not in documents[0]
+    assert next(stream) == \
+        {
+            'content': _pytest_regex(
+                r'<p>test codeblock</p>\s*.*codehilite.*<pre>[\s\S]+</pre>.*'),
+            'destination': '1.html',
+        }
 
 
-def test_document_with_table(testapp):
+def test_document_with_table(testapp, run_processor):
     """Markdown processor has to support table syntax (markup extension)."""
 
-    documents = markdown.process(
+    stream = run_processor(
         testapp,
         [
-            _get_document(
-                content=textwrap.dedent('''\
+            {
+                'content': textwrap.dedent('''\
                     column a | column b
                     ---------|---------
                        foo   |   bar
-                '''))
+                '''),
+                'destination': '1.md',
+            },
         ])
 
-    assert len(documents) == 1
-    assert 'table' in documents[0]['content']
-    assert '<th>column a</th>' in documents[0]['content']
-    assert '<th>column b</th>' in documents[0]['content']
-    assert '<td>foo</td>' in documents[0]['content']
-    assert '<td>bar</td>' in documents[0]['content']
-    assert documents[0]['destination'].endswith('.html')
-    assert 'title' not in documents[0]
+    document = next(stream)
+    assert document == \
+        {
+            'content': unittest.mock.ANY,
+            'destination': '1.html',
+        }
+
+    assert 'table' in document['content']
+    assert '<th>column a</th>' in document['content']
+    assert '<th>column b</th>' in document['content']
+    assert '<td>foo</td>' in document['content']
+    assert '<td>bar</td>' in document['content']
 
 
-def test_document_with_inline_code(testapp):
+def test_document_with_inline_code(testapp, run_processor):
     """Markdown processor has to use <code> for inline code."""
 
-    documents = markdown.process(
+    stream = run_processor(
         testapp,
         [
-            _get_document(
-                content=textwrap.dedent('''\
+            {
+                'content': textwrap.dedent('''\
                     test `code`
-                '''))
+                '''),
+                'destination': '1.md',
+            },
         ])
 
-    assert len(documents) == 1
-    assert documents[0]['content'] == '<p>test <code>code</code></p>'
-    assert documents[0]['destination'].endswith('.html')
-    assert 'title' not in documents[0]
+    assert next(stream) == \
+        {
+            'content': _pytest_regex(r'<p>test <code>code</code></p>'),
+            'destination': '1.html',
+        }
 
 
-def test_param_extensions(testapp):
+def test_param_extensions(testapp, run_processor):
     """Markdown processor has to respect extensions parameter."""
 
-    documents = markdown.process(
+    stream = run_processor(
         testapp,
         [
-            _get_document(
-                content=textwrap.dedent('''\
+            {
+                'content': textwrap.dedent('''\
                     ```
                     lambda x: pass
                     ```
-                '''))
+                '''),
+                'destination': '1.md',
+            },
         ],
         extensions=[])
 
-    assert len(documents) == 1
-    assert re.match(
-        (
-            # when no extensions are passed, syntax highlighting is turned off
-            r'<p><code>lambda x: pass</code></p>'
-        ),
-        documents[0]['content'])
-    assert documents[0]['destination'].endswith('.html')
-    assert 'title' not in documents[0]
+    assert next(stream) == \
+        {
+            'content': _pytest_regex(
+                # no syntax highlighting when no extensions are passed
+                r'<p><code>lambda x: pass</code></p>'),
+            'destination': '1.html',
+        }
 
 
-def test_param_when(testapp):
+def test_param_when(testapp, run_processor):
     """Markdown processor has to ignore non-markdown documents."""
 
-    documents = markdown.process(
+    stream = run_processor(
         testapp,
         [
-            _get_document(
-                content='**wookiee**',
-                source='0.txt',
-                destination='0.txt'),
-            _get_document(
-                content='**wookiee**',
-                source='1.md',
-                destination='1.md'),
-            _get_document(
-                content='# wookiee',
-                source='2',
-                destination='2'),
-            _get_document(
-                content='# wookiee',
-                source='3.markdown',
-                destination='3.markdown'),
+            {
+                'content': '**wookiee**',
+                'destination': '0.txt',
+                'source': '0.txt',
+            },
+            {
+                'content': '**wookiee**',
+                'destination': '1.md',
+                'source': '1.md',
+            },
+            {
+                'content': '# wookiee',
+                'destination': '2',
+                'source': '2',
+            },
+            {
+                'content': '# wookiee',
+                'destination': '3.markdown',
+                'source': '3.markdown',
+            },
         ],
         when=[
             {
@@ -363,27 +408,34 @@ def test_param_when(testapp):
             },
         ])
 
-    assert len(documents) == 4
+    assert next(stream) == \
+        {
+            'content': '**wookiee**',
+            'destination': '0.txt',
+            'source': '0.txt',
+        }
 
-    assert documents[0]['source'] == '0.txt'
-    assert documents[0]['content'] == '**wookiee**'
-    assert documents[0]['destination'].endswith('0.txt')
-    assert 'title' not in documents[0]
+    assert next(stream) == \
+        {
+            'content': _pytest_regex(r'<p><strong>wookiee</strong></p>'),
+            'destination': '1.html',
+            'source': '1.md',
+        }
 
-    assert documents[1]['source'] == '1.md'
-    assert documents[1]['content'] == '<p><strong>wookiee</strong></p>'
-    assert documents[1]['destination'].endswith('1.html')
-    assert 'title' not in documents[1]
+    assert next(stream) == \
+        {
+            'content': '# wookiee',
+            'destination': '2',
+            'source': '2'
+        }
 
-    assert documents[2]['source'] == '2'
-    assert documents[2]['content'] == '# wookiee'
-    assert documents[2]['destination'].endswith('2')
-    assert 'title' not in documents[2]
-
-    assert documents[3]['source'] == '3.markdown'
-    assert documents[3]['content'] == ''
-    assert documents[3]['destination'].endswith('3.html')
-    assert documents[3]['title'] == 'wookiee'
+    assert next(stream) == \
+        {
+            'content': '',
+            'destination': '3.html',
+            'source': '3.markdown',
+            'title': 'wookiee',
+        }
 
 
 @pytest.mark.parametrize('params, error', [
@@ -394,4 +446,4 @@ def test_param_bad_value(testapp, params, error):
     """Markdown processor has to validate input parameters."""
 
     with pytest.raises(ValueError, match=error):
-        markdown.process(testapp, [], **params)
+        next(markdown.process(testapp, [], **params))

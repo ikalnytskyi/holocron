@@ -1,8 +1,5 @@
 """Tags processor test suite."""
 
-import os
-import datetime
-
 import pytest
 
 from holocron import app, content
@@ -21,187 +18,261 @@ def testapp():
     return instance
 
 
-def test_document(testapp):
+@pytest.fixture(scope='function')
+def run_processor():
+    streams = []
+
+    def run(*args, **kwargs):
+        streams.append(tags.process(*args, **kwargs))
+        return streams[-1]
+
+    yield run
+
+    for stream in streams:
+        with pytest.raises(StopIteration):
+            next(stream)
+
+
+def test_document(testapp, run_processor):
     """Tags processor has to work!"""
 
-    documents = tags.process(
+    stream = run_processor(
         testapp,
         [
-            _get_document(
-                title='the way of the Force',
-                destination=os.path.join('posts', '1.html'),
-                published=datetime.date(2017, 10, 4),
-                tags=['kenobi', 'skywalker']),
+            {
+                'title': 'the way of the Force',
+                'tags': ['kenobi', 'skywalker'],
+            },
         ])
 
-    assert len(documents) == 3
+    document = \
+        {
+            'title': 'the way of the Force',
+            'tags': [
+                {'name': 'kenobi', 'url': '/tags/kenobi.html'},
+                {'name': 'skywalker', 'url': '/tags/skywalker.html'},
+            ],
+        }
 
-    assert documents[0]['title'] == 'the way of the Force'
-    assert documents[0]['destination'] == os.path.join('posts', '1.html')
-    assert documents[0]['published'] == datetime.date(2017, 10, 4)
+    assert next(stream) == document
+    assert next(stream) == \
+        {
+            'source': 'virtual://tags/kenobi',
+            'destination': 'tags/kenobi.html',
+            'template': 'index.j2',
+            'documents': [document],
+        }
+    assert next(stream) == \
+        {
+            'source': 'virtual://tags/skywalker',
+            'destination': 'tags/skywalker.html',
+            'template': 'index.j2',
+            'documents': [document],
+        }
 
-    assert documents[1]['source'] == 'virtual://tags/kenobi'
-    assert documents[1]['destination'] == 'tags/kenobi.html'
-    assert documents[1]['template'] == 'index.j2'
-    assert documents[1]['documents'] == [documents[0]]
 
-    assert documents[2]['source'] == 'virtual://tags/skywalker'
-    assert documents[2]['destination'] == 'tags/skywalker.html'
-    assert documents[2]['template'] == 'index.j2'
-    assert documents[2]['documents'] == [documents[0]]
-
-
-def test_documents_cross_tags(testapp):
+def test_documents_cross_tags(testapp, run_processor):
     """Tags processor has to group tags"""
 
-    documents = tags.process(
+    stream = run_processor(
         testapp,
         [
-            _get_document(
-                title='the way of the Force #1',
-                destination=os.path.join('posts', '1.html'),
-                published=datetime.date(2017, 10, 1),
-                tags=['kenobi', 'skywalker']),
-            _get_document(
-                title='the way of the Force #2',
-                destination=os.path.join('posts', '2.html'),
-                published=datetime.date(2017, 10, 2),
-                tags=['yoda', 'skywalker']),
+            {
+                'title': 'the way of the Force #1',
+                'tags': ['kenobi', 'skywalker'],
+            },
+            {
+                'title': 'the way of the Force #2',
+                'tags': ['yoda', 'skywalker'],
+            },
         ])
 
-    assert len(documents) == 5
+    document_a = \
+        {
+            'title': 'the way of the Force #1',
+            'tags': [
+                {'name': 'kenobi', 'url': '/tags/kenobi.html'},
+                {'name': 'skywalker', 'url': '/tags/skywalker.html'},
+            ],
+        }
 
-    assert documents[0]['title'] == 'the way of the Force #1'
-    assert documents[0]['destination'] == os.path.join('posts', '1.html')
-    assert documents[0]['published'] == datetime.date(2017, 10, 1)
+    document_b = \
+        {
+            'title': 'the way of the Force #2',
+            'tags': [
+                {'name': 'yoda', 'url': '/tags/yoda.html'},
+                {'name': 'skywalker', 'url': '/tags/skywalker.html'},
+            ],
+        }
 
-    assert documents[1]['title'] == 'the way of the Force #2'
-    assert documents[1]['destination'] == os.path.join('posts', '2.html')
-    assert documents[1]['published'] == datetime.date(2017, 10, 2)
+    assert next(stream) == document_a
+    assert next(stream) == document_b
+    assert next(stream) == \
+        {
+            'source': 'virtual://tags/kenobi',
+            'destination': 'tags/kenobi.html',
+            'template': 'index.j2',
+            'documents': [document_a],
+        }
+    assert next(stream) == \
+        {
+            'source': 'virtual://tags/skywalker',
+            'destination': 'tags/skywalker.html',
+            'template': 'index.j2',
+            'documents': [document_a, document_b],
+        }
+    assert next(stream) == \
+        {
+            'source': 'virtual://tags/yoda',
+            'destination': 'tags/yoda.html',
+            'template': 'index.j2',
+            'documents': [document_b],
+        }
 
-    assert documents[2]['source'] == 'virtual://tags/kenobi'
-    assert documents[2]['destination'] == 'tags/kenobi.html'
-    assert documents[2]['template'] == 'index.j2'
-    assert documents[2]['documents'] == [documents[0]]
 
-    assert documents[3]['source'] == 'virtual://tags/skywalker'
-    assert documents[3]['destination'] == 'tags/skywalker.html'
-    assert documents[3]['template'] == 'index.j2'
-    assert documents[3]['documents'] == [documents[0], documents[1]]
-
-    assert documents[4]['source'] == 'virtual://tags/yoda'
-    assert documents[4]['destination'] == 'tags/yoda.html'
-    assert documents[4]['template'] == 'index.j2'
-    assert documents[4]['documents'] == [documents[1]]
-
-
-def test_param_template(testapp):
+def test_param_template(testapp, run_processor):
     """Tags processor has to respect template parameter."""
 
-    documents = tags.process(
+    stream = run_processor(
         testapp,
         [
-            _get_document(
-                title='the way of the Force',
-                destination=os.path.join('posts', '1.html'),
-                published=datetime.date(2017, 10, 4),
-                tags=['kenobi']),
+            {
+                'title': 'the way of the Force',
+                'tags': ['kenobi'],
+            },
         ],
         template='foobar.txt')
 
-    assert len(documents) == 2
+    document = \
+        {
+            'title': 'the way of the Force',
+            'tags': [{'name': 'kenobi', 'url': '/tags/kenobi.html'}],
+        }
 
-    assert documents[0]['title'] == 'the way of the Force'
-    assert documents[0]['destination'] == os.path.join('posts', '1.html')
-    assert documents[0]['published'] == datetime.date(2017, 10, 4)
+    assert next(stream) == document
+    assert next(stream) == \
+        {
+            'source': 'virtual://tags/kenobi',
+            'destination': 'tags/kenobi.html',
+            'template': 'foobar.txt',
+            'documents': [document],
+        }
 
-    assert documents[1]['source'] == 'virtual://tags/kenobi'
-    assert documents[1]['destination'] == 'tags/kenobi.html'
-    assert documents[1]['template'] == 'foobar.txt'
-    assert documents[1]['documents'] == [documents[0]]
 
-
-def test_param_output(testapp):
+def test_param_output(testapp, run_processor):
     """Tags processor has to respect output parameter."""
 
-    documents = tags.process(
+    stream = run_processor(
         testapp,
         [
-            _get_document(
-                title='the way of the Force',
-                destination=os.path.join('posts', '1.html'),
-                published=datetime.date(2017, 10, 4),
-                tags=['kenobi', 'skywalker']),
+            {
+                'title': 'the way of the Force',
+                'tags': ['kenobi', 'skywalker'],
+            },
         ],
         output='mytags/{tag}/index.html')
 
-    assert len(documents) == 3
+    document = \
+        {
+            'title': 'the way of the Force',
+            'tags': [
+                {'name': 'kenobi', 'url': '/mytags/kenobi/index.html'},
+                {'name': 'skywalker', 'url': '/mytags/skywalker/index.html'},
+            ],
+        }
 
-    assert documents[0]['title'] == 'the way of the Force'
-    assert documents[0]['destination'] == os.path.join('posts', '1.html')
-    assert documents[0]['published'] == datetime.date(2017, 10, 4)
+    assert next(stream) == document
+    assert next(stream) == \
+        {
+            'source': 'virtual://tags/kenobi',
+            'destination': 'mytags/kenobi/index.html',
+            'template': 'index.j2',
+            'documents': [document],
+        }
+    assert next(stream) == \
+        {
+            'source': 'virtual://tags/skywalker',
+            'destination': 'mytags/skywalker/index.html',
+            'template': 'index.j2',
+            'documents': [document],
+        }
 
-    assert documents[1]['source'] == 'virtual://tags/kenobi'
-    assert documents[1]['destination'] == 'mytags/kenobi/index.html'
-    assert documents[1]['template'] == 'index.j2'
-    assert documents[1]['documents'] == [documents[0]]
 
-    assert documents[2]['source'] == 'virtual://tags/skywalker'
-    assert documents[2]['destination'] == 'mytags/skywalker/index.html'
-    assert documents[2]['template'] == 'index.j2'
-    assert documents[2]['documents'] == [documents[0]]
-
-
-def test_param_when(testapp):
+def test_param_when(testapp, run_processor):
     """Tags processor has to ignore non-relevant documents."""
 
-    documents = tags.process(
+    stream = tags.process(
         testapp,
         [
-            _get_document(
-                title='the way of the Force #1',
-                source=os.path.join('posts', '1.md'),
-                destination=os.path.join('posts', '1.html'),
-                published=datetime.date(2017, 10, 1),
-                tags=['kenobi']),
-            _get_document(
-                title='the way of the Force #2',
-                source=os.path.join('pages', '2.md'),
-                destination=os.path.join('pages', '2.html'),
-                published=datetime.date(2017, 10, 2),
-                tags=['kenobi']),
-            _get_document(
-                title='the way of the Force #3',
-                source=os.path.join('posts', '3.md'),
-                destination=os.path.join('posts', '3.html'),
-                published=datetime.date(2017, 10, 3),
-                tags=['kenobi']),
-            _get_document(
-                title='the way of the Force #4',
-                source=os.path.join('pages', '4.md'),
-                destination=os.path.join('pages', '4.html'),
-                published=datetime.date(2017, 10, 4),
-                tags=['kenobi']),
+            {
+                'title': 'the way of the Force #1',
+                'source': '1.md',
+                'tags': ['kenobi'],
+            },
+            {
+                'title': 'the way of the Force #2',
+                'source': '2.rst',
+                'tags': ['kenobi'],
+            },
+            {
+                'title': 'the way of the Force #3',
+                'source': '3.md',
+                'tags': ['kenobi'],
+            },
+            {
+                'title': 'the way of the Force #4',
+                'source': '4.rst',
+                'tags': ['kenobi'],
+            },
         ],
         when=[
             {
                 'operator': 'match',
                 'attribute': 'source',
-                'pattern': r'^posts.*$',
+                'pattern': r'^.*\.md$',
             },
         ])
 
-    assert len(documents) == 5
+    document_a = next(stream)
+    document_b = next(stream)
+    document_c = next(stream)
+    document_d = next(stream)
 
-    for i, document in enumerate(documents[:-1]):
-        assert document['source'].endswith('%d.md' % (i + 1))
-        assert document['title'] == 'the way of the Force #%d' % (i + 1)
-        assert document['published'] == datetime.date(2017, 10, i + 1)
+    assert document_a == \
+        {
+            'title': 'the way of the Force #1',
+            'source': '1.md',
+            'tags': [{'name': 'kenobi', 'url': '/tags/kenobi.html'}],
+        }
 
-    assert documents[-1]['source'] == 'virtual://tags/kenobi'
-    assert documents[-1]['destination'] == 'tags/kenobi.html'
-    assert documents[-1]['template'] == 'index.j2'
-    assert documents[-1]['documents'] == [documents[0], documents[2]]
+    assert document_b == \
+        {
+            'title': 'the way of the Force #2',
+            'source': '2.rst',
+            'tags': ['kenobi'],
+        }
+
+    assert document_c == \
+        {
+            'title': 'the way of the Force #3',
+            'source': '3.md',
+            'tags': [{'name': 'kenobi', 'url': '/tags/kenobi.html'}],
+        }
+
+    assert document_d == \
+        {
+            'title': 'the way of the Force #4',
+            'source': '4.rst',
+            'tags': ['kenobi'],
+        }
+
+    assert next(stream) == \
+        {
+            'source': 'virtual://tags/kenobi',
+            'destination': 'tags/kenobi.html',
+            'template': 'index.j2',
+            'documents': [document_a, document_c],
+        }
 
 
 @pytest.mark.parametrize('params, error', [

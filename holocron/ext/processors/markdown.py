@@ -6,7 +6,7 @@ import re
 import markdown
 import schema
 
-from ._misc import iterdocuments, parameters
+from ._misc import iterdocuments_ex, parameters
 
 
 _top_heading_re = re.compile(
@@ -45,23 +45,24 @@ def process(app, documents, *, when=None, extensions=None):
             'markdown.extensions.extra',
         ])
 
-    for document in iterdocuments(documents, when):
-        # We need to strip top level heading out of the document because
-        # its value is used separately in number of places.
-        match = _top_heading_re.match(document['content'])
-        if match:
-            title = match.group('heading').strip()
-            document['content'] = match.group('content').strip()
+    for document, is_matched in iterdocuments_ex(documents, when):
+        if is_matched:
+            # We need to strip top level heading out of the document because
+            # its value is used separately in number of places.
+            match = _top_heading_re.match(document['content'])
+            if match:
+                title = match.group('heading').strip()
+                document['content'] = match.group('content').strip()
 
-            # Usually converters go after frontmatter processor and that
-            # means any explicitly specified attribute is already set on
-            # the document. Since frontmatter processor is considered to
-            # have a higher priority, let's set 'title' iff it does't
-            # exist.
-            document['title'] = document.get('title', title)
+                # Usually converters go after frontmatter processor and that
+                # means any explicitly specified attribute is already set on
+                # the document. Since frontmatter processor is considered to
+                # have a higher priority, let's set 'title' iff it does't
+                # exist.
+                document['title'] = document.get('title', title)
 
-        document['content'] = markdown_.convert(document['content'])
-        document['destination'] = \
-            '%s.html' % os.path.splitext(document['destination'])[0]
+            document['content'] = markdown_.convert(document['content'])
+            document['destination'] = \
+                '%s.html' % os.path.splitext(document['destination'])[0]
 
-    return documents
+        yield document

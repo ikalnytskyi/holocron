@@ -63,13 +63,6 @@ class TestHolocron(HolocronTestCase):
         self.assertEqual(len(self.app._processors), 1)
         self.assertIs(self.app._processors['test'], process)
 
-    def test_run(self):
-        """
-        Tests build process.
-        """
-        self.app.conf['pipelines.build'] = []
-        self.app.run()
-
 
 class TestHolocronDefaults(HolocronTestCase):
 
@@ -253,6 +246,7 @@ def test_metadata():
 def test_invoke_processors_propagates_options(testapp, processor_options):
     def processor(app, documents, **options):
         assert options == processor_options
+        yield from documents
     testapp.add_processor('processor', processor)
     testapp.invoke_processors([], [dict(processor_options, name='processor')])
 
@@ -274,6 +268,7 @@ def test_invoke_processors_resolves_jsonref(testapp, options, resolved):
 
     def processor(app, documents, **options):
         assert options == resolved
+        yield from documents
     testapp.add_processor('processor', processor)
     testapp.invoke_processors([], [dict(options, name='processor')])
 
@@ -287,6 +282,7 @@ def test_invoke_processors_resolves_jsonref(testapp, options, resolved):
 def test_invoke_processors_initial_documents(testapp, initial_documents):
     def processor(app, documents):
         assert documents == initial_documents
+        yield from documents
     testapp.add_processor('processor', processor)
     testapp.invoke_processors(initial_documents, [{'name': 'processor'}])
 
@@ -298,23 +294,26 @@ def test_invoke_processors_initial_documents(testapp, initial_documents):
     [{'a': {'x': [1, 2]}, 'b': ['1', 2]}],
 ])
 def test_invoke_processors_empty_pipeline(testapp, documents):
-    assert testapp.invoke_processors(documents, []) == documents
+    assert list(testapp.invoke_processors(documents, [])) == documents
 
 
 def test_invoke_processors_pipeline(testapp):
     def processor_a(app, documents):
+        documents = list(documents)
         assert documents == [{'a': 'b'}]
         documents[0]['x'] = 42
-        return documents
+        yield from documents
 
     def processor_b(app, documents):
+        documents = list(documents)
         assert documents == [{'a': 'b', 'x': 42}]
         documents.append({'z': 13})
-        return documents
+        yield from documents
 
     def processor_c(app, documents):
+        documents = list(documents)
         assert documents == [{'a': 'b', 'x': 42}, {'z': 13}]
-        return documents
+        yield from documents
 
     testapp.add_processor('processor_a', processor_a)
     testapp.add_processor('processor_b', processor_b)
@@ -322,14 +321,16 @@ def test_invoke_processors_pipeline(testapp):
 
     pipeline = [{'name': 'processor_a'},
                 {'name': 'processor_b'}]
-    assert testapp.invoke_processors([{'a': 'b'}], pipeline) \
+    assert list(testapp.invoke_processors([{'a': 'b'}], pipeline)) \
         == [{'a': 'b', 'x': 42}, {'z': 13}]
 
 
 def test_invoke_processors_processor_errors(testapp):
     def processor(app, documents):
         raise ValueError('something bad happened')
+        yield
     testapp.add_processor('processor', processor)
 
     with pytest.raises(ValueError, match='something bad happened'):
-        testapp.invoke_processors([], [{'name': 'processor'}])
+        for _ in testapp.invoke_processors([], [{'name': 'processor'}]):
+            pass

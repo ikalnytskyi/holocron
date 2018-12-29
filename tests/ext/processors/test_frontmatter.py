@@ -5,14 +5,8 @@ import textwrap
 import pytest
 import yaml
 
-from holocron import app, content
+from holocron import app
 from holocron.ext.processors import frontmatter
-
-
-def _get_document(**kwargs):
-    document = content.Document(app.Holocron({}))
-    document.update(kwargs)
-    return document
 
 
 @pytest.fixture(scope='function')
@@ -23,11 +17,11 @@ def testapp():
 def test_document(testapp):
     """YAML front matter has to be processed and cut out."""
 
-    documents = frontmatter.process(
+    stream = frontmatter.process(
         testapp,
         [
-            _get_document(
-                content=textwrap.dedent('''\
+            {
+                'content': textwrap.dedent('''\
                     ---
                     author: Yoda
                     master: true
@@ -35,24 +29,30 @@ def test_document(testapp):
                     ---
 
                     May the Force be with you!
-                '''))
+                '''),
+            },
         ])
 
-    assert len(documents) == 1
-    assert documents[0]['author'] == 'Yoda'
-    assert documents[0]['master']
-    assert documents[0]['labels'] == ['force', 'motto']
-    assert documents[0]['content'] == 'May the Force be with you!\n'
+    assert next(stream) == \
+        {
+            'content': 'May the Force be with you!\n',
+            'author': 'Yoda',
+            'master': True,
+            'labels': ['force', 'motto'],
+        }
+
+    with pytest.raises(StopIteration):
+        next(stream)
 
 
 def test_document_without_frontmatter(testapp):
     """Document without front matter has to be ignored."""
 
-    documents = frontmatter.process(
+    stream = frontmatter.process(
         testapp,
         [
-            _get_document(
-                content=textwrap.dedent('''\
+            {
+                'content': textwrap.dedent('''\
                     ---
                     author: Yoda
                     master: true
@@ -60,29 +60,35 @@ def test_document_without_frontmatter(testapp):
                     ...
 
                     May the Force be with you!
-                '''))
+                '''),
+            },
         ])
 
-    assert len(documents) == 1
-    assert documents[0]['content'] == textwrap.dedent('''\
-        ---
-        author: Yoda
-        master: true
-        labels: [force, motto]
-        ...
+    assert next(stream) == \
+        {
+            'content': textwrap.dedent('''\
+                ---
+                author: Yoda
+                master: true
+                labels: [force, motto]
+                ...
 
-        May the Force be with you!
-    ''')
+                May the Force be with you!
+            '''),
+        }
+
+    with pytest.raises(StopIteration):
+        next(stream)
 
 
-def text_document_with_frontmatter_in_text(testapp):
+def test_document_with_frontmatter_in_text(testapp):
     """Only front matter on the beginning has to be processed."""
 
-    documents = frontmatter.process(
+    stream = frontmatter.process(
         testapp,
         [
-            _get_document(
-                content=textwrap.dedent('''\
+            {
+                'content': textwrap.dedent('''\
                     I am a Jedi, like my father before me.
 
                     ---
@@ -92,71 +98,83 @@ def text_document_with_frontmatter_in_text(testapp):
                     ---
 
                     May the Force be with you!
-                '''))
+                '''),
+            },
         ])
 
-    assert len(documents) == 1
-    assert documents[0]['content'] == textwrap.dedent('''\
-        I am a Jedi, like my father before me.
+    assert next(stream) == \
+        {
+            'content': textwrap.dedent('''\
+                I am a Jedi, like my father before me.
 
-        ---
-        author: Yoda
-        master: true
-        labels: [force, motto]
-        ...
+                ---
+                author: Yoda
+                master: true
+                labels: [force, motto]
+                ---
 
-        May the Force be with you!
-    ''')
+                May the Force be with you!
+            '''),
+        }
+
+    with pytest.raises(StopIteration):
+        next(stream)
 
 
 def test_document_invalid_yaml(testapp):
     """Frontmatter processor has to fail in case of invalid front matter."""
 
-    with pytest.raises(yaml.YAMLError):
-        frontmatter.process(
-            testapp,
-            [
-                _get_document(
-                    content=textwrap.dedent('''\
-                        ---
-                        author: Yoda
-                         the best jedi ever:
-                        ---
+    stream = frontmatter.process(
+        testapp,
+        [
+            {
+                'content': textwrap.dedent('''\
+                    ---
+                    author: Yoda
+                     the best jedi ever:
+                    ---
 
-                        May the Force be with you!
-                    '''))
-            ])
+                    May the Force be with you!
+                '''),
+            },
+        ])
+
+    with pytest.raises(yaml.YAMLError):
+        next(stream)
 
 
 def test_document_with_exploit(testapp):
     """Frontmatter processor has to be protected from YAML attacks."""
 
-    with pytest.raises(yaml.YAMLError):
-        frontmatter.process(
-            testapp,
-            [
-                _get_document(
-                    content=textwrap.dedent('''\
-                        ---
-                        author: !!python/object/apply:subprocess.check_output
-                          args: [ cat ~/.ssh/id_rsa ]
-                          kwds: { shell: true }
-                        ---
+    stream = frontmatter.process(
+        testapp,
+        [
+            {
+                'content': textwrap.dedent('''\
+                    ---
+                    author: !!python/object/apply:subprocess.check_output
+                      args: [ cat ~/.ssh/id_rsa ]
+                      kwds: { shell: true }
+                    ---
 
-                        May the Force be with you!
-                    '''))
-            ])
+                    May the Force be with you!
+                '''),
+            },
+        ])
+
+    with pytest.raises(yaml.YAMLError):
+        next(stream)
 
 
 @pytest.mark.parametrize('delimiter', ['+++', '***'])
 def test_param_delimiter(testapp, delimiter):
     """Frontmatter processor has to respect delimiter parameter."""
 
-    documents = frontmatter.process(
+    stream = frontmatter.process(
         testapp,
         [
-            _get_document(
-                content=textwrap.dedent('''\
+            {
+                'content': textwrap.dedent('''\
                     %s
                     author: Yoda
                     master: true
@@ -164,27 +182,33 @@ def test_param_delimiter(testapp, delimiter):
                     %s
 
                     May the Force be with you!
-                ''' % (delimiter, delimiter)))
+                ''' % (delimiter, delimiter)),
+            },
         ],
         delimiter=delimiter)
 
-    assert len(documents) == 1
-    assert documents[0]['author'] == 'Yoda'
-    assert documents[0]['master']
-    assert documents[0]['labels'] == ['force', 'motto']
-    assert documents[0]['content'] == 'May the Force be with you!\n'
+    assert next(stream) == \
+        {
+            'content': 'May the Force be with you!\n',
+            'author': 'Yoda',
+            'master': True,
+            'labels': ['force', 'motto'],
+        }
+
+    with pytest.raises(StopIteration):
+        next(stream)
 
 
 @pytest.mark.parametrize('overwrite', [False, True])
 def test_param_overwrite(testapp, overwrite):
     """Frontmatter processor has to respect overwrite parameter."""
 
-    documents = frontmatter.process(
+    stream = frontmatter.process(
         testapp,
         [
-            _get_document(
-                author='Obi-Wan Kenobi',
-                content=textwrap.dedent('''\
+            {
+                'author': 'Obi-Wan Kenobi',
+                'content': textwrap.dedent('''\
                     ---
                     author: Yoda
                     master: true
@@ -192,19 +216,21 @@ def test_param_overwrite(testapp, overwrite):
                     ---
 
                     May the Force be with you!
-                '''))
+                '''),
+            },
         ],
         overwrite=overwrite)
 
-    assert len(documents) == 1
-    assert documents[0]['master']
-    assert documents[0]['labels'] == ['force', 'motto']
-    assert documents[0]['content'] == 'May the Force be with you!\n'
+    assert next(stream) == \
+        {
+            'content': 'May the Force be with you!\n',
+            'author': 'Yoda' if overwrite else 'Obi-Wan Kenobi',
+            'master': True,
+            'labels': ['force', 'motto'],
+        }
 
-    if overwrite:
-        assert documents[0]['author'] == 'Yoda'
-    else:
-        assert documents[0]['author'] == 'Obi-Wan Kenobi'
+    with pytest.raises(StopIteration):
+        next(stream)
 
 
 def test_param_when(testapp):
@@ -219,13 +245,13 @@ def test_param_when(testapp):
         May the Force be with you!
     ''')
 
-    documents = frontmatter.process(
+    stream = frontmatter.process(
         testapp,
         [
-            _get_document(content=content, source='0.txt'),
-            _get_document(content=content, source='1.md'),
-            _get_document(content=content, source='2'),
-            _get_document(content=content, source='3.markdown'),
+            {'content': content, 'source': '0.txt'},
+            {'content': content, 'source': '1.md'},
+            {'content': content, 'source': '2'},
+            {'content': content, 'source': '3.markdown'},
         ],
         when=[
             {
@@ -235,23 +261,33 @@ def test_param_when(testapp):
             },
         ])
 
-    assert len(documents) == 4
+    assert next(stream) == \
+        {
+            'content': content,
+            'source': '0.txt',
+        }
+    assert next(stream) == \
+        {
+            'content': 'May the Force be with you!\n',
+            'source': '1.md',
+            'master': True,
+            'labels': ['force', 'motto'],
+        }
+    assert next(stream) == \
+        {
+            'content': content,
+            'source': '2',
+        }
+    assert next(stream) == \
+        {
+            'content': 'May the Force be with you!\n',
+            'source': '3.markdown',
+            'master': True,
+            'labels': ['force', 'motto'],
+        }
 
-    assert 'master' not in documents[0]
-    assert 'labels' not in documents[0]
-    assert documents[0]['content'] == content
-
-    assert documents[1]['master']
-    assert documents[1]['labels'] == ['force', 'motto']
-    assert documents[1]['content'] == 'May the Force be with you!\n'
-
-    assert 'master' not in documents[2]
-    assert 'labels' not in documents[2]
-    assert documents[2]['content'] == content
-
-    assert documents[3]['master']
-    assert documents[3]['labels'] == ['force', 'motto']
-    assert documents[3]['content'] == 'May the Force be with you!\n'
+    with pytest.raises(StopIteration):
+        next(stream)
 
 
 @pytest.mark.parametrize('params, error', [
@@ -263,4 +299,4 @@ def test_param_bad_value(testapp, params, error):
     """Frontmatter processor has to validate input parameters."""
 
     with pytest.raises(ValueError, match=error):
-        frontmatter.process(testapp, [], **params)
+        next(frontmatter.process(testapp, [], **params))

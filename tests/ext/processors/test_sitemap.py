@@ -27,6 +27,21 @@ def testapp():
     return instance
 
 
+@pytest.fixture(scope='function')
+def run_processor():
+    streams = []
+
+    def run(*args, **kwargs):
+        streams.append(sitemap.process(*args, **kwargs))
+        return streams[-1]
+
+    yield run
+
+    for stream in streams:
+        with pytest.raises(StopIteration):
+            next(stream)
+
+
 @pytest.mark.parametrize('filename', [
     's.html',       # test basic case works
     'ы.html',       # test for proper UTF-8 encoding/decoding
@@ -36,11 +51,11 @@ def testapp():
     'a"b.html',     # test escaping, otherwise XML is invalid
     "a'b.html",     # test escaping, otherwise XML is invalid
 ])
-def test_document(testapp, filename):
+def test_document(testapp, run_processor, filename):
     """Sitemap processor has to work!"""
 
     timepoint = datetime.datetime.fromtimestamp(0, tz=datetime.timezone.utc)
-    documents = sitemap.process(
+    stream = run_processor(
         testapp,
         [
             _get_document(
@@ -48,14 +63,14 @@ def test_document(testapp, filename):
                 updated=timepoint)
         ])
 
-    assert len(documents) == 2
+    document = next(stream)
+    assert document['destination'] == os.path.join('posts', filename)
+    assert document['updated'] == timepoint
 
-    assert documents[0]['destination'] == os.path.join('posts', filename)
-    assert documents[0]['updated'] == timepoint
-
-    assert documents[1]['source'] == 'virtual://sitemap'
-    assert documents[1]['destination'] == 'sitemap.xml'
-    assert xmltodict.parse(documents[1]['content'], 'UTF-8') == {
+    document = next(stream)
+    assert document['source'] == 'virtual://sitemap'
+    assert document['destination'] == 'sitemap.xml'
+    assert xmltodict.parse(document['content'], 'UTF-8') == {
         'urlset': {
             '@xmlns': 'http://www.sitemaps.org/schemas/sitemap/0.9',
             'url': {
@@ -66,11 +81,11 @@ def test_document(testapp, filename):
     }
 
 
-def test_document_gzip(testapp):
+def test_document_gzip(testapp, run_processor):
     """Sitemap processor has to respect gzip parameter."""
 
     timepoint = datetime.datetime.fromtimestamp(0, tz=datetime.timezone.utc)
-    documents = sitemap.process(
+    stream = run_processor(
         testapp,
         [
             _get_document(
@@ -79,15 +94,15 @@ def test_document_gzip(testapp):
         ],
         gzip=True)
 
-    assert len(documents) == 2
+    document = next(stream)
+    assert document['destination'] == os.path.join('posts', '1.html')
+    assert document['updated'] == timepoint
 
-    assert documents[0]['destination'] == os.path.join('posts', '1.html')
-    assert documents[0]['updated'] == timepoint
+    document = next(stream)
+    assert document['source'] == 'virtual://sitemap'
+    assert document['destination'] == 'sitemap.xml.gz'
 
-    assert documents[1]['source'] == 'virtual://sitemap'
-    assert documents[1]['destination'] == 'sitemap.xml.gz'
-
-    decompressed = gzip.decompress(documents[1]['content'])
+    decompressed = gzip.decompress(document['content'])
     assert xmltodict.parse(decompressed, 'UTF-8') == {
         'urlset': {
             '@xmlns': 'http://www.sitemaps.org/schemas/sitemap/0.9',
@@ -103,11 +118,11 @@ def test_document_gzip(testapp):
     os.path.join('posts', 'skywalker.luke'),
     os.path.join('yoda.jedi'),
 ])
-def test_param_save_as(testapp, save_as):
+def test_param_save_as(testapp, run_processor, save_as):
     """Sitemap processor has to respect save_as parameter."""
 
     timepoint = datetime.datetime.fromtimestamp(0, tz=datetime.timezone.utc)
-    documents = sitemap.process(
+    stream = sitemap.process(
         testapp,
         [
             _get_document(
@@ -116,13 +131,13 @@ def test_param_save_as(testapp, save_as):
         ],
         save_as=save_as)
 
-    assert len(documents) == 2
+    document = next(stream)
+    assert document['destination'] == os.path.join('posts', '1.html')
+    assert document['updated'] == timepoint
 
-    assert documents[0]['destination'] == os.path.join('posts', '1.html')
-    assert documents[0]['updated'] == timepoint
-
-    assert documents[1]['source'] == 'virtual://sitemap'
-    assert documents[1]['destination'] == save_as
+    document = next(stream)
+    assert document['source'] == 'virtual://sitemap'
+    assert document['destination'] == save_as
 
 
 @pytest.mark.parametrize('document_path, sitemap_path', [
@@ -130,20 +145,22 @@ def test_param_save_as(testapp, save_as):
     (os.path.join('a', '1.html'), os.path.join('b', 'sitemap.xml')),
     (os.path.join('a', '1.html'), os.path.join('a', 'c', 'sitemap.xml')),
 ])
-def test_param_save_as_unsupported(testapp, document_path, sitemap_path):
+def test_param_save_as_unsupported(
+        testapp, run_processor, document_path, sitemap_path):
     """Sitemap process has to check enlisted URLs for compatibility."""
 
     timepoint = datetime.datetime.fromtimestamp(0, tz=datetime.timezone.utc)
+    stream = run_processor(
+        testapp,
+        [
+            _get_document(
+                destination=document_path,
+                updated=timepoint)
+        ],
+        save_as=sitemap_path)
 
     with pytest.raises(ValueError) as excinfo:
-        sitemap.process(
-            testapp,
-            [
-                _get_document(
-                    destination=document_path,
-                    updated=timepoint)
-            ],
-            save_as=sitemap_path)
+        next(stream)
 
     excinfo.match(
         "The location of a Sitemap file determines the set of URLs "
@@ -152,11 +169,11 @@ def test_param_save_as_unsupported(testapp, document_path, sitemap_path):
         "include .*.")
 
 
-def test_param_when(testapp):
+def test_param_when(testapp, run_processor):
     """Sitemap processor has to ignore non-relevant documents."""
 
     timepoint = datetime.datetime.fromtimestamp(0, tz=datetime.timezone.utc)
-    documents = sitemap.process(
+    stream = run_processor(
         testapp,
         [
             _get_document(
@@ -184,14 +201,15 @@ def test_param_when(testapp):
             },
         ])
 
-    assert len(documents) == 5
-
-    for i, document in enumerate(documents[:-1]):
+    for i, document in zip(range(4), stream):
         assert document['source'].endswith('%d.md' % (i + 1))
+        assert document['destination'].endswith('%d.html' % (i + 1))
+        assert document['updated'] == timepoint
 
-    assert documents[-1]['source'] == 'virtual://sitemap'
-    assert documents[-1]['destination'] == 'sitemap.xml'
-    assert xmltodict.parse(documents[-1]['content'], 'UTF-8') == {
+    document = next(stream)
+    assert document['source'] == 'virtual://sitemap'
+    assert document['destination'] == 'sitemap.xml'
+    assert xmltodict.parse(document['content'], 'UTF-8') == {
         'urlset': {
             '@xmlns': 'http://www.sitemaps.org/schemas/sitemap/0.9',
             'url': [
@@ -217,4 +235,4 @@ def test_param_bad_value(testapp, params, error):
     """Sitemap processor has to validate input parameters."""
 
     with pytest.raises(ValueError, match=error):
-        sitemap.process(testapp, [], **params)
+        next(sitemap.process(testapp, [], **params))

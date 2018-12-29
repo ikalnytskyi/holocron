@@ -32,9 +32,9 @@ def process(app,
             encoding='UTF-8',
             timezone='UTC'):
     tzinfo = dateutil.tz.gettz(timezone)
-    documents.extend(
-        iterdocuments(_finddocuments(app, path, encoding, tzinfo), when))
-    return documents
+
+    yield from documents
+    yield from iterdocuments(_finddocuments(app, path, encoding, tzinfo), when)
 
 
 def _finddocuments(app, path, encoding, tzinfo):

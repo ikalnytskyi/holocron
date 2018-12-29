@@ -1,6 +1,7 @@
 """Generate Sitemap XML."""
 
 import os
+import itertools
 import textwrap
 import gzip as _gzip
 
@@ -44,10 +45,13 @@ def _check_documents_urls(sitemap, documents):
     }
 )
 def process(app, documents, *, when=None, gzip=False, save_as='sitemap.xml'):
+    passthrough, documents = itertools.tee(documents)
+    selected, selected_check = itertools.tee(iterdocuments(documents, when))
+
     # According to the Sitemap protocol, the output encoding must be UTF-8.
     # Since this processor does not perform any I/O, the only thing we can
     # do here is to provide bytes representing UTF-8 encoded XML.
-    content = _template.render(documents=iterdocuments(documents, when))
+    content = _template.render(documents=selected)
     content = content.encode('UTF-8')
 
     # According to the Sitemap protocol, the sitemap.xml can be compressed
@@ -65,5 +69,7 @@ def process(app, documents, *, when=None, gzip=False, save_as='sitemap.xml'):
     # the set of URLs that can be included in that sitemap. So we need to
     # check those before proceeding, and raise an exception if restriction
     # is broken.
-    _check_documents_urls(sitemap, iterdocuments(documents, when))
-    return documents + [sitemap]
+    _check_documents_urls(sitemap, iterdocuments(selected_check, when))
+
+    yield from passthrough
+    yield sitemap

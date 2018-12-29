@@ -2,7 +2,7 @@
 
 import schema
 
-from ._misc import iterdocuments, parameters
+from ._misc import iterdocuments_ex, parameters
 
 
 @parameters(
@@ -13,9 +13,10 @@ from ._misc import iterdocuments, parameters
     }
 )
 def process(app, documents, *, when=None, metadata={}, overwrite=True):
-    for document in iterdocuments(documents, when):
-        for key, value in metadata.items():
-            if overwrite or key not in document:
-                document[key] = value
+    for document, is_matched in iterdocuments_ex(documents, when):
+        if is_matched:
+            for key, value in metadata.items():
+                if overwrite or key not in document:
+                    document[key] = value
 
-    return documents
+        yield document
