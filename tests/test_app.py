@@ -8,17 +8,13 @@
     :license: 3-clause BSD, see LICENSE for details.
 """
 
-import os
 import copy
 import textwrap
 
 import pytest
 import mock
 
-import holocron
-import holocron.content
 from holocron.app import Holocron, create_app
-from holocron.ext.processors import commit
 
 from tests import HolocronTestCase
 
@@ -99,15 +95,8 @@ class TestHolocronDefaults(HolocronTestCase):
             'index',
             'tags',
             'commit',
+            'jinja2',
         ]))
-
-    def test_registered_themes(self):
-        """
-        Tests that default theme is registered.
-        """
-        self.assertCountEqual(self.app._themes, [
-            os.path.join(os.path.dirname(holocron.__file__), 'theme'),
-        ])
 
 
 class TestCreateApp(HolocronTestCase):
@@ -227,6 +216,7 @@ class TestCreateApp(HolocronTestCase):
             'index',
             'tags',
             'commit',
+            'jinja2',
         ]))
 
 
@@ -252,57 +242,6 @@ def test_metadata():
     testapp.metadata['skywalker'] = 'luke'
     assert testapp.metadata['skywalker'] == 'luke'
     assert testapp.metadata['yoda'] == 'master'
-
-
-def test_theme_static(testapp, monkeypatch, tmpdir):
-    """Default theme's static has to be copied."""
-
-    monkeypatch.chdir(tmpdir)
-
-    testapp.add_processor('commit', commit.process)
-    testapp.conf['pipelines.build'] = [{'name': 'commit'}]
-
-    testapp.run()
-
-    assert set(tmpdir.join('_site').listdir()) == set([
-        tmpdir.join('_site', 'static'),
-    ])
-
-    assert set(tmpdir.join('_site', 'static').listdir()) == set([
-        tmpdir.join('_site', 'static', 'logo.svg'),
-        tmpdir.join('_site', 'static', 'pygments.css'),
-        tmpdir.join('_site', 'static', 'style.css'),
-    ])
-
-
-def test_user_theme_static(testapp, monkeypatch, tmpdir):
-    """User theme's static has to be copied overwriting default theme."""
-
-    monkeypatch.chdir(tmpdir)
-
-    tmpdir.ensure('_theme', 'templates', 'some.txt').write('yoda')
-    tmpdir.ensure('_theme', 'static', 'marker.txt').write('skywalker')
-    tmpdir.ensure('_theme', 'static', 'style.css').write('overwritten')
-
-    testapp.add_theme(tmpdir.join('_theme').strpath)
-    testapp.add_processor('commit', commit.process)
-    testapp.conf['pipelines.build'] = [{'name': 'commit'}]
-
-    testapp.run()
-
-    assert set(tmpdir.join('_site').listdir()) == set([
-        tmpdir.join('_site', 'static'),
-    ])
-
-    assert set(tmpdir.join('_site', 'static').listdir()) == set([
-        tmpdir.join('_site', 'static', 'logo.svg'),
-        tmpdir.join('_site', 'static', 'marker.txt'),
-        tmpdir.join('_site', 'static', 'pygments.css'),
-        tmpdir.join('_site', 'static', 'style.css'),
-    ])
-
-    assert tmpdir.join('_site', 'static', 'style.css').read() == 'overwritten'
-    assert tmpdir.join('_site', 'static', 'marker.txt').read() == 'skywalker'
 
 
 @pytest.mark.parametrize('processor_options', [

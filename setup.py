@@ -55,9 +55,6 @@ setup(
         'console_scripts': [
             'holocron = holocron.main:main',
         ],
-        'holocron.ext': [
-            'user-theme = holocron.ext:UserTheme',
-        ],
         'holocron.ext.processors': [
             'source = holocron.ext.processors.source:process',
             'metadata = holocron.ext.processors.metadata:process',
@@ -72,6 +69,7 @@ setup(
             'index = holocron.ext.processors.index:process',
             'tags = holocron.ext.processors.tags:process',
             'commit = holocron.ext.processors.commit:process',
+            'jinja2 = holocron.ext.processors.jinja2:process',
         ],
         'holocron.ext.commands': [
             'init = holocron.ext.commands.init:Init',

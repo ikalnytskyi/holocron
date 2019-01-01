@@ -13,13 +13,11 @@ import logging
 import collections
 
 import yaml
-import jinja2
 
 from dooku.conf import Conf
-from dooku.decorator import cached_property
 from dooku.ext import ExtensionManager
 
-from .ext.processors import source, _misc
+from .ext.processors import _misc
 
 
 logger = logging.getLogger(__name__)
@@ -121,13 +119,6 @@ class Holocron(object):
         #: .. versionadded:: 0.4.0
         self.metadata = collections.ChainMap({}, metadata or {})
 
-        #: name -> extension instance
-        #:
-        #: Contains all registered extensions and is used for preventing them
-        #: to be handled by garbage collector. Also I believe it might be
-        #: useful for extension developers in future.
-        self._extensions = {}
-
         #: processor name -> processor function
         #:
         #: Processors are stateless functions that receive a list of documents
@@ -138,39 +129,6 @@ class Holocron(object):
         #:
         #: .. versionadded:: 0.4.0
         self._processors = {}
-
-        #: theme path, ...
-        #:
-        #: Contains all registered themes. Initially it has only a default one.
-        #: Each further added theme will override the previous one, i.e.
-        #: it'll have higher priority for templates lookup and static
-        #: overwriting.
-        #:
-        #: .. versionadded:: 0.3.0
-        self._themes = [
-            os.path.join(os.path.dirname(__file__), 'theme'),
-        ]
-
-        #: key -> value
-        #:
-        #: Contains context values to be passed to theme renderer.
-        #:
-        #: .. versionadded:: 0.3.0
-        self._theme_ctx = {
-            'metadata': self.metadata,
-            'theme': self.conf['theme'],
-        }
-
-        # discover and execute all found extensions
-        for name, ext in ExtensionManager(
-            namespace='holocron.ext',
-            names=self.conf.get('ext.enabled', []),
-        ):
-            if name in self._extensions:
-                logger.warning(
-                    '%s extension skipped: already registered', name)
-                continue
-            self._extensions[name] = ext(self)
 
     def add_processor(self, name, processor):
         """Register a given processor in the application instance.
@@ -186,40 +144,6 @@ class Holocron(object):
             return
 
         self._processors[name] = processor
-
-    def add_theme(self, theme_path):
-        """
-        Registers a given theme in the application instance.
-
-        :param theme_path: a path to theme to be registered
-        """
-        self._themes.append(theme_path)
-
-        # remove evaluated value, so next time we access 'jinja_env' it'll
-        # be re-evaluated and new themes will be taken into account
-        self.__dict__.pop('jinja_env', None)
-
-    @cached_property
-    def jinja_env(self):
-        """
-        Gets a Jinja2 environment based on Holocron's settings.
-        """
-        # Themes are consumed in reverse order because jinja2.ChoiceLoader
-        # will stop looking for templates as soon as it finds one in current
-        # path. Since we want default theme to be low-prio, processing is
-        # started from user themes paths.
-        loaders = [
-            jinja2.FileSystemLoader(os.path.join(theme, 'templates'))
-            for theme in reversed(self._themes)
-        ]
-
-        # Let's make default theme always available for inheritance
-        # via '!default' prefix.
-        loaders.append(jinja2.PrefixLoader('!default', loaders[-1]))
-
-        env = jinja2.Environment(loader=jinja2.ChoiceLoader(loaders))
-        env.globals.update(**self._theme_ctx)
-        return env
 
     def invoke_processors(self, documents, pipeline):
         for processor in pipeline:
@@ -241,17 +165,6 @@ class Holocron(object):
         (DEPRECATED) Starts build process.
         """
         documents = []
-
-        # These lines are temporal measure until jinja2 processor is
-        # implemented. The idea here is to inject theme static files,
-        # like stylesheet, javascript or images into processor pipeline
-        # so they will be persisted on the filesystem.
-        for theme in self._themes:
-            documents = source.process(self, documents, path=theme, when=[{
-                'operator': 'match',
-                'attribute': 'source',
-                'pattern': r'^static/',
-            }])
 
         processors = self.conf['pipelines.build']
         documents = self.invoke_processors(documents, processors)

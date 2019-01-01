@@ -1,6 +1,5 @@
 """Generate tags page."""
 
-import codecs
 import collections
 import schema
 
@@ -9,13 +8,9 @@ from holocron import content
 
 
 @parameters(
-    fallback={
-        'encoding': ':metadata:#/encoding',
-    },
     schema={
         'when': schema.Or([{str: object}], None, error='unsupported value'),
         'template': schema.Schema(str),
-        'encoding': schema.Schema(codecs.lookup, 'unsupported encoding'),
         'output': schema.Schema(str),
     }
 )
@@ -24,7 +19,6 @@ def process(app,
             *,
             when=None,
             template='index.j2',
-            encoding='UTF-8',
             output='tags/{tag}.html'):
     app.metadata['show_tags'] = True
 
@@ -39,15 +33,14 @@ def process(app,
                 tag_objects.append(_Tag(tag, output))
             post['tags'] = tag_objects
 
-    template = app.jinja_env.get_template(template)
     inserted = []
 
     for tag in sorted(tags):
         tag_doc = content.Document(app)
-        tag_doc['content'] = template.render(posts=tags[tag]).encode(encoding)
         tag_doc['source'] = 'virtual://tags/%s' % tag
         tag_doc['destination'] = output.format(tag=tag)
-        tag_doc['encoding'] = encoding
+        tag_doc['template'] = template
+        tag_doc['documents'] = tags[tag]
         inserted.append(tag_doc)
 
     return documents + inserted
