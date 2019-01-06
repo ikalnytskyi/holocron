@@ -14,7 +14,7 @@ def testapp():
     return app.Holocron()
 
 
-def test_document(testapp):
+def test_item(testapp):
     """YAML front matter has to be processed and cut out."""
 
     stream = frontmatter.process(
@@ -45,8 +45,8 @@ def test_document(testapp):
         next(stream)
 
 
-def test_document_without_frontmatter(testapp):
-    """Document without front matter has to be ignored."""
+def test_item_without_frontmatter(testapp):
+    """item without front matter has to be ignored."""
 
     stream = frontmatter.process(
         testapp,
@@ -81,7 +81,7 @@ def test_document_without_frontmatter(testapp):
         next(stream)
 
 
-def test_document_with_frontmatter_in_text(testapp):
+def test_item_with_frontmatter_in_text(testapp):
     """Only front matter on the beginning has to be processed."""
 
     stream = frontmatter.process(
@@ -121,7 +121,7 @@ def test_document_with_frontmatter_in_text(testapp):
         next(stream)
 
 
-def test_document_invalid_yaml(testapp):
+def test_item_invalid_yaml(testapp):
     """Frontmatter processor has to fail in case of invalid front matter."""
 
     stream = frontmatter.process(
@@ -143,7 +143,7 @@ def test_document_invalid_yaml(testapp):
         next(stream)
 
 
-def test_document_with_exploit(testapp):
+def test_item_with_exploit(testapp):
     """Frontmatter processor has to be protected from YAML attacks."""
 
     stream = frontmatter.process(
@@ -163,6 +163,38 @@ def test_document_with_exploit(testapp):
         ])
 
     with pytest.raises(yaml.YAMLError):
+        next(stream)
+
+
+@pytest.mark.parametrize('amount', [0, 1, 2, 5, 10])
+def test_item_many(testapp, amount):
+    """Frontmatter processor has to work with stream."""
+
+    stream = frontmatter.process(
+        testapp,
+        [
+            {
+                'content': textwrap.dedent('''\
+                    ---
+                    master: %d
+                    labels: [force, motto]
+                    ---
+
+                    May the Force be with you!
+                ''' % i)
+            }
+            for i in range(amount)
+        ])
+
+    for i in range(amount):
+        assert next(stream) == \
+            {
+                'master': i,
+                'labels': ['force', 'motto'],
+                'content': 'May the Force be with you!\n',
+            }
+
+    with pytest.raises(StopIteration):
         next(stream)
 
 
@@ -233,65 +265,7 @@ def test_param_overwrite(testapp, overwrite):
         next(stream)
 
 
-def test_param_when(testapp):
-    """Frontmatter processor has to ignore non-targeted documents."""
-
-    content = textwrap.dedent('''\
-        ---
-        master: true
-        labels: [force, motto]
-        ---
-
-        May the Force be with you!
-    ''')
-
-    stream = frontmatter.process(
-        testapp,
-        [
-            {'content': content, 'source': '0.txt'},
-            {'content': content, 'source': '1.md'},
-            {'content': content, 'source': '2'},
-            {'content': content, 'source': '3.markdown'},
-        ],
-        when=[
-            {
-                'operator': 'match',
-                'attribute': 'source',
-                'pattern': r'.*\.(markdown|mdown|mkd|mdwn|md)$',
-            },
-        ])
-
-    assert next(stream) == \
-        {
-            'content': content,
-            'source': '0.txt',
-        }
-    assert next(stream) == \
-        {
-            'content': 'May the Force be with you!\n',
-            'source': '1.md',
-            'master': True,
-            'labels': ['force', 'motto'],
-        }
-    assert next(stream) == \
-        {
-            'content': content,
-            'source': '2',
-        }
-    assert next(stream) == \
-        {
-            'content': 'May the Force be with you!\n',
-            'source': '3.markdown',
-            'master': True,
-            'labels': ['force', 'motto'],
-        }
-
-    with pytest.raises(StopIteration):
-        next(stream)
-
-
 @pytest.mark.parametrize('params, error', [
-    ({'when': [42]}, 'when: unsupported value'),
     ({'delimiter': 42}, "delimiter: 42 should be instance of 'str'"),
     ({'overwrite': 'true'}, "overwrite: 'true' should be instance of 'bool'"),
 ])
