@@ -18,7 +18,8 @@ def testapp():
     })
 
     def set_marker(app, documents, marker):
-        setattr(app, 'marker', marker)
+        app.metadata['marker'] = marker
+        yield from documents
     app.add_processor('set_marker', set_marker)
 
     return app
@@ -37,10 +38,10 @@ def test_run_missed(testapp, testcommand):
 def test_run_alpha(testapp, testcommand):
     testcommand.execute(testapp, argparse.Namespace(pipeline='alpha'))
 
-    assert getattr(testapp, 'marker') == 13
+    assert testapp.metadata['marker'] == 13
 
 
 def test_run_omega(testapp, testcommand):
     testcommand.execute(testapp, argparse.Namespace(pipeline='omega'))
 
-    assert getattr(testapp, 'marker') == 42
+    assert testapp.metadata['marker'] == 42

@@ -1,5 +1,7 @@
 """Generate index page."""
 
+import itertools
+
 import schema
 
 from ._misc import iterdocuments, parameters
@@ -17,10 +19,13 @@ def process(app,
             *,
             when=None,
             template='index.j2'):
+    passthrough, documents = itertools.tee(documents)
+
     index = Document(app)
     index['source'] = 'virtual://index'
     index['destination'] = 'index.html'
     index['template'] = template
     index['documents'] = list(iterdocuments(documents, when))
 
-    return documents + [index]
+    yield from passthrough
+    yield index

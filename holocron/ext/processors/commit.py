@@ -5,7 +5,7 @@ import codecs
 
 import schema
 
-from ._misc import iterdocuments, parameters
+from ._misc import iterdocuments_ex, parameters
 
 
 @parameters(
@@ -26,29 +26,23 @@ def process(app,
             when=None,
             unload=True,
             encoding='UTF-8'):
-    to_remove = []
 
-    for document in iterdocuments(list(documents), when):
-        to_remove.append(document)
+    for document, is_matched in iterdocuments_ex(documents, when):
+        if is_matched:
+            destination = os.path.join(path, document['destination'])
+            if not os.path.exists(os.path.dirname(destination)):
+                os.makedirs(os.path.dirname(destination))
 
-        destination = os.path.join(path, document['destination'])
-        if not os.path.exists(os.path.dirname(destination)):
-            os.makedirs(os.path.dirname(destination))
+            if isinstance(document['content'], str):
+                output = open(destination, 'wt', encoding=encoding)
+            else:
+                output = open(destination, 'wb')
 
-        # A document may suggest its own encoding as it might be pretty
-        # important to have this one.
-        enc = document.get('encoding', encoding)
+            with output:
+                output.write(document['content'])
 
-        if isinstance(document['content'], str):
-            output = open(destination, 'wt', encoding=enc)
-        else:
-            output = open(destination, 'wb')
-
-        with output:
-            output.write(document['content'])
-
-    if unload:
-        for document in to_remove:
-            documents.remove(document)
-
-    return documents
+        # Preserve in the pipeline uncommitted documents because they may have
+        # other committers in the pipeline. If unload is turned off, all
+        # documents will be preserved.
+        if not unload or not is_matched:
+            yield document

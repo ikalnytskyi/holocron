@@ -5,15 +5,21 @@ import textwrap
 
 import pytest
 
-from holocron import app, content
+from holocron import app
 from holocron.ext.processors import restructuredtext
 
 
-def _get_document(**kwargs):
-    document = content.Document(app.Holocron({}))
-    document['destination'] = 'about/cv.rst'
-    document.update(kwargs)
-    return document
+class _pytest_regex:
+    """Assert that a given string meets some expectations."""
+
+    def __init__(self, pattern, flags=0):
+        self._regex = re.compile(pattern, flags)
+
+    def __eq__(self, actual):
+        return bool(self._regex.match(actual))
+
+    def __repr__(self):
+        return self._regex.pattern
 
 
 @pytest.fixture(scope='function')
@@ -21,39 +27,55 @@ def testapp():
     return app.Holocron()
 
 
-def test_document(testapp):
+@pytest.fixture(scope='function')
+def run_processor():
+    streams = []
+
+    def run(*args, **kwargs):
+        streams.append(restructuredtext.process(*args, **kwargs))
+        return streams[-1]
+
+    yield run
+
+    for stream in streams:
+        with pytest.raises(StopIteration):
+            next(stream)
+
+
+def test_document(testapp, run_processor):
     """reStructuredText processor has to work in simple case."""
 
-    documents = restructuredtext.process(
+    stream = run_processor(
         testapp,
         [
-            _get_document(
-                content=textwrap.dedent('''\
+            {
+                'content': textwrap.dedent('''\
                     some title
                     ==========
 
                     text with **bold**
-                '''))
+                '''),
+                'destination': '1.rst',
+            },
         ])
 
-    assert len(documents) == 1
-    assert re.match(
-        (
-            r'<p>text with <strong>bold</strong></p>\s*'
-        ),
-        documents[0]['content'])
-    assert documents[0]['destination'].endswith('.html')
-    assert documents[0]['title'] == 'some title'
+    assert next(stream) == \
+        {
+            'content': _pytest_regex(
+                r'<p>text with <strong>bold</strong></p>\s*'),
+            'destination': '1.html',
+            'title': 'some title',
+        }
 
 
-def test_document_with_subsection(testapp):
+def test_document_with_subsection(testapp, run_processor):
     """reStructuredText processor has to start subsections with <h2>."""
 
-    documents = restructuredtext.process(
+    stream = run_processor(
         testapp,
         [
-            _get_document(
-                content=textwrap.dedent('''\
+            {
+                'content': textwrap.dedent('''\
                     some title
                     ==========
 
@@ -63,51 +85,52 @@ def test_document_with_subsection(testapp):
                     ------------
 
                     text with **bold**
-                '''))
+                '''),
+                'destination': '1.rst',
+            },
         ])
 
-    assert len(documents) == 1
-    assert re.match(
-        (
-            r'<p>abstract</p>\s*'
-            r'<h2>some section</h2>\s*'
-            r'<p>text with <strong>bold</strong></p>\s*'
-        ),
-        documents[0]['content'])
-    assert documents[0]['destination'].endswith('.html')
-    assert documents[0]['title'] == 'some title'
+    assert next(stream) == \
+        {
+            'content': _pytest_regex(
+                r'<p>abstract</p>\s*'
+                r'<h2>some section</h2>\s*'
+                r'<p>text with <strong>bold</strong></p>\s*'),
+            'destination': '1.html',
+            'title': 'some title',
+        }
 
 
-def test_document_without_title(testapp):
+def test_document_without_title(testapp, run_processor):
     """reStructuredText processor has to work even without a title."""
 
-    documents = restructuredtext.process(
+    stream = run_processor(
         testapp,
         [
-            _get_document(
-                content=textwrap.dedent('''\
+            {
+                'content': textwrap.dedent('''\
                     text with **bold**
-                '''))
+                '''),
+                'destination': '1.rst',
+            },
         ])
 
-    assert len(documents) == 1
-    assert re.match(
-        (
-            r'<p>text with <strong>bold</strong></p>\s*'
-        ),
-        documents[0]['content'])
-    assert documents[0]['destination'].endswith('.html')
-    assert 'title' not in documents[0]
+    assert next(stream) == \
+        {
+            'content': _pytest_regex(
+                r'<p>text with <strong>bold</strong></p>\s*'),
+            'destination': '1.html',
+        }
 
 
-def test_document_with_sections(testapp):
+def test_document_with_sections(testapp, run_processor):
     """reStructuredText processor has to work with a lot of sections."""
 
-    documents = restructuredtext.process(
+    stream = run_processor(
         testapp,
         [
-            _get_document(
-                content=textwrap.dedent('''\
+            {
+                'content': textwrap.dedent('''\
                     some title 1
                     ============
 
@@ -132,84 +155,83 @@ def test_document_with_sections(testapp):
                     --------------
 
                     yyy
-                '''))
+                '''),
+                'destination': '1.rst',
+            },
         ])
 
-    assert len(documents) == 1
-    assert re.match(
-        (
-            r'<h2>some title 1</h2>\s*'
-            r'<p>aaa</p>\s*'
-            r'<h3>some section 1</h3>\s*'
-            r'<p>bbb</p>\s*'
-            r'<h3>some section 2</h3>\s*'
-            r'<p>ccc</p>\s*'
-            r'<h2>some title 2</h2>\s*'
-            r'<p>xxx</p>\s*'
-            r'<h3>some section 3</h3>\s*'
-            r'<p>yyy</p>\s*'
-        ),
-        documents[0]['content'])
-    assert documents[0]['destination'].endswith('.html')
-    assert 'title' not in documents[0]
+    assert next(stream) == \
+        {
+            'content': _pytest_regex(
+                r'<h2>some title 1</h2>\s*'
+                r'<p>aaa</p>\s*'
+                r'<h3>some section 1</h3>\s*'
+                r'<p>bbb</p>\s*'
+                r'<h3>some section 2</h3>\s*'
+                r'<p>ccc</p>\s*'
+                r'<h2>some title 2</h2>\s*'
+                r'<p>xxx</p>\s*'
+                r'<h3>some section 3</h3>\s*'
+                r'<p>yyy</p>\s*'),
+            'destination': '1.html',
+        }
 
 
-def test_document_with_code(testapp):
+def test_document_with_code(testapp, run_processor):
     """reStructuredText processor has to highlight code with Pygments."""
 
-    documents = restructuredtext.process(
+    stream = run_processor(
         testapp,
         [
-            _get_document(
-                content=textwrap.dedent('''\
+            {
+                'content': textwrap.dedent('''\
                     test codeblock
 
                     .. code:: python
 
                         lambda x: pass
-                '''))
+                '''),
+                'destination': '1.rst',
+            },
         ])
 
-    assert len(documents) == 1
-    assert re.match(
-        (
-            r'<p>test codeblock</p>\s*<pre.*python[^>]*>[\s\S]+</pre>'
-        ),
-        documents[0]['content'])
-    assert documents[0]['destination'].endswith('.html')
-    assert 'title' not in documents[0]
+    assert next(stream) == \
+        {
+            'content': _pytest_regex(
+                r'<p>test codeblock</p>\s*<pre.*python[^>]*>[\s\S]+</pre>'),
+            'destination': '1.html',
+        }
 
 
-def test_document_with_inline_code(testapp):
+def test_document_with_inline_code(testapp, run_processor):
     """reStructuredText processor has to use <code> tag for inline code."""
 
-    documents = restructuredtext.process(
+    stream = run_processor(
         testapp,
         [
-            _get_document(
-                content=textwrap.dedent('''\
+            {
+                'content': textwrap.dedent('''\
                     test ``code``
-                '''))
+                '''),
+                'destination': '1.rst',
+            },
         ])
 
-    assert len(documents) == 1
-    assert re.match(
-        (
-            r'<p>test <code>code</code></p>'
-        ),
-        documents[0]['content'])
-    assert documents[0]['destination'].endswith('.html')
-    assert 'title' not in documents[0]
+    assert next(stream) == \
+        {
+            'content': _pytest_regex(r'<p>test <code>code</code></p>'),
+            'destination': '1.html',
+        }
 
 
-def test_param_docutils(testapp):
+def test_param_docutils(testapp, run_processor):
     """reStructuredText processor has to respect custom settings."""
 
-    documents = restructuredtext.process(
+    stream = run_processor(
         testapp,
         [
-            _get_document(
-                content=textwrap.dedent('''\
+            {
+                'content': textwrap.dedent('''\
                     section 1
                     =========
 
@@ -219,49 +241,53 @@ def test_param_docutils(testapp):
                     =========
 
                     bbb
-                '''))
+                '''),
+                'destination': '1.rst',
+            },
         ],
         docutils={
             'initial_header_level': 3,
         })
 
-    assert len(documents) == 1
-    assert re.match(
-        (
-            # by default, initial header level is 2 and so the sections would
-            # start with <h2>
-            r'<h3>section 1</h3>\s*'
-            r'<p>aaa</p>\s*'
-            r'<h3>section 2</h3>\s*'
-            r'<p>bbb</p>\s*'
-        ),
-        documents[0]['content'])
-    assert documents[0]['destination'].endswith('.html')
-    assert 'title' not in documents[0]
+    assert next(stream) == \
+        {
+            'content': _pytest_regex(
+                # by default, initial header level is 2 and so the sections
+                # would start with <h2>
+                r'<h3>section 1</h3>\s*'
+                r'<p>aaa</p>\s*'
+                r'<h3>section 2</h3>\s*'
+                r'<p>bbb</p>\s*'),
+            'destination': '1.html',
+        }
 
 
-def test_param_when(testapp):
+def test_param_when(testapp, run_processor):
     """reStructuredText processor has to ignore non-targeted documents."""
 
-    documents = restructuredtext.process(
+    stream = run_processor(
         testapp,
         [
-            _get_document(
-                content='**wookiee**',
-                source='0.txt',
-                destination='0.txt'),
-            _get_document(
-                content='**wookiee**',
-                source='1.rst',
-                destination='1.rst'),
-            _get_document(
-                content='wookiee\n=======',
-                source='2',
-                destination='2'),
-            _get_document(
-                content='wookiee\n=======',
-                source='3.rest',
-                destination='3.rest'),
+            {
+                'content': '**wookiee**',
+                'source': '0.txt',
+                'destination': '0.txt',
+            },
+            {
+                'content': '**wookiee**',
+                'source': '1.rst',
+                'destination': '1.rst',
+            },
+            {
+                'content': 'wookiee\n=======',
+                'source': '2',
+                'destination': '2',
+            },
+            {
+                'content': 'wookiee\n=======',
+                'source': '3.rest',
+                'destination': '3.rest',
+            },
         ],
         when=[
             {
@@ -271,27 +297,34 @@ def test_param_when(testapp):
             },
         ])
 
-    assert len(documents) == 4
+    assert next(stream) == \
+        {
+            'source': '0.txt',
+            'content': '**wookiee**',
+            'destination': '0.txt',
+        }
 
-    assert documents[0]['source'] == '0.txt'
-    assert documents[0]['content'] == '**wookiee**'
-    assert documents[0]['destination'].endswith('0.txt')
-    assert 'title' not in documents[0]
+    assert next(stream) == \
+        {
+            'source': '1.rst',
+            'content': '<p><strong>wookiee</strong></p>',
+            'destination': '1.html',
+        }
 
-    assert documents[1]['source'] == '1.rst'
-    assert documents[1]['content'] == '<p><strong>wookiee</strong></p>'
-    assert documents[1]['destination'].endswith('1.html')
-    assert 'title' not in documents[1]
+    assert next(stream) == \
+        {
+            'source': '2',
+            'content': 'wookiee\n=======',
+            'destination': '2',
+        }
 
-    assert documents[2]['source'] == '2'
-    assert documents[2]['content'] == 'wookiee\n======='
-    assert documents[2]['destination'].endswith('2')
-    assert 'title' not in documents[2]
-
-    assert documents[3]['source'] == '3.rest'
-    assert documents[3]['content'] == ''
-    assert documents[3]['destination'].endswith('3.html')
-    assert documents[3]['title'] == 'wookiee'
+    assert next(stream) == \
+        {
+            'source': '3.rest',
+            'content': '',
+            'destination': '3.html',
+            'title': 'wookiee',
+        }
 
 
 @pytest.mark.parametrize('params, error', [
@@ -302,4 +335,4 @@ def test_param_bad_value(testapp, params, error):
     """reStructuredText processor has to validate input parameters."""
 
     with pytest.raises(ValueError, match=error):
-        restructuredtext.process(testapp, [], **params)
+        next(restructuredtext.process(testapp, [], **params))

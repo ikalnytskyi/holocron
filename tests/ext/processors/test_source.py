@@ -2,66 +2,77 @@
 
 import os
 import datetime
+import unittest.mock
 
 import pytest
 
-from holocron import app, content
+from holocron import app
 from holocron.ext.processors import source
 
 
 @pytest.fixture(scope='function')
 def testapp():
-    instance = app.Holocron({})
-    return instance
+    return app.Holocron()
 
 
-@pytest.mark.parametrize('path, cls', [
-    (['about', 'cv.pdf'], content.Document),
-    (['2017', '09', '17', 'cv.pdf'], content.Document),
+@pytest.fixture(scope='function')
+def run_processor():
+    streams = []
+
+    def run(*args, **kwargs):
+        streams.append(source.process(*args, **kwargs))
+        return streams[-1]
+
+    yield run
+
+    for stream in streams:
+        with pytest.raises(StopIteration):
+            next(stream)
+
+
+@pytest.mark.parametrize('path', [
+    ['about', 'cv.pdf'],
+    ['2017', '09', '17', 'cv.pdf'],
 ])
-def test_document(testapp, tmpdir, path, cls):
-    """Source processor has to work."""
+def test_document(testapp, run_processor, tmpdir, path):
+    """run_processoror has to work."""
 
-    tmpdir.ensure(*path).write_text('text', encoding='UTF-8')
+    tmpdir.ensure(*path).write_text('Obi-Wan', encoding='UTF-8')
 
-    preserved = content.Document(testapp)
-    preserved['source'] = os.path.join('images', 'me.png')
-    preserved['destination'] = os.path.join('images', 'me.png')
-
-    documents = source.process(
+    stream = run_processor(
         testapp,
         [
-            preserved,
+            {
+                'source': os.path.join('images', 'me.png'),
+            },
         ],
         path=tmpdir.strpath)
 
-    assert len(documents) == 2
+    assert next(stream) == \
+        {
+            'source': os.path.join('images', 'me.png'),
+        }
 
-    assert documents[0]['source'] == os.path.join('images', 'me.png')
-    assert documents[0]['destination'] == os.path.join('images', 'me.png')
+    document = next(stream)
 
-    assert isinstance(documents[1], cls)
-    assert documents[1]['source'] == os.path.join(*path)
-    assert documents[1]['destination'] == os.path.join(*path)
-    assert documents[1]['created'].timestamp() \
+    assert document['source'] == os.path.join(*path)
+    assert document['destination'] == os.path.join(*path)
+    assert document['created'].timestamp() \
         == pytest.approx(tmpdir.join(*path).stat().ctime, 0.00001)
-    assert documents[1]['updated'].timestamp() \
+    assert document['updated'].timestamp() \
         == pytest.approx(tmpdir.join(*path).stat().mtime, 0.00001)
-    assert documents[1]['content'] == 'text'
+    assert document['content'] == 'Obi-Wan'
 
     if path[0] == '2017':
-        assert documents[1]['published'] == datetime.date(2017, 9, 17)
-
-        if path[3].endswith('.md'):
-            assert isinstance(documents[1], content.Post)
+        assert document['published'] == datetime.date(2017, 9, 17)
 
 
-@pytest.mark.parametrize('data, cls', [
-    (u'text', str),
-    (b'\xf1', bytes),
+@pytest.mark.parametrize('data', [
+    u'text',
+    b'\xf1',
 ])
-def test_document_content_types(testapp, tmpdir, data, cls):
-    """Source processor has to properly read documents' content."""
+def test_document_content_types(testapp, run_processor, tmpdir, data):
+    """run_processoror has to properly read documents' content."""
 
     localpath = tmpdir.ensure('cv.md')
 
@@ -70,102 +81,137 @@ def test_document_content_types(testapp, tmpdir, data, cls):
     else:
         localpath.write_text(data, encoding='UTF-8')
 
-    documents = source.process(testapp, [], path=tmpdir.strpath)
+    stream = run_processor(testapp, [], path=tmpdir.strpath)
+    assert next(stream) == \
+        {
+            'source': 'cv.md',
+            'destination': 'cv.md',
+            'content': data,
+            'created': unittest.mock.ANY,
+            'updated': unittest.mock.ANY,
+        }
 
-    assert len(documents) == 1
-    assert documents[0]['content'] == data
-    assert isinstance(documents[0]['content'], cls)
+
+def test_document_empty(testapp, run_processor, tmpdir):
+    """run_processoror has to properly read empty documents."""
+
+    tmpdir.ensure('cv.md').write_binary(b'')
+
+    stream = run_processor(testapp, [], path=tmpdir.strpath)
+    assert next(stream) == \
+        {
+            'source': 'cv.md',
+            'destination': 'cv.md',
+            'content': '',
+            'created': unittest.mock.ANY,
+            'updated': unittest.mock.ANY,
+        }
 
 
 @pytest.mark.parametrize('encoding', ['CP1251', 'UTF-16'])
-def test_param_encoding(testapp, tmpdir, encoding):
-    """Source processor has to respect encoding parameter."""
+def test_param_encoding(testapp, run_processor, tmpdir, encoding):
+    """run_processoror has to respect encoding parameter."""
 
-    tmpdir.ensure('cv.md').write_text('оби-ван', encoding=encoding)
+    tmpdir.ensure('cv.md').write_text('Оби-Ван', encoding=encoding)
 
-    documents = source.process(
+    stream = run_processor(
         testapp,
         [],
         path=tmpdir.strpath,
         encoding=encoding)
 
-    assert len(documents) == 1
-    assert documents[0]['content'] == 'оби-ван'
+    assert next(stream) == \
+        {
+            'source': 'cv.md',
+            'destination': 'cv.md',
+            'content': 'Оби-Ван',
+            'created': unittest.mock.ANY,
+            'updated': unittest.mock.ANY,
+        }
 
 
 @pytest.mark.parametrize('encoding', ['CP1251', 'UTF-16'])
-def test_param_encoding_fallback(testapp, tmpdir, encoding):
-    """Source processor has to respect encoding parameter (fallback)."""
+def test_param_encoding_fallback(testapp, run_processor, tmpdir, encoding):
+    """run_processoror has to respect encoding parameter (fallback)."""
 
-    tmpdir.ensure('cv.md').write_text('оби-ван', encoding=encoding)
+    tmpdir.ensure('cv.md').write_text('Оби-Ван', encoding=encoding)
     testapp.metadata.update({'encoding': encoding})
 
-    documents = source.process(
+    stream = run_processor(
         testapp,
         [],
         path=tmpdir.strpath)
 
-    assert len(documents) == 1
-    assert documents[0]['content'] == 'оби-ван'
+    assert next(stream) == \
+        {
+            'source': 'cv.md',
+            'destination': 'cv.md',
+            'content': 'Оби-Ван',
+            'created': unittest.mock.ANY,
+            'updated': unittest.mock.ANY,
+        }
 
 
 @pytest.mark.parametrize('timezone, tznames', [
     ('UTC', ['UTC']),
     ('Europe/Kiev', ['EET', 'EEST']),
 ])
-def test_param_timezone(testapp, tmpdir, timezone, tznames):
-    """Source processor has to respect timezone parameter."""
+def test_param_timezone(testapp, run_processor, tmpdir, timezone, tznames):
+    """run_processoror has to respect timezone parameter."""
 
-    tmpdir.ensure('cv.md').write_text('text', encoding='UTF-8')
+    tmpdir.ensure('cv.md').write_text('Obi-Wan', encoding='UTF-8')
 
-    documents = source.process(
+    stream = run_processor(
         testapp,
         [],
         path=tmpdir.strpath,
         timezone=timezone)
 
-    assert len(documents) == 1
+    document = next(stream)
 
-    created = documents[0]['created']
-    updated = documents[0]['updated']
+    created = document['created']
+    updated = document['updated']
 
     assert created.tzinfo.tzname(created) in tznames
     assert updated.tzinfo.tzname(updated) in tznames
 
 
-@pytest.mark.parametrize('timezone, tznames', [
+@pytest.mark.parametrize('tz, tznames', [
     ('UTC', ['UTC']),
     ('Europe/Kiev', ['EET', 'EEST']),
 ])
-def test_param_timezone_fallback(testapp, tmpdir, timezone, tznames):
-    """Source processor has to respect timezone parameter (fallback)."""
+def test_param_timezone_fallback(testapp, run_processor, tmpdir, tz, tznames):
+    """run_processoror has to respect timezone parameter (fallback)."""
 
-    tmpdir.ensure('cv.md').write_text('text', encoding='UTF-8')
-    testapp.metadata.update({'timezone': timezone})
+    tmpdir.ensure('cv.md').write_text('Obi-Wan', encoding='UTF-8')
+    testapp.metadata.update({'timezone': tz})
 
-    documents = source.process(
+    stream = run_processor(
         testapp,
         [],
         path=tmpdir.strpath)
 
-    assert len(documents) == 1
+    document = next(stream)
 
-    created = documents[0]['created']
-    updated = documents[0]['updated']
+    created = document['created']
+    updated = document['updated']
 
     assert created.tzinfo.tzname(created) in tznames
     assert updated.tzinfo.tzname(updated) in tznames
 
 
-def test_param_timezone_in_action(testapp, tmpdir):
-    """Source processor has to respect timezone parameter."""
+def test_param_timezone_in_action(testapp, run_processor, tmpdir):
+    """run_processoror has to respect timezone parameter."""
 
-    tmpdir.ensure('cv.md').write_text('text', encoding='UTF-8')
+    tmpdir.ensure('cv.md').write_text('Obi-Wan', encoding='UTF-8')
 
-    created_utc = source.process(
-        testapp, [], path=tmpdir.strpath, timezone='UTC')[0]['created']
-    created_kie = source.process(
-        testapp, [], path=tmpdir.strpath, timezone='Europe/Kiev')[0]['created']
+    stream_utc = run_processor(
+        testapp, [], path=tmpdir.strpath, timezone='UTC')
+    stream_kie = run_processor(
+        testapp, [], path=tmpdir.strpath, timezone='Europe/Kiev')
+
+    created_utc = next(stream_utc)['created']
+    created_kie = next(stream_kie)['created']
 
     assert created_kie.tzinfo.utcoffset(created_kie) \
         >= created_utc.tzinfo.utcoffset(created_utc)
@@ -173,12 +219,10 @@ def test_param_timezone_in_action(testapp, tmpdir):
     assert created_kie.isoformat().split('+')[-1] in ('02:00', '03:00')
 
 
-def test_param_when(testapp, tmpdir):
-    """Source processor has to ignore non-matched documents."""
+def test_param_when(testapp, run_processor, tmpdir):
+    """run_processoror has to ignore non-matched stream."""
 
     structure = sorted([
-        ['2017', '09', '20', 'the-force.md'],
-        ['2017', '09', '20', 'yoda.jpg'],
         ['about', 'index.md'],
         ['about', 'me.png'],
         ['cv.pdf'],
@@ -188,7 +232,7 @@ def test_param_when(testapp, tmpdir):
         tmpdir.ensure(*path)
     tmpdir.ensure('_config.yml')
 
-    documents = source.process(
+    stream = run_processor(
         testapp,
         [],
         path=tmpdir.strpath,
@@ -200,13 +244,18 @@ def test_param_when(testapp, tmpdir):
             },
         ])
 
-    assert len(documents) == 5
-
-    documents = sorted(documents, key=lambda document: document['source'])
+    documents = sorted(stream, key=lambda document: document['source'])
 
     for document, path in zip(documents, structure):
-        assert document['source'] == os.path.join(*path)
-        assert document['destination'] == os.path.join(*path)
+        assert document == \
+            {
+                'source': os.path.join(*path),
+                'destination': os.path.join(*path),
+                'content': '',
+                'created': unittest.mock.ANY,
+                'updated': unittest.mock.ANY,
+            }
+
         assert document['created'].timestamp() \
             == pytest.approx(tmpdir.join(*path).stat().ctime, 0.00001)
         assert document['updated'].timestamp() \
@@ -220,7 +269,7 @@ def test_param_when(testapp, tmpdir):
     ({'timezone': 'Europe/Kharkiv'}, 'timezone: unsupported timezone'),
 ])
 def test_param_bad_value(testapp, params, error):
-    """Source processor has to validate input parameters."""
+    """run_processoror has to validate input parameters."""
 
     with pytest.raises(ValueError, match=error):
-        source.process(testapp, [], **params)
+        next(source.process(testapp, [], **params))

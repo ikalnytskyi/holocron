@@ -13,4 +13,7 @@ class Run(abc.Command):
         if arguments.pipeline not in app.conf['pipelines']:
             raise ValueError('%s: no such pipeline' % arguments.pipeline)
 
-        app.invoke_processors([], app.conf['pipelines'][arguments.pipeline])
+        pipeline = app.conf['pipelines'][arguments.pipeline]
+
+        for _ in app.invoke_processors([], pipeline):
+            pass
