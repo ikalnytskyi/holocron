@@ -1,11 +1,11 @@
-"""Unload pipeline by committing documents."""
+"""Commit (save) items from the stream on disk."""
 
 import os
 import codecs
 
 import schema
 
-from ._misc import iterdocuments_ex, parameters
+from ._misc import parameters
 
 
 @parameters(
@@ -13,36 +13,24 @@ from ._misc import iterdocuments_ex, parameters
         'encoding': ':metadata:#/encoding',
     },
     schema={
-        'path': str,
-        'when': schema.Or([{str: object}], None, error='unsupported value'),
+        'save_to': str,
         'encoding': schema.Schema(codecs.lookup, 'unsupported encoding'),
-        'unload': schema.Schema(bool),
     }
 )
-def process(app,
-            documents,
-            *,
-            path='_site',
-            when=None,
-            unload=True,
-            encoding='UTF-8'):
+def process(app, stream, *, save_to='_site', encoding='UTF-8'):
 
-    for document, is_matched in iterdocuments_ex(documents, when):
-        if is_matched:
-            destination = os.path.join(path, document['destination'])
-            if not os.path.exists(os.path.dirname(destination)):
-                os.makedirs(os.path.dirname(destination))
+    for item in stream:
+        destination = os.path.join(save_to, item['destination'])
 
-            if isinstance(document['content'], str):
-                output = open(destination, 'wt', encoding=encoding)
-            else:
-                output = open(destination, 'wb')
+        if not os.path.exists(os.path.dirname(destination)):
+            os.makedirs(os.path.dirname(destination))
 
-            with output:
-                output.write(document['content'])
+        if isinstance(item['content'], str):
+            output = open(destination, 'wt', encoding=encoding)
+        else:
+            output = open(destination, 'wb')
 
-        # Preserve in the pipeline uncommitted documents because they may have
-        # other committers in the pipeline. If unload is turned off, all
-        # documents will be preserved.
-        if not unload or not is_matched:
-            yield document
+        with output:
+            output.write(item['content'])
+
+        yield item
