@@ -1,4 +1,4 @@
-"""Render documents using Jinja2 template engine."""
+"""Render stream using Jinja2 template engine."""
 
 import os
 
@@ -7,24 +7,17 @@ import jsonpointer
 import schema
 
 from . import source
-from ._misc import iterdocuments_ex, parameters
+from ._misc import parameters
 
 
 @parameters(
     schema={
-        'when': schema.Or([{str: object}], None, error='unsupported value'),
         'template': schema.Schema(str),
-        'themes': schema.Or([str], None, error='unsupported value'),
         'context': schema.Or({str: object}, error='must be a dict'),
+        'themes': schema.Or([str], None, error='unsupported value'),
     }
 )
-def process(app,
-            documents,
-            *,
-            template='page.j2',
-            themes=None,
-            context={},
-            when=None):
+def process(app, stream, *, template='page.j2', context={}, themes=None):
     if themes is None:
         import holocron
         themes = [os.path.join(os.path.dirname(holocron.__file__), 'theme')]
@@ -38,18 +31,17 @@ def process(app,
     ]))
     env.filters['jsonpointer'] = jsonpointer.resolve_pointer
 
-    for document, is_matched in iterdocuments_ex(documents, when):
-        if is_matched:
-            document['content'] = \
-                env.get_template(document.get('template', template)).render(
-                    document=document,
-                    metadata=app.metadata,
-                    **context)
-        yield document
+    for item in stream:
+        item['content'] = \
+            env.get_template(item.get('template', template)).render(
+                document=item,
+                metadata=app.metadata,
+                **context)
+        yield item
 
     # Themes may optionally come with various statics (e.g. css, images) they
-    # depend on. That's why we need to inject these statics to a documents
-    # pipeline; otherwise rendered documents may look improperly.
+    # depend on. That's why we need to inject these statics to a pipeline;
+    # otherwise, rendered items may look improperly.
     for theme in themes:
         yield from source.process(app, [], path=theme, when=[{
             'operator': 'match',
