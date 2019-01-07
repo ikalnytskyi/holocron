@@ -1,8 +1,5 @@
 """Pipeline processor test suite."""
 
-
-import os
-
 import pytest
 
 from holocron import app
@@ -11,21 +8,21 @@ from holocron.ext.processors import pipeline
 
 @pytest.fixture(scope='function')
 def testapp():
-    def spam(app, documents, **options):
-        for document in documents:
-            document['spam'] = options.get('text', 42)
-            yield document
+    def spam(app, items, **options):
+        for item in items:
+            item['spam'] = options.get('text', 42)
+            yield item
 
-    def eggs(app, documents, **options):
-        for document in documents:
-            document['content'] += ' #friedeggs'
-            yield document
+    def eggs(app, items, **options):
+        for item in items:
+            item['content'] += ' #friedeggs'
+            yield item
 
-    def rice(app, documents, **options):
-        yield from documents
+    def rice(app, items, **options):
+        yield from items
         yield {'content': 'rice'}
 
-    instance = app.Holocron({})
+    instance = app.Holocron()
     instance.add_processor('spam', spam)
     instance.add_processor('eggs', eggs)
     instance.add_processor('rice', rice)
@@ -33,25 +30,10 @@ def testapp():
     return instance
 
 
-@pytest.fixture(scope='function')
-def run_processor():
-    streams = []
-
-    def run(*args, **kwargs):
-        streams.append(pipeline.process(*args, **kwargs))
-        return streams[-1]
-
-    yield run
-
-    for stream in streams:
-        with pytest.raises(StopIteration):
-            next(stream)
-
-
-def test_document(testapp, run_processor):
+def test_item(testapp):
     """Pipeline processor has to work!"""
 
-    stream = run_processor(
+    stream = pipeline.process(
         testapp,
         [
             {
@@ -59,7 +41,7 @@ def test_document(testapp, run_processor):
                 'author': 'skywalker',
             },
         ],
-        processors=[
+        pipeline=[
             {'name': 'spam'},
             {'name': 'eggs'},
             {'name': 'rice'},
@@ -77,11 +59,14 @@ def test_document(testapp, run_processor):
             'content': 'rice',
         }
 
+    with pytest.raises(StopIteration):
+        next(stream)
 
-def test_document_processor_with_option(testapp, run_processor):
+
+def test_item_processor_with_option(testapp):
     """Pipeline processor has to pass down processors options."""
 
-    stream = run_processor(
+    stream = pipeline.process(
         testapp,
         [
             {
@@ -89,7 +74,7 @@ def test_document_processor_with_option(testapp, run_processor):
                 'author': 'skywalker',
             },
         ],
-        processors=[
+        pipeline=[
             {'name': 'spam', 'text': 1},
         ])
 
@@ -100,18 +85,22 @@ def test_document_processor_with_option(testapp, run_processor):
             'spam': 1,
         }
 
+    with pytest.raises(StopIteration):
+        next(stream)
 
-def test_document_no_processors(testapp, run_processor):
-    """Pipeline processor with no processors has to passed by."""
 
-    stream = run_processor(
+def test_param_pipeline_empty(testapp):
+    """Pipeline processor with empty pipeline has to pass by."""
+
+    stream = pipeline.process(
         testapp,
         [
             {
                 'content': 'the Force',
                 'author': 'skywalker',
             },
-        ])
+        ],
+        pipeline=[])
 
     assert next(stream) == \
         {
@@ -119,78 +108,42 @@ def test_document_no_processors(testapp, run_processor):
             'author': 'skywalker',
         }
 
+    with pytest.raises(StopIteration):
+        next(stream)
 
-def test_param_when(testapp, run_processor):
-    """Pipeline processor has to ignore non-targeted documents."""
 
-    stream = run_processor(
+@pytest.mark.parametrize('amount', [0, 1, 2, 5, 10])
+def test_item_many(testapp, amount):
+    """Pipeline processor has to work with stream."""
+
+    stream = pipeline.process(
         testapp,
         [
             {
-                'content': 'the way of the Force #1',
-                'source': os.path.join('posts', '1.md'),
-            },
-            {
-                'content': 'the way of the Force #2',
-                'source': os.path.join('pages', '2.md'),
-            },
-            {
-                'content': 'the way of the Force #3',
-                'source': os.path.join('posts', '3.md'),
-            },
-            {
-                'content': 'the way of the Force #4',
-                'source': os.path.join('pages', '4.md'),
-            },
+                'content': 'the Force (%d)' % i,
+                'author': 'skywalker',
+            }
+            for i in range(amount)
         ],
-        processors=[
+        pipeline=[
             {'name': 'spam'},
             {'name': 'eggs'},
-            {'name': 'rice'},
-        ],
-        when=[
-            {
-                'operator': 'match',
-                'attribute': 'source',
-                'pattern': r'^posts.*$',
-            },
         ])
 
-    assert next(stream) == \
-        {
-            'content': 'the way of the Force #2',
-            'source': os.path.join('pages', '2.md'),
-        }
+    for i in range(amount):
+        assert next(stream) == \
+            {
+                'content': 'the Force (%d) #friedeggs' % i,
+                'author': 'skywalker',
+                'spam': 42,
+            }
 
-    assert next(stream) == \
-        {
-            'content': 'the way of the Force #4',
-            'source': os.path.join('pages', '4.md'),
-        }
-
-    assert next(stream) == \
-        {
-            'content': 'the way of the Force #1 #friedeggs',
-            'source': os.path.join('posts', '1.md'),
-            'spam': 42,
-        }
-
-    assert next(stream) == \
-        {
-            'content': 'the way of the Force #3 #friedeggs',
-            'source': os.path.join('posts', '3.md'),
-            'spam': 42,
-        }
-
-    assert next(stream) == \
-        {
-            'content': 'rice',
-        }
+    with pytest.raises(StopIteration):
+        next(stream)
 
 
 @pytest.mark.parametrize('params, error', [
-    ({'when': [42]}, 'when: unsupported value'),
-    ({'processors': 42}, "processors: 42 should be instance of 'list'"),
+    ({'pipeline': 42}, "pipeline: 42 should be instance of 'list'"),
 ])
 def test_param_bad_value(testapp, params, error):
     """Pipeline processor has to validate input parameters."""

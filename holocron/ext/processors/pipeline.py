@@ -1,25 +1,14 @@
-"""Run separate processors pipeline on selected documents."""
+"""Run items through a pipeline."""
 
 import schema
 
-from ._misc import iterdocuments_ex, parameters
+from ._misc import parameters
 
 
 @parameters(
     schema={
-        'when': schema.Or([{str: object}], None, error='unsupported value'),
-        'processors': schema.Schema([{str: object}]),
+        'pipeline': schema.Schema([{str: object}]),
     }
 )
-def process(app, documents, *, when=None, processors=[]):
-    kept = []
-    selected = []
-
-    for document, is_matched in iterdocuments_ex(documents, when):
-        if is_matched:
-            selected.append(document)
-        else:
-            kept.append(document)
-
-    yield from kept
-    yield from app.invoke_processors(selected, processors)
+def process(app, stream, *, pipeline=[]):
+    yield from app.invoke_processors(stream, pipeline)
