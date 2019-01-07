@@ -28,25 +28,10 @@ def testapp():
     return app.Holocron()
 
 
-@pytest.fixture(scope='function')
-def run_processor():
-    streams = []
-
-    def run(*args, **kwargs):
-        streams.append(markdown.process(*args, **kwargs))
-        return streams[-1]
-
-    yield run
-
-    for stream in streams:
-        with pytest.raises(StopIteration):
-            next(stream)
-
-
-def test_document(testapp, run_processor):
+def test_item(testapp):
     """Markdown processor has to work."""
 
-    stream = run_processor(
+    stream = markdown.process(
         testapp,
         [
             {
@@ -67,11 +52,14 @@ def test_document(testapp, run_processor):
             'title': 'some title',
         }
 
+    with pytest.raises(StopIteration):
+        next(stream)
 
-def test_document_with_alt_title_syntax(testapp, run_processor):
+
+def test_item_with_alt_title_syntax(testapp):
     """Markdown processor has to work with alternative title syntax."""
 
-    stream = run_processor(
+    stream = markdown.process(
         testapp,
         [
             {
@@ -93,11 +81,14 @@ def test_document_with_alt_title_syntax(testapp, run_processor):
             'title': 'some title',
         }
 
+    with pytest.raises(StopIteration):
+        next(stream)
 
-def test_document_with_newlines_at_the_beginning(testapp, run_processor):
+
+def test_item_with_newlines_at_the_beginning(testapp):
     """Markdown processor has to ignore newlines at the beginning."""
 
-    stream = run_processor(
+    stream = markdown.process(
         testapp,
         [
             {
@@ -120,11 +111,14 @@ def test_document_with_newlines_at_the_beginning(testapp, run_processor):
             'title': 'some title',
         }
 
+    with pytest.raises(StopIteration):
+        next(stream)
 
-def test_document_without_title(testapp, run_processor):
-    """Markdown processor has to work process documents without title."""
 
-    stream = run_processor(
+def test_item_without_title(testapp):
+    """Markdown processor has to work process items without title."""
+
+    stream = markdown.process(
         testapp,
         [
             {
@@ -142,11 +136,14 @@ def test_document_without_title(testapp, run_processor):
             'destination': '1.html',
         }
 
+    with pytest.raises(StopIteration):
+        next(stream)
 
-def test_document_title_is_not_overwritten(testapp, run_processor):
+
+def test_item_title_is_not_overwritten(testapp):
     """Markdown processor hasn't to set title if it's already set."""
 
-    stream = run_processor(
+    stream = markdown.process(
         testapp,
         [
             {
@@ -168,11 +165,14 @@ def test_document_title_is_not_overwritten(testapp, run_processor):
             'title': 'another title',
         }
 
+    with pytest.raises(StopIteration):
+        next(stream)
 
-def test_document_title_ignored_in_the_middle_of_text(testapp, run_processor):
+
+def test_item_title_ignored_in_the_middle_of_text(testapp):
     """Markdown processor has to ignore title if it's in the middle of text."""
 
-    stream = run_processor(
+    stream = markdown.process(
         testapp,
         [
             {
@@ -196,11 +196,14 @@ def test_document_title_ignored_in_the_middle_of_text(testapp, run_processor):
             'destination': '1.html',
         }
 
+    with pytest.raises(StopIteration):
+        next(stream)
 
-def test_document_with_sections(testapp, run_processor):
-    """Markdown processor has to work even for complex documents."""
 
-    stream = run_processor(
+def test_item_with_sections(testapp):
+    """Markdown processor has to work even for complex items."""
+
+    stream = markdown.process(
         testapp,
         [
             {
@@ -244,11 +247,14 @@ def test_document_with_sections(testapp, run_processor):
             'title': 'some title 1',
         }
 
+    with pytest.raises(StopIteration):
+        next(stream)
 
-def test_document_with_code(testapp, run_processor):
+
+def test_item_with_code(testapp):
     """Markdown processor has to highlight code with codehilite extension."""
 
-    stream = run_processor(
+    stream = markdown.process(
         testapp,
         [
             {
@@ -269,11 +275,14 @@ def test_document_with_code(testapp, run_processor):
             'destination': '1.html',
         }
 
+    with pytest.raises(StopIteration):
+        next(stream)
 
-def test_document_with_fenced_code(testapp, run_processor):
+
+def test_item_with_fenced_code(testapp):
     """Markdown processor has to support GitHub's fence code syntax."""
 
-    stream = run_processor(
+    stream = markdown.process(
         testapp,
         [
             {
@@ -295,11 +304,14 @@ def test_document_with_fenced_code(testapp, run_processor):
             'destination': '1.html',
         }
 
+    with pytest.raises(StopIteration):
+        next(stream)
 
-def test_document_with_table(testapp, run_processor):
+
+def test_item_with_table(testapp):
     """Markdown processor has to support table syntax (markup extension)."""
 
-    stream = run_processor(
+    stream = markdown.process(
         testapp,
         [
             {
@@ -312,24 +324,27 @@ def test_document_with_table(testapp, run_processor):
             },
         ])
 
-    document = next(stream)
-    assert document == \
+    item = next(stream)
+    assert item == \
         {
             'content': unittest.mock.ANY,
             'destination': '1.html',
         }
 
-    assert 'table' in document['content']
-    assert '<th>column a</th>' in document['content']
-    assert '<th>column b</th>' in document['content']
-    assert '<td>foo</td>' in document['content']
-    assert '<td>bar</td>' in document['content']
+    assert 'table' in item['content']
+    assert '<th>column a</th>' in item['content']
+    assert '<th>column b</th>' in item['content']
+    assert '<td>foo</td>' in item['content']
+    assert '<td>bar</td>' in item['content']
+
+    with pytest.raises(StopIteration):
+        next(stream)
 
 
-def test_document_with_inline_code(testapp, run_processor):
+def test_item_with_inline_code(testapp):
     """Markdown processor has to use <code> for inline code."""
 
-    stream = run_processor(
+    stream = markdown.process(
         testapp,
         [
             {
@@ -346,11 +361,39 @@ def test_document_with_inline_code(testapp, run_processor):
             'destination': '1.html',
         }
 
+    with pytest.raises(StopIteration):
+        next(stream)
 
-def test_param_extensions(testapp, run_processor):
+
+@pytest.mark.parametrize('amount', [0, 1, 2, 5, 10])
+def test_item_many(testapp, amount):
+    """Markdown processor has to work with stream."""
+
+    stream = markdown.process(
+        testapp,
+        [
+            {
+                'content': 'the key is **%d**' % i,
+                'destination': '1.md',
+            }
+            for i in range(amount)
+        ])
+
+    for i in range(amount):
+        assert next(stream) == \
+            {
+                'content': '<p>the key is <strong>%d</strong></p>' % i,
+                'destination': '1.html',
+            }
+
+    with pytest.raises(StopIteration):
+        next(stream)
+
+
+def test_param_extensions(testapp):
     """Markdown processor has to respect extensions parameter."""
 
-    stream = run_processor(
+    stream = markdown.process(
         testapp,
         [
             {
@@ -372,74 +415,11 @@ def test_param_extensions(testapp, run_processor):
             'destination': '1.html',
         }
 
-
-def test_param_when(testapp, run_processor):
-    """Markdown processor has to ignore non-markdown documents."""
-
-    stream = run_processor(
-        testapp,
-        [
-            {
-                'content': '**wookiee**',
-                'destination': '0.txt',
-                'source': '0.txt',
-            },
-            {
-                'content': '**wookiee**',
-                'destination': '1.md',
-                'source': '1.md',
-            },
-            {
-                'content': '# wookiee',
-                'destination': '2',
-                'source': '2',
-            },
-            {
-                'content': '# wookiee',
-                'destination': '3.markdown',
-                'source': '3.markdown',
-            },
-        ],
-        when=[
-            {
-                'operator': 'match',
-                'attribute': 'source',
-                'pattern': r'.*\.(md|mkd|mdown|markdown)$',
-            },
-        ])
-
-    assert next(stream) == \
-        {
-            'content': '**wookiee**',
-            'destination': '0.txt',
-            'source': '0.txt',
-        }
-
-    assert next(stream) == \
-        {
-            'content': _pytest_regex(r'<p><strong>wookiee</strong></p>'),
-            'destination': '1.html',
-            'source': '1.md',
-        }
-
-    assert next(stream) == \
-        {
-            'content': '# wookiee',
-            'destination': '2',
-            'source': '2'
-        }
-
-    assert next(stream) == \
-        {
-            'content': '',
-            'destination': '3.html',
-            'source': '3.markdown',
-            'title': 'wookiee',
-        }
+    with pytest.raises(StopIteration):
+        next(stream)
 
 
 @pytest.mark.parametrize('params, error', [
-    ({'when': [42]}, 'when: unsupported value'),
     ({'extensions': 42}, "extensions: 42 should be instance of 'list'"),
 ])
 def test_param_bad_value(testapp, params, error):
