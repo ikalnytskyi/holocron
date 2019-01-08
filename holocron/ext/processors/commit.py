@@ -10,7 +10,7 @@ from ._misc import parameters
 
 @parameters(
     fallback={
-        'encoding': ':metadata:#/encoding',
+        'encoding': 'metadata://#/encoding',
     },
     schema={
         'save_to': str,

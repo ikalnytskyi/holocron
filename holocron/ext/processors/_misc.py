@@ -87,7 +87,7 @@ class parameters:
                     try:
                         value = resolve_json_references(
                             {'$ref': self._fallback[param]},
-                            {':metadata:': app.metadata})
+                            {'metadata:': app.metadata})
                     except (jsonpointer.JsonPointerException, KeyError):
                         continue
 

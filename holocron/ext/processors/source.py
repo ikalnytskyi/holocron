@@ -14,8 +14,8 @@ from ._misc import parameters
 
 @parameters(
     fallback={
-        'encoding': ':metadata:#/encoding',
-        'timezone': ':metadata:#/timezone',
+        'encoding': 'metadata://#/encoding',
+        'timezone': 'metadata://#/timezone',
     },
     schema={
         'path': str,
