@@ -86,7 +86,6 @@ class TestHolocronDefaults(HolocronTestCase):
             'feed',
             'sitemap',
             'index',
-            'tags',
             'commit',
             'jinja2',
         ]))
@@ -207,7 +206,6 @@ class TestCreateApp(HolocronTestCase):
             'feed',
             'sitemap',
             'index',
-            'tags',
             'commit',
             'jinja2',
         ]))
