@@ -10,70 +10,85 @@ from holocron import app
 from holocron.ext.processors import source
 
 
+class _pytest_timestamp:
+    """Assert that a given timestamp is equal to a datetime object."""
+
+    def __init__(self, timestamp, abs_=0.001):
+        self._timestamp = timestamp
+        self._abs = abs_
+
+    def __eq__(self, actual):
+        return actual.timestamp() == \
+               pytest.approx(self._timestamp, abs=self._abs)
+
+    def __repr__(self):
+        return self._timestamp
+
+
 @pytest.fixture(scope='function')
 def testapp():
     return app.Holocron()
 
 
-@pytest.fixture(scope='function')
-def run_processor():
-    streams = []
-
-    def run(*args, **kwargs):
-        streams.append(source.process(*args, **kwargs))
-        return streams[-1]
-
-    yield run
-
-    for stream in streams:
-        with pytest.raises(StopIteration):
-            next(stream)
-
-
 @pytest.mark.parametrize('path', [
-    ['about', 'cv.pdf'],
-    ['2017', '09', '17', 'cv.pdf'],
+    ('about', 'luke', 'cv.pdf', ),
+    ('about', 'cv.pdf', ),
+    ('cv.pdf', ),
+    ('.post', ),
 ])
-def test_document(testapp, run_processor, tmpdir, path):
-    """run_processoror has to work."""
+def test_item(testapp, monkeypatch, tmpdir, path):
+    """Source processor has to work."""
 
+    monkeypatch.chdir(tmpdir)
     tmpdir.ensure(*path).write_text('Obi-Wan', encoding='UTF-8')
 
-    stream = run_processor(
-        testapp,
-        [
-            {
-                'source': os.path.join('images', 'me.png'),
-            },
-        ],
-        path=tmpdir.strpath)
-
+    stream = source.process(testapp, [])
     assert next(stream) == \
         {
-            'source': os.path.join('images', 'me.png'),
+            'source': os.path.join(*path),
+            'destination': os.path.join(*path),
+            'content': 'Obi-Wan',
+            'created': _pytest_timestamp(tmpdir.join(*path).stat().ctime),
+            'updated': _pytest_timestamp(tmpdir.join(*path).stat().mtime),
         }
 
-    document = next(stream)
+    with pytest.raises(StopIteration):
+        next(stream)
 
-    assert document['source'] == os.path.join(*path)
-    assert document['destination'] == os.path.join(*path)
-    assert document['created'].timestamp() \
-        == pytest.approx(tmpdir.join(*path).stat().ctime, 0.00001)
-    assert document['updated'].timestamp() \
-        == pytest.approx(tmpdir.join(*path).stat().mtime, 0.00001)
-    assert document['content'] == 'Obi-Wan'
 
-    if path[0] == '2017':
-        assert document['published'] == datetime.date(2017, 9, 17)
+@pytest.mark.parametrize('path, published', [
+    (('2017', '09', '17', 'cv.pdf'), datetime.date(2017, 9, 17)),
+    (('2018', '3', '2', 'cv.pdf'), datetime.date(2018, 3, 2)),
+])
+def test_item_published(testapp, monkeypatch, tmpdir, path, published):
+    """Source processor has to set published property for posts."""
+
+    monkeypatch.chdir(tmpdir)
+    tmpdir.ensure(*path).write_text('Obi-Wan', encoding='UTF-8')
+
+    stream = source.process(testapp, [])
+    assert next(stream) == \
+        {
+            'source': os.path.join(*path),
+            'destination': os.path.join(*path),
+            'content': 'Obi-Wan',
+            'created': _pytest_timestamp(tmpdir.join(*path).stat().ctime),
+            'updated': _pytest_timestamp(tmpdir.join(*path).stat().mtime),
+            'published': published,
+        }
+
+    with pytest.raises(StopIteration):
+        next(stream)
 
 
 @pytest.mark.parametrize('data', [
     u'text',
     b'\xf1',
 ])
-def test_document_content_types(testapp, run_processor, tmpdir, data):
-    """run_processoror has to properly read documents' content."""
+def test_item_content_types(testapp, monkeypatch, tmpdir, data):
+    """Source processor has to properly read items' content."""
 
+    monkeypatch.chdir(tmpdir)
     localpath = tmpdir.ensure('cv.md')
 
     if isinstance(data, bytes):
@@ -81,45 +96,147 @@ def test_document_content_types(testapp, run_processor, tmpdir, data):
     else:
         localpath.write_text(data, encoding='UTF-8')
 
-    stream = run_processor(testapp, [], path=tmpdir.strpath)
+    stream = source.process(testapp, [])
     assert next(stream) == \
         {
             'source': 'cv.md',
             'destination': 'cv.md',
             'content': data,
-            'created': unittest.mock.ANY,
-            'updated': unittest.mock.ANY,
+            'created': _pytest_timestamp(tmpdir.join('cv.md').stat().ctime),
+            'updated': _pytest_timestamp(tmpdir.join('cv.md').stat().mtime),
         }
 
+    with pytest.raises(StopIteration):
+        next(stream)
 
-def test_document_empty(testapp, run_processor, tmpdir):
-    """run_processoror has to properly read empty documents."""
 
+def test_item_empty(testapp, monkeypatch, tmpdir):
+    """Source processor has to properly read empty items."""
+
+    monkeypatch.chdir(tmpdir)
     tmpdir.ensure('cv.md').write_binary(b'')
 
-    stream = run_processor(testapp, [], path=tmpdir.strpath)
+    stream = source.process(testapp, [])
     assert next(stream) == \
         {
             'source': 'cv.md',
             'destination': 'cv.md',
             'content': '',
-            'created': unittest.mock.ANY,
-            'updated': unittest.mock.ANY,
+            'created': _pytest_timestamp(tmpdir.join('cv.md').stat().ctime),
+            'updated': _pytest_timestamp(tmpdir.join('cv.md').stat().mtime),
         }
+
+    with pytest.raises(StopIteration):
+        next(stream)
+
+
+@pytest.mark.parametrize('discovered', [0, 1, 2, 5, 10])
+@pytest.mark.parametrize('passed', [0, 1, 2, 5, 10])
+def test_item_many(testapp, monkeypatch, tmpdir, discovered, passed):
+    """Source processor has to preserve documents and produce many new."""
+
+    monkeypatch.chdir(tmpdir)
+
+    for i in range(discovered):
+        tmpdir.join(str(i)).write_text('key=%d' % i, encoding='UTF-8')
+
+    stream = source.process(
+        testapp,
+        [
+            {
+                'marker': 'the key is %d' % i,
+            }
+            for i in range(passed)
+        ])
+
+    for i, item in zip(range(passed), stream):
+        assert item == {'marker': 'the key is %d' % i}
+
+    # Since we don't know in which order items are discovered, we sort them so
+    # we can avoid possible flakes of the test.
+    assert sorted(stream, key=lambda item: item['source']) == \
+        [
+            {
+                'source': str(i),
+                'destination': str(i),
+                'content': 'key=%d' % i,
+                'created': _pytest_timestamp(tmpdir.join(str(i)).stat().ctime),
+                'updated': _pytest_timestamp(tmpdir.join(str(i)).stat().mtime),
+            }
+            for i in range(discovered)
+        ]
+
+
+@pytest.mark.parametrize('path', [
+    ('a', ),
+    ('a', 'b', ),
+    ('a', 'b', 'c', ),
+])
+def test_param_path(testapp, monkeypatch, tmpdir, path):
+    """Source processor has to respect path parameter."""
+
+    monkeypatch.chdir(tmpdir)
+    tmpdir.join(*path).ensure('test').write_text('Obi-Wan', encoding='UTF-8')
+
+    stream = source.process(testapp, [], path=tmpdir.join(*path).strpath)
+    assert next(stream) == \
+        {
+            'source': 'test',
+            'destination': 'test',
+            'content': 'Obi-Wan',
+            'created': _pytest_timestamp(
+                tmpdir.join(*path).join('test').stat().ctime),
+            'updated': _pytest_timestamp(
+                tmpdir.join(*path).join('test').stat().mtime),
+        }
+
+    with pytest.raises(StopIteration):
+        next(stream)
+
+
+def test_param_pattern(testapp, monkeypatch, tmpdir):
+    """Source processor has to respect pattern parameter."""
+
+    monkeypatch.chdir(tmpdir)
+
+    tmpdir.join('1.md').write_text('Skywalker', encoding='UTF-8')
+    tmpdir.join('2.txt').write_text('Obi-Wan', encoding='UTF-8')
+    tmpdir.join('3.rst').write_text('Vader', encoding='UTF-8')
+    tmpdir.join('4.markdown').write_text('Yoda', encoding='UTF-8')
+
+    stream = source.process(testapp, [], pattern=r'.*\.(md|markdown)')
+
+    # Since we don't know in which order items are discovered, we sort them so
+    # we can avoid possible flakes of the test.
+    assert sorted(stream, key=lambda item: item['source']) == \
+        [
+            {
+                'source': '1.md',
+                'destination': '1.md',
+                'content': 'Skywalker',
+                'created': _pytest_timestamp(tmpdir.join('1.md').stat().ctime),
+                'updated': _pytest_timestamp(tmpdir.join('1.md').stat().mtime),
+            },
+            {
+                'source': '4.markdown',
+                'destination': '4.markdown',
+                'content': 'Yoda',
+                'created': _pytest_timestamp(
+                    tmpdir.join('4.markdown').stat().ctime),
+                'updated': _pytest_timestamp(
+                    tmpdir.join('4.markdown').stat().mtime),
+            },
+        ]
 
 
 @pytest.mark.parametrize('encoding', ['CP1251', 'UTF-16'])
-def test_param_encoding(testapp, run_processor, tmpdir, encoding):
-    """run_processoror has to respect encoding parameter."""
+def test_param_encoding(testapp, monkeypatch, tmpdir, encoding):
+    """Source processor has to respect encoding parameter."""
 
+    monkeypatch.chdir(tmpdir)
     tmpdir.ensure('cv.md').write_text('Оби-Ван', encoding=encoding)
 
-    stream = run_processor(
-        testapp,
-        [],
-        path=tmpdir.strpath,
-        encoding=encoding)
-
+    stream = source.process(testapp, [], encoding=encoding)
     assert next(stream) == \
         {
             'source': 'cv.md',
@@ -129,19 +246,19 @@ def test_param_encoding(testapp, run_processor, tmpdir, encoding):
             'updated': unittest.mock.ANY,
         }
 
+    with pytest.raises(StopIteration):
+        next(stream)
+
 
 @pytest.mark.parametrize('encoding', ['CP1251', 'UTF-16'])
-def test_param_encoding_fallback(testapp, run_processor, tmpdir, encoding):
-    """run_processoror has to respect encoding parameter (fallback)."""
+def test_param_encoding_fallback(testapp, monkeypatch, tmpdir, encoding):
+    """Source processor has to respect encoding parameter (fallback)."""
 
+    monkeypatch.chdir(tmpdir)
     tmpdir.ensure('cv.md').write_text('Оби-Ван', encoding=encoding)
     testapp.metadata.update({'encoding': encoding})
 
-    stream = run_processor(
-        testapp,
-        [],
-        path=tmpdir.strpath)
-
+    stream = source.process(testapp, [])
     assert next(stream) == \
         {
             'source': 'cv.md',
@@ -150,65 +267,70 @@ def test_param_encoding_fallback(testapp, run_processor, tmpdir, encoding):
             'created': unittest.mock.ANY,
             'updated': unittest.mock.ANY,
         }
+
+    with pytest.raises(StopIteration):
+        next(stream)
 
 
 @pytest.mark.parametrize('timezone, tznames', [
     ('UTC', ['UTC']),
     ('Europe/Kiev', ['EET', 'EEST']),
 ])
-def test_param_timezone(testapp, run_processor, tmpdir, timezone, tznames):
-    """run_processoror has to respect timezone parameter."""
+def test_param_timezone(testapp, monkeypatch, tmpdir, timezone, tznames):
+    """Source processor has to respect timezone parameter."""
 
+    monkeypatch.chdir(tmpdir)
     tmpdir.ensure('cv.md').write_text('Obi-Wan', encoding='UTF-8')
 
-    stream = run_processor(
-        testapp,
-        [],
-        path=tmpdir.strpath,
-        timezone=timezone)
+    stream = source.process(testapp, [], timezone=timezone)
 
-    document = next(stream)
+    item = next(stream)
 
-    created = document['created']
-    updated = document['updated']
+    created = item['created']
+    updated = item['updated']
 
     assert created.tzinfo.tzname(created) in tznames
     assert updated.tzinfo.tzname(updated) in tznames
+
+    with pytest.raises(StopIteration):
+        next(stream)
 
 
 @pytest.mark.parametrize('tz, tznames', [
     ('UTC', ['UTC']),
     ('Europe/Kiev', ['EET', 'EEST']),
 ])
-def test_param_timezone_fallback(testapp, run_processor, tmpdir, tz, tznames):
-    """run_processoror has to respect timezone parameter (fallback)."""
+def test_param_timezone_fallback(testapp, monkeypatch, tmpdir, tz, tznames):
+    """Source processor has to respect timezone parameter (fallback)."""
 
+    monkeypatch.chdir(tmpdir)
     tmpdir.ensure('cv.md').write_text('Obi-Wan', encoding='UTF-8')
     testapp.metadata.update({'timezone': tz})
 
-    stream = run_processor(
+    stream = source.process(
         testapp,
-        [],
-        path=tmpdir.strpath)
+        [])
 
-    document = next(stream)
+    item = next(stream)
 
-    created = document['created']
-    updated = document['updated']
+    created = item['created']
+    updated = item['updated']
 
     assert created.tzinfo.tzname(created) in tznames
     assert updated.tzinfo.tzname(updated) in tznames
 
+    with pytest.raises(StopIteration):
+        next(stream)
 
-def test_param_timezone_in_action(testapp, run_processor, tmpdir):
-    """run_processoror has to respect timezone parameter."""
 
+def test_param_timezone_in_action(testapp, monkeypatch, tmpdir):
+    """Source processor has to respect timezone parameter."""
+
+    monkeypatch.chdir(tmpdir)
     tmpdir.ensure('cv.md').write_text('Obi-Wan', encoding='UTF-8')
 
-    stream_utc = run_processor(
-        testapp, [], path=tmpdir.strpath, timezone='UTC')
-    stream_kie = run_processor(
-        testapp, [], path=tmpdir.strpath, timezone='Europe/Kiev')
+    stream_utc = source.process(testapp, [], timezone='UTC')
+    stream_kie = source.process(testapp, [], timezone='Europe/Kiev')
 
     created_utc = next(stream_utc)['created']
     created_kie = next(stream_kie)['created']
@@ -218,58 +340,21 @@ def test_param_timezone_in_action(testapp, run_processor, tmpdir):
     assert created_kie.isoformat() > created_utc.isoformat()
     assert created_kie.isoformat().split('+')[-1] in ('02:00', '03:00')
 
+    with pytest.raises(StopIteration):
+        next(stream_utc)
 
-def test_param_when(testapp, run_processor, tmpdir):
-    """run_processoror has to ignore non-matched stream."""
-
-    structure = sorted([
-        ['about', 'index.md'],
-        ['about', 'me.png'],
-        ['cv.pdf'],
-    ])
-
-    for path in structure:
-        tmpdir.ensure(*path)
-    tmpdir.ensure('_config.yml')
-
-    stream = run_processor(
-        testapp,
-        [],
-        path=tmpdir.strpath,
-        when=[
-            {
-                'operator': 'match',
-                'attribute': 'source',
-                'pattern': r'^(?!_).*$',
-            },
-        ])
-
-    documents = sorted(stream, key=lambda document: document['source'])
-
-    for document, path in zip(documents, structure):
-        assert document == \
-            {
-                'source': os.path.join(*path),
-                'destination': os.path.join(*path),
-                'content': '',
-                'created': unittest.mock.ANY,
-                'updated': unittest.mock.ANY,
-            }
-
-        assert document['created'].timestamp() \
-            == pytest.approx(tmpdir.join(*path).stat().ctime, 0.00001)
-        assert document['updated'].timestamp() \
-            == pytest.approx(tmpdir.join(*path).stat().mtime, 0.00001)
+    with pytest.raises(StopIteration):
+        next(stream_kie)
 
 
 @pytest.mark.parametrize('params, error', [
     ({'path': 42}, "path: 42 should be instance of 'str'"),
-    ({'when': 42}, 'when: unsupported value'),
+    ({'pattern': 42}, "pattern: 42 should be instance of 'str'"),
     ({'encoding': 'UTF-42'}, 'encoding: unsupported encoding'),
     ({'timezone': 'Europe/Kharkiv'}, 'timezone: unsupported timezone'),
 ])
 def test_param_bad_value(testapp, params, error):
-    """run_processoror has to validate input parameters."""
+    """Source processor has to validate input parameters."""
 
     with pytest.raises(ValueError, match=error):
         next(source.process(testapp, [], **params))
