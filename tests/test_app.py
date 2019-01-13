@@ -85,7 +85,7 @@ class TestHolocronDefaults(HolocronTestCase):
             'prettyuri',
             'feed',
             'sitemap',
-            'index',
+            'archive',
             'commit',
             'jinja2',
         ]))
@@ -205,7 +205,7 @@ class TestCreateApp(HolocronTestCase):
             'prettyuri',
             'feed',
             'sitemap',
-            'index',
+            'archive',
             'commit',
             'jinja2',
         ]))
