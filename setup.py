@@ -66,7 +66,7 @@ setup(
             '   holocron.ext.processors.restructuredtext:process',
             'feed = holocron.ext.processors.feed:process',
             'sitemap = holocron.ext.processors.sitemap:process',
-            'index = holocron.ext.processors.index:process',
+            'archive = holocron.ext.processors.archive:process',
             'commit = holocron.ext.processors.commit:process',
             'jinja2 = holocron.ext.processors.jinja2:process',
         ],

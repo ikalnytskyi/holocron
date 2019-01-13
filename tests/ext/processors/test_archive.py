@@ -1,11 +1,11 @@
-"""Index processor test suite."""
+"""Archive processor test suite."""
 
 import os
 
 import pytest
 
 from holocron import app
-from holocron.ext.processors import index
+from holocron.ext.processors import archive
 
 
 @pytest.fixture(scope='function')
@@ -13,10 +13,10 @@ def testapp():
     return app.Holocron()
 
 
-def test_document(testapp):
-    """Index processor has to work!"""
+def test_item(testapp):
+    """Archive processor has to work!"""
 
-    stream = index.process(
+    stream = archive.process(
         testapp,
         [
             {
@@ -33,10 +33,10 @@ def test_document(testapp):
 
     assert next(stream) == \
         {
-            'source': 'index://index.html',
+            'source': 'archive://index.html',
             'destination': 'index.html',
-            'template': 'index.j2',
-            'documents': [
+            'template': 'archive.j2',
+            'items': [
                 {
                     'title': 'the way of the Force',
                     'content': 'Obi-Wan'
@@ -49,10 +49,10 @@ def test_document(testapp):
 
 
 @pytest.mark.parametrize('amount', [0, 1, 2, 5, 10])
-def test_document_many(testapp, amount):
-    """Index processor has to work with stream."""
+def test_item_many(testapp, amount):
+    """archive processor has to work with stream."""
 
-    stream = index.process(
+    stream = archive.process(
         testapp,
         [
             {
@@ -69,10 +69,10 @@ def test_document_many(testapp, amount):
 
     assert next(stream) == \
         {
-            'source': 'index://index.html',
+            'source': 'archive://index.html',
             'destination': 'index.html',
-            'template': 'index.j2',
-            'documents': [
+            'template': 'archive.j2',
+            'items': [
                 {
                     'title': 'the way of the Force #%d' % i,
                 }
@@ -85,9 +85,9 @@ def test_document_many(testapp, amount):
 
 
 def test_param_template(testapp):
-    """Index processor has respect template parameter."""
+    """archive processor has respect template parameter."""
 
-    stream = index.process(
+    stream = archive.process(
         testapp,
         [
             {
@@ -105,10 +105,10 @@ def test_param_template(testapp):
 
     assert next(stream) == \
         {
-            'source': 'index://index.html',
+            'source': 'archive://index.html',
             'destination': 'index.html',
             'template': 'foobar.txt',
-            'documents': [
+            'items': [
                 {
                     'title': 'the way of the Force',
                     'content': 'Obi-Wan'
@@ -125,9 +125,9 @@ def test_param_template(testapp):
     os.path.join('yoda.jedi'),
 ])
 def test_param_save_as(testapp, save_as):
-    """Index processor has to respect save_as parameter."""
+    """archive processor has to respect save_as parameter."""
 
-    stream = index.process(
+    stream = archive.process(
         testapp,
         [
             {
@@ -145,10 +145,10 @@ def test_param_save_as(testapp, save_as):
 
     assert next(stream) == \
         {
-            'source': 'index://%s' % save_as,
+            'source': 'archive://%s' % save_as,
             'destination': save_as,
-            'template': 'index.j2',
-            'documents': [
+            'template': 'archive.j2',
+            'items': [
                 {
                     'title': 'the way of the Force',
                     'content': 'Obi-Wan'
@@ -165,7 +165,7 @@ def test_param_save_as(testapp, save_as):
     ({'template': 42}, "template: 42 should be instance of 'str'"),
 ])
 def test_param_bad_value(testapp, params, error):
-    """Index processor has to validate input parameters."""
+    """archive processor has to validate input parameters."""
 
     with pytest.raises(ValueError, match=error):
-        next(index.process(testapp, [], **params))
+        next(archive.process(testapp, [], **params))
