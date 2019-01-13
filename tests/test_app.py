@@ -88,6 +88,7 @@ class TestHolocronDefaults(HolocronTestCase):
             'archive',
             'commit',
             'jinja2',
+            'when',
         ]))
 
 
@@ -208,6 +209,7 @@ class TestCreateApp(HolocronTestCase):
             'archive',
             'commit',
             'jinja2',
+            'when',
         ]))
 
 
