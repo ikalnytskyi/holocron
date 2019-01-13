@@ -4,28 +4,24 @@ import itertools
 
 import schema
 
-from ._misc import iterdocuments, parameters
-from holocron.content import Document
+from ._misc import parameters
 
 
 @parameters(
     schema={
-        'when': schema.Or([{str: object}], None, error='unsupported value'),
         'template': schema.Schema(str),
+        'save_as': schema.Schema(str),
     }
 )
-def process(app,
-            documents,
-            *,
-            when=None,
-            template='index.j2'):
-    passthrough, documents = itertools.tee(documents)
+def process(app, stream, *, template='index.j2', save_as='index.html'):
+    passthrough, stream = itertools.tee(stream)
 
-    index = Document(app)
-    index['source'] = 'virtual://index'
-    index['destination'] = 'index.html'
-    index['template'] = template
-    index['documents'] = list(iterdocuments(documents, when))
+    index = {
+        'source': 'index://%s' % save_as,
+        'destination': save_as,
+        'template': template,
+        'documents': list(stream),
+    }
 
     yield from passthrough
     yield index

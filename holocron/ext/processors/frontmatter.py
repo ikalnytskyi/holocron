@@ -1,36 +1,34 @@
-"""Parse YAML front matter and set its values as document attributes."""
+"""Parse YAML front matter and set its values as item's properties."""
 
 import re
 
 import yaml
 import schema
 
-from ._misc import iterdocuments_ex, parameters
+from ._misc import parameters
 
 
 @parameters(
     schema={
-        'when': schema.Or([{str: object}], None, error='unsupported value'),
         'delimiter': schema.Schema(str),
         'overwrite': schema.Schema(bool),
     }
 )
-def process(app, documents, *, when=None, delimiter='---', overwrite=True):
+def process(app, stream, *, delimiter='---', overwrite=True):
     delimiter = re.escape(delimiter)
 
-    for document, is_matched in iterdocuments_ex(documents, when):
-        if is_matched:
-            match = re.match(
-                # Match block between delimiters and block outsides of them, if
-                # the block between delimiters is on the beginning of content.
-                r'{0}\s*\n(.*)\n{0}\s*\n(.*)'.format(delimiter),
-                document['content'], re.M | re.S)
+    for item in stream:
+        match = re.match(
+            # Match block between delimiters and block outsides of them, if
+            # the block between delimiters is on the beginning of content.
+            r'{0}\s*\n(.*)\n{0}\s*\n(.*)'.format(delimiter),
+            item['content'], re.M | re.S)
 
-            if match:
-                headers, document['content'] = match.groups()
+        if match:
+            headers, item['content'] = match.groups()
 
-                for key, value in yaml.safe_load(headers).items():
-                    if overwrite or key not in document:
-                        document[key] = value
+            for key, value in yaml.safe_load(headers).items():
+                if overwrite or key not in item:
+                    item[key] = value
 
-        yield document
+        yield item

@@ -7,16 +7,14 @@ import feedgen.feed
 import pkg_resources
 import schema
 
-from ._misc import iterdocuments, parameters, resolve_json_references
-from holocron.content import Document
+from ._misc import parameters, resolve_json_references
 
 
 @parameters(
     fallback={
-        'encoding': ':metadata:#/encoding',
+        'encoding': 'metadata://#/encoding',
     },
     schema={
-        'when': schema.Or([{str: object}], None, error='unsupported value'),
         'save_as': schema.Schema(str),
         'limit': schema.Or(None, schema.And(int, lambda x: x > 0),
                            error='must be null or positive integer'),
@@ -26,36 +24,34 @@ from holocron.content import Document
     }
 )
 def process(app,
-            documents,
+            stream,
             *,
             feed,
             item,
             syndication_format='atom',
-            when=None,
             save_as='feed.xml',
             limit=10,
             encoding='UTF-8',
             pretty=True):
-    passthrough, documents = itertools.tee(documents)
-    selected = list(iterdocuments(documents, when))
+    passthrough, stream = itertools.tee(stream)
 
     # In order to decrease amount of traffic required to deliver feed content
     # (and thus increase the throughput), the number of items in the feed is
     # usually limited to the "N" latest items. This is handy because feed is
     # usually used to deliver news, and news are known to get outdated.
-    selected = sorted(selected, key=lambda d: d['published'], reverse=True)
+    stream = sorted(stream, key=lambda d: d['published'], reverse=True)
     if limit:
-        selected = selected[:limit]
+        stream = stream[:limit]
 
     def _resolvefeed(name):
         return resolve_json_references(feed.get(name), {
-            ':feed:': feed,
+            'feed:': feed,
         })
 
-    def _resolveitem(name, document):
+    def _resolveitem(name, streamitem):
         return resolve_json_references(item.get(name), {
-            ':document:': document,
-            ':feed:': feed,
+            'item:': streamitem,
+            'feed:': feed,
         })
 
     feed_generator = feedgen.feed.FeedGenerator()
@@ -104,53 +100,54 @@ def process(app,
     feed_generator.ttl(_resolvefeed('ttl'))
     feed_generator.webMaster(_resolvefeed('webMaster'))
 
-    for document in selected:
+    for streamitem in stream:
         feed_entry = feed_generator.add_entry(order='append')
-        feed_entry.title(_resolveitem('title', document))
-        feed_entry.id(_resolveitem('id', document))
-        feed_entry.updated(_resolveitem('updated', document))
-        feed_entry.author(_resolveitem('author', document), replace=True)
-        feed_entry.content(_resolveitem('content', document), type='html')
-        feed_entry.link(_resolveitem('link', document), replace=True)
-        feed_entry.description(_resolveitem('description', document))
-        feed_entry.summary(_resolveitem('summary', document))
-        feed_entry.category(_resolveitem('category', document), replace=True)
+        feed_entry.title(_resolveitem('title', streamitem))
+        feed_entry.id(_resolveitem('id', streamitem))
+        feed_entry.updated(_resolveitem('updated', streamitem))
+        feed_entry.author(_resolveitem('author', streamitem), replace=True)
+        feed_entry.content(_resolveitem('content', streamitem), type='html')
+        feed_entry.link(_resolveitem('link', streamitem), replace=True)
+        feed_entry.description(_resolveitem('description', streamitem))
+        feed_entry.summary(_resolveitem('summary', streamitem))
+        feed_entry.category(_resolveitem('category', streamitem), replace=True)
         feed_entry.contributor(
-            _resolveitem('contributor', document), replace=True)
-        feed_entry.published(_resolveitem('published', document))
-        feed_entry.rights(_resolveitem('rights', document))
-        feed_entry.comments(_resolveitem('comments', document))
-        feed_entry.enclosure(**(_resolveitem('enclosure', document) or {}))
+            _resolveitem('contributor', streamitem), replace=True)
+        feed_entry.published(_resolveitem('published', streamitem))
+        feed_entry.rights(_resolveitem('rights', streamitem))
+        feed_entry.comments(_resolveitem('comments', streamitem))
+        feed_entry.enclosure(**(_resolveitem('enclosure', streamitem) or {}))
 
         if hasattr(feed_generator, 'podcast'):
             feed_entry.podcast.itunes_author(
-                _resolveitem('itunes_author', document))
+                _resolveitem('itunes_author', streamitem))
             feed_entry.podcast.itunes_block(
-                _resolveitem('itunes_block', document))
+                _resolveitem('itunes_block', streamitem))
             feed_entry.podcast.itunes_image(
-                _resolveitem('itunes_image', document))
+                _resolveitem('itunes_image', streamitem))
             feed_entry.podcast.itunes_duration(
-                _resolveitem('itunes_duration', document))
+                _resolveitem('itunes_duration', streamitem))
             feed_entry.podcast.itunes_duration(
-                _resolveitem('itunes_duration', document))
+                _resolveitem('itunes_duration', streamitem))
             feed_entry.podcast.itunes_explicit(
-                _resolveitem('itunes_explicit', document))
+                _resolveitem('itunes_explicit', streamitem))
             feed_entry.podcast.itunes_is_closed_captioned(
-                _resolveitem('itunes_is_closed_captioned', document))
+                _resolveitem('itunes_is_closed_captioned', streamitem))
             feed_entry.podcast.itunes_order(
-                _resolveitem('itunes_order', document))
+                _resolveitem('itunes_order', streamitem))
             feed_entry.podcast.itunes_subtitle(
-                _resolveitem('itunes_subtitle', document))
+                _resolveitem('itunes_subtitle', streamitem))
             feed_entry.podcast.itunes_summary(
-                _resolveitem('itunes_summary', document))
+                _resolveitem('itunes_summary', streamitem))
 
     to_bytes = {'atom': feed_generator.atom_str, 'rss': feed_generator.rss_str}
     to_bytes = to_bytes[syndication_format]
 
-    feed_document = Document(app)
-    feed_document['content'] = to_bytes(pretty=pretty, encoding=encoding)
-    feed_document['source'] = 'virtual://feed'
-    feed_document['destination'] = save_as
+    feed_item = {
+        'source': 'feed://%s' % save_as,
+        'destination': save_as,
+        'content': to_bytes(pretty=pretty, encoding=encoding),
+    }
 
     yield from passthrough
-    yield feed_document
+    yield feed_item

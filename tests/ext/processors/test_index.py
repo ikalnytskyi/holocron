@@ -1,5 +1,7 @@
 """Index processor test suite."""
 
+import os
+
 import pytest
 
 from holocron import app
@@ -8,8 +10,7 @@ from holocron.ext.processors import index
 
 @pytest.fixture(scope='function')
 def testapp():
-    instance = app.Holocron({})
-    return instance
+    return app.Holocron()
 
 
 def test_document(testapp):
@@ -32,14 +33,51 @@ def test_document(testapp):
 
     assert next(stream) == \
         {
-            'source': 'virtual://index',
+            'source': 'index://index.html',
             'destination': 'index.html',
             'template': 'index.j2',
             'documents': [
                 {
                     'title': 'the way of the Force',
                     'content': 'Obi-Wan'
-                }],
+                },
+            ],
+        }
+
+    with pytest.raises(StopIteration):
+        next(stream)
+
+
+@pytest.mark.parametrize('amount', [0, 1, 2, 5, 10])
+def test_document_many(testapp, amount):
+    """Index processor has to work with stream."""
+
+    stream = index.process(
+        testapp,
+        [
+            {
+                'title': 'the way of the Force #%d' % i,
+            }
+            for i in range(amount)
+        ])
+
+    for i in range(amount):
+        assert next(stream) == \
+            {
+                'title': 'the way of the Force #%d' % i,
+            }
+
+    assert next(stream) == \
+        {
+            'source': 'index://index.html',
+            'destination': 'index.html',
+            'template': 'index.j2',
+            'documents': [
+                {
+                    'title': 'the way of the Force #%d' % i,
+                }
+                for i in range(amount)
+            ],
         }
 
     with pytest.raises(StopIteration):
@@ -67,72 +105,55 @@ def test_param_template(testapp):
 
     assert next(stream) == \
         {
-            'source': 'virtual://index',
+            'source': 'index://index.html',
             'destination': 'index.html',
             'template': 'foobar.txt',
             'documents': [
                 {
                     'title': 'the way of the Force',
                     'content': 'Obi-Wan'
-                }],
+                },
+            ],
         }
 
     with pytest.raises(StopIteration):
         next(stream)
 
 
-def test_param_when(testapp):
-    """Index processor has to ignore non-relevant documents."""
+@pytest.mark.parametrize('save_as', [
+    os.path.join('posts', 'skywalker.luke'),
+    os.path.join('yoda.jedi'),
+])
+def test_param_save_as(testapp, save_as):
+    """Index processor has to respect save_as parameter."""
 
     stream = index.process(
         testapp,
         [
             {
-                'title': 'the way of the Force #1',
-                'source': '1.md',
-            },
-            {
-                'title': 'the way of the Force #2',
-                'source': '2.rst',
-            },
-            {
-                'title': 'the way of the Force #3',
-                'source': '3.md',
-            },
-            {
-                'title': 'the way of the Force #4',
-                'source': '4.rst',
+                'title': 'the way of the Force',
+                'content': 'Obi-Wan',
             },
         ],
-        when=[
-            {
-                'operator': 'match',
-                'attribute': 'source',
-                'pattern': r'^.*\.md$',
-            },
-        ])
-
-    for i, document in zip(range(1, 5), stream):
-        assert document == \
-            {
-                'title': 'the way of the Force #%d' % i,
-                'source': '%d.%s' % (i, 'md' if i % 2 else 'rst'),
-            }
+        save_as=save_as)
 
     assert next(stream) == \
         {
-            'source': 'virtual://index',
-            'destination': 'index.html',
+            'title': 'the way of the Force',
+            'content': 'Obi-Wan',
+        }
+
+    assert next(stream) == \
+        {
+            'source': 'index://%s' % save_as,
+            'destination': save_as,
             'template': 'index.j2',
             'documents': [
                 {
-                    'title': 'the way of the Force #1',
-                    'source': '1.md',
+                    'title': 'the way of the Force',
+                    'content': 'Obi-Wan'
                 },
-                {
-                    'title': 'the way of the Force #3',
-                    'source': '3.md',
-                }],
+            ],
         }
 
     with pytest.raises(StopIteration):
@@ -140,7 +161,7 @@ def test_param_when(testapp):
 
 
 @pytest.mark.parametrize('params, error', [
-    ({'when': 42}, 'when: unsupported value'),
+    ({'save_as': 42}, "save_as: 42 should be instance of 'str'"),
     ({'template': 42}, "template: 42 should be instance of 'str'"),
 ])
 def test_param_bad_value(testapp, params, error):

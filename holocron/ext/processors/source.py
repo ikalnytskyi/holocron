@@ -1,4 +1,4 @@
-"""Find documents and add them to pipeline."""
+"""Find stream and add them to pipeline."""
 
 import re
 import os
@@ -9,38 +9,46 @@ import dateutil.tz
 import schema
 
 from holocron import content
-from ._misc import iterdocuments, parameters
+from ._misc import parameters
 
 
 @parameters(
     fallback={
-        'encoding': ':metadata:#/encoding',
-        'timezone': ':metadata:#/timezone',
+        'encoding': 'metadata://#/encoding',
+        'timezone': 'metadata://#/timezone',
     },
     schema={
         'path': str,
-        'when': schema.Or([{str: object}], None, error='unsupported value'),
+        'pattern': str,
         'encoding': schema.Schema(codecs.lookup, 'unsupported encoding'),
         'timezone': schema.Schema(dateutil.tz.gettz, 'unsupported timezone'),
     }
 )
 def process(app,
-            documents,
+            stream,
             *,
             path='.',
-            when=None,
+            pattern=None,
             encoding='UTF-8',
             timezone='UTC'):
     tzinfo = dateutil.tz.gettz(timezone)
 
-    yield from documents
-    yield from iterdocuments(_finddocuments(app, path, encoding, tzinfo), when)
+    yield from stream
+    yield from _finditems(app, path, pattern, encoding, tzinfo)
 
 
-def _finddocuments(app, path, encoding, tzinfo):
+def _finditems(app, path, pattern, encoding, tzinfo):
+    if pattern:
+        re_name = re.compile(pattern)
+
     for root, dirnames, filenames in os.walk(path, topdown=True):
         for filename in filenames:
-            yield _createdocument(
+            source = os.path.relpath(os.path.join(root, filename), path)
+
+            if pattern and not re_name.match(source):
+                continue
+
+            yield _createitem(
                 app,
                 os.path.join(root, filename),
                 basepath=path,
@@ -48,35 +56,35 @@ def _finddocuments(app, path, encoding, tzinfo):
                 tzinfo=tzinfo)
 
 
-def _createdocument(app, path, basepath, encoding, tzinfo):
+def _createitem(app, path, basepath, encoding, tzinfo):
     source = os.path.relpath(path, basepath)
-    document = _getinstance(source, app)
+    item = _getinstance(source, app)
 
-    # A path to an input (source) document. Despite reading its content into
+    # A path to an input (source) item. Despite reading its content into
     # a memory, we still want to have this attribute in order to do pattern
     # matching against it.
-    document['source'] = source
-    document['destination'] = source
+    item['source'] = source
+    item['destination'] = source
 
-    document['created'] = \
+    item['created'] = \
         datetime.datetime.fromtimestamp(os.path.getctime(path), tzinfo)
-    document['updated'] = \
+    item['updated'] = \
         datetime.datetime.fromtimestamp(os.path.getmtime(path), tzinfo)
 
     try:
         with open(path, 'rt', encoding=encoding) as f:
-            document['content'] = f.read()
+            item['content'] = f.read()
     except UnicodeDecodeError:
         with open(path, 'rb') as f:
-            document['content'] = f.read()
+            item['content'] = f.read()
 
-    return document
+    return item
 
 
 def _getinstance(filename, app):
     post_pattern = re.compile(r'^\d{2,4}/\d{1,2}/\d{1,2}')
 
-    # Extract 'published' date out of document path.
+    # Extract 'published' date out of item path.
     published = None
     if post_pattern.search(filename):
         published = ''.join(
@@ -85,7 +93,7 @@ def _getinstance(filename, app):
 
     _, ext = os.path.splitext(filename)
 
-    document = content.Document(app)
+    item = content.Document(app)
     if published:
-        document['published'] = published.date()
-    return document
+        item['published'] = published.date()
+    return item

@@ -16,7 +16,7 @@ def testapp():
     return app.Holocron({})
 
 
-def test_document(testapp):
+def test_item(testapp):
     """Jinja2 processor has to work!"""
 
     stream = jinja2.process(
@@ -28,14 +28,14 @@ def test_document(testapp):
             },
         ])
 
-    document = next(stream)
-    assert document == \
+    item = next(stream)
+    assert item == \
         {
             'title': 'History of the Force',
             'content': unittest.mock.ANY,
         }
 
-    soup = bs4.BeautifulSoup(document['content'], 'html.parser')
+    soup = bs4.BeautifulSoup(item['content'], 'html.parser')
     assert soup.meta['charset'] == 'UTF-8'
     assert soup.article.header.h1.string == 'History of the Force'
     assert list(soup.article.stripped_strings)[1] == 'the Force'
@@ -52,8 +52,8 @@ def test_document(testapp):
     assert len(static) == 3
 
 
-def test_document_template(testapp, tmpdir):
-    """Jinja2 processor has to respect document suggested template."""
+def test_item_template(testapp, tmpdir):
+    """Jinja2 processor has to respect item suggested template."""
 
     tmpdir.ensure('theme_a', 'templates', 'holiday.j2').write_text(
         textwrap.dedent('''\
@@ -84,6 +84,45 @@ def test_document_template(testapp, tmpdir):
 
     with pytest.raises(StopIteration):
         next(stream)
+
+
+@pytest.mark.parametrize('amount', [0, 1, 2, 5, 10])
+def test_item_many(testapp, tmpdir, amount):
+    """Jinja2 processor has to work with stream."""
+
+    stream = jinja2.process(
+        testapp,
+        [
+            {
+                'title': 'History of the Force',
+                'content': 'the Force #%d' % i,
+            }
+            for i in range(amount)
+        ])
+
+    for i in range(amount):
+        item = next(stream)
+        assert item == \
+            {
+                'title': 'History of the Force',
+                'content': unittest.mock.ANY,
+            }
+
+        soup = bs4.BeautifulSoup(item['content'], 'html.parser')
+        assert soup.meta['charset'] == 'UTF-8'
+        assert soup.article.header.h1.string == 'History of the Force'
+        assert list(soup.article.stripped_strings)[1] == 'the Force #%d' % i
+
+    # Since we don't know in which order statics are discovered, we sort them
+    # so we can avoid possible flakes.
+    static = sorted(stream, key=lambda d: d['source'])
+    assert static[0]['source'] == os.path.join('static', 'logo.svg')
+    assert static[0]['destination'] == static[0]['source']
+    assert static[1]['source'] == os.path.join('static', 'pygments.css')
+    assert static[1]['destination'] == static[1]['source']
+    assert static[2]['source'] == os.path.join('static', 'style.css')
+    assert static[2]['destination'] == static[2]['source']
+    assert len(static) == 3
 
 
 def test_param_themes(testapp, tmpdir):
@@ -196,98 +235,10 @@ def test_param_themes_two_themes(testapp, tmpdir):
         next(stream)
 
 
-def test_param_when(testapp):
-    """Jinja2 processor has to ignore non-relevant documents."""
-
-    stream = jinja2.process(
-        testapp,
-        [
-            {
-                'title': 'History of the Force #1',
-                'content': 'the Force #1',
-                'source': os.path.join('posts', '1.md'),
-            },
-            {
-                'title': 'History of the Force #2',
-                'content': 'the Force #2',
-                'source': os.path.join('pages', '2.md'),
-            },
-            {
-                'title': 'History of the Force #3',
-                'content': 'the Force #3',
-                'source': os.path.join('posts', '3.md'),
-            },
-            {
-                'title': 'History of the Force #4',
-                'content': 'the Force #4',
-                'source': os.path.join('pages', '4.md'),
-            },
-        ],
-        when=[
-            {
-                'operator': 'match',
-                'attribute': 'source',
-                'pattern': r'^posts.*$',
-            },
-        ])
-
-    document = next(stream)
-    assert document == \
-        {
-            'title': 'History of the Force #1',
-            'source': os.path.join('posts', '1.md'),
-            'content': unittest.mock.ANY,
-        }
-    assert document['title'] == 'History of the Force #1'
-    soup = bs4.BeautifulSoup(document['content'], 'html.parser')
-    assert soup.meta['charset'] == 'UTF-8'
-    assert soup.article.header.h1.string == 'History of the Force #1'
-    assert list(soup.article.stripped_strings)[1] == 'the Force #1'
-
-    assert next(stream) == \
-        {
-            'title': 'History of the Force #2',
-            'source': os.path.join('pages', '2.md'),
-            'content': 'the Force #2',
-        }
-
-    document = next(stream)
-    assert document == \
-        {
-            'title': 'History of the Force #3',
-            'source': os.path.join('posts', '3.md'),
-            'content': unittest.mock.ANY,
-        }
-    assert document['title'] == 'History of the Force #3'
-    soup = bs4.BeautifulSoup(document['content'], 'html.parser')
-    assert soup.meta['charset'] == 'UTF-8'
-    assert soup.article.header.h1.string == 'History of the Force #3'
-    assert list(soup.article.stripped_strings)[1] == 'the Force #3'
-
-    assert next(stream) == \
-        {
-            'title': 'History of the Force #4',
-            'source': os.path.join('pages', '4.md'),
-            'content': 'the Force #4',
-        }
-
-    # Since we don't know in which order statics are discovered, we sort them
-    # so we can avoid possible flakes.
-    static = sorted(stream, key=lambda d: d['source'])
-    assert static[-3]['source'] == os.path.join('static', 'logo.svg')
-    assert static[-3]['destination'] == static[0]['source']
-    assert static[-2]['source'] == os.path.join('static', 'pygments.css')
-    assert static[-2]['destination'] == static[1]['source']
-    assert static[-1]['source'] == os.path.join('static', 'style.css')
-    assert static[-1]['destination'] == static[2]['source']
-    assert len(static) == 3
-
-
 @pytest.mark.parametrize('params, error', [
-    ({'when': [42]}, 'when: unsupported value'),
     ({'template': 42}, "template: 42 should be instance of 'str'"),
-    ({'themes': {'foo': 1}}, 'themes: unsupported value'),
     ({'context': 42}, 'context: must be a dict'),
+    ({'themes': {'foo': 1}}, 'themes: unsupported value'),
 ])
 def test_param_bad_value(testapp, params, error):
     """Commit processor has to validate input parameters."""

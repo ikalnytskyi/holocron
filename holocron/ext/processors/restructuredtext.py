@@ -7,16 +7,15 @@ from docutils.core import publish_parts
 from docutils.writers import html5_polyglot
 from docutils import nodes
 
-from ._misc import iterdocuments_ex, parameters
+from ._misc import parameters
 
 
 @parameters(
     schema={
-        'when': schema.Or([{str: object}], None, error='unsupported value'),
-        'docutils': schema.Schema({str: object}),
+        'settings': schema.Schema({str: object}),
     }
 )
-def process(app, documents, *, when=None, docutils={}):
+def process(app, stream, *, settings={}):
     settings = dict(
         {
             # We need to start heading level with <h2> in case there are
@@ -39,38 +38,37 @@ def process(app, documents, *, when=None, docutils={}):
             # simplify customization flow.
             'syntax_highlight': 'short',
         },
-        **docutils)
+        **settings)
 
-    for document, is_matched in iterdocuments_ex(documents, when):
-        if is_matched:
-            # Writer is mutable so we can't share the same instance between
-            # conversions.
-            writer = html5_polyglot.Writer()
+    for item in stream:
+        # Writer is mutable so we can't share the same instance between
+        # conversions.
+        writer = html5_polyglot.Writer()
 
-            # Unfortunately we are not happy with out-of-box conversion to
-            # HTML. For instance, we want to see inline code to be wrapped
-            # into <code> tag rather than <span>. So we need to use custom
-            # translator to fit our needs.
-            writer.translator_class = _HTMLTranslator
+        # Unfortunately we are not happy with out-of-box conversion to
+        # HTML. For instance, we want to see inline code to be wrapped
+        # into <code> tag rather than <span>. So we need to use custom
+        # translator to fit our needs.
+        writer.translator_class = _HTMLTranslator
 
-            parts = publish_parts(
-                document['content'],
-                writer=writer,
-                settings_overrides=settings)
+        parts = publish_parts(
+            item['content'],
+            writer=writer,
+            settings_overrides=settings)
 
-            document['content'] = parts['fragment'].strip()
-            document['destination'] = \
-                '%s.html' % os.path.splitext(document['destination'])[0]
+        item['content'] = parts['fragment'].strip()
+        item['destination'] = \
+            '%s.html' % os.path.splitext(item['destination'])[0]
 
-            # Usually converters go after frontmatter processor and that
-            # means any explicitly specified attribute is already set on
-            # the document. Since frontmatter processor is considered to
-            # have a higher priority, let's set 'title' iff it does't
-            # exist.
-            if 'title' not in document and parts.get('title'):
-                document['title'] = parts['title']
+        # Usually converters go after frontmatter processor and that
+        # means any explicitly specified attribute is already set on
+        # the item. Since frontmatter processor is considered to
+        # have a higher priority, let's set 'title' iff it does't
+        # exist.
+        if 'title' not in item and parts.get('title'):
+            item['title'] = parts['title']
 
-        yield document
+        yield item
 
 
 class _HTMLTranslator(html5_polyglot.HTMLTranslator):
@@ -89,6 +87,6 @@ class _HTMLTranslator(html5_polyglot.HTMLTranslator):
     def visit_literal(self, node):
         self.body.extend(['<code>', node.astext(), '</code>'])
 
-        # HTML tag has been produced and any further processing is not
-        # required anymore.
+        # HTML tag has been produced. Thus, there's no need to call
+        # depart_literal().
         raise nodes.SkipNode

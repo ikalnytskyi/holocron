@@ -6,7 +6,7 @@ import re
 import markdown
 import schema
 
-from ._misc import iterdocuments_ex, parameters
+from ._misc import parameters
 
 
 _top_heading_re = re.compile(
@@ -31,11 +31,10 @@ _top_heading_re = re.compile(
 
 @parameters(
     schema={
-        'when': schema.Or([{str: object}], None, error='unsupported value'),
         'extensions': schema.Schema([str]),
     }
 )
-def process(app, documents, *, when=None, extensions=None):
+def process(app, stream, *, extensions=None):
     markdown_ = markdown.Markdown(
         # No one use pure Markdown nowadays, so let's enhance it with some
         # popular and widely used extensions such as tables, footnotes and
@@ -45,24 +44,20 @@ def process(app, documents, *, when=None, extensions=None):
             'markdown.extensions.extra',
         ])
 
-    for document, is_matched in iterdocuments_ex(documents, when):
-        if is_matched:
-            # We need to strip top level heading out of the document because
-            # its value is used separately in number of places.
-            match = _top_heading_re.match(document['content'])
-            if match:
-                title = match.group('heading').strip()
-                document['content'] = match.group('content').strip()
+    for item in stream:
+        match = _top_heading_re.match(item['content'])
+        if match:
+            title = match.group('heading').strip()
+            item['content'] = match.group('content').strip()
 
-                # Usually converters go after frontmatter processor and that
-                # means any explicitly specified attribute is already set on
-                # the document. Since frontmatter processor is considered to
-                # have a higher priority, let's set 'title' iff it does't
-                # exist.
-                document['title'] = document.get('title', title)
+            # Usually converters go after frontmatter processor and that means
+            # any explicitly specified attribute is already set on the item.
+            # Since frontmatter processor is considered to have a higher
+            # priority, let's set 'title' iff it's not set.
+            item['title'] = item.get('title', title)
 
-            document['content'] = markdown_.convert(document['content'])
-            document['destination'] = \
-                '%s.html' % os.path.splitext(document['destination'])[0]
+        item['content'] = markdown_.convert(item['content'])
+        item['destination'] = \
+            '%s.html' % os.path.splitext(item['destination'])[0]
 
-        yield document
+        yield item

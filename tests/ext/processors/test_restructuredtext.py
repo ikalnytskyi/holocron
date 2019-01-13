@@ -27,25 +27,10 @@ def testapp():
     return app.Holocron()
 
 
-@pytest.fixture(scope='function')
-def run_processor():
-    streams = []
-
-    def run(*args, **kwargs):
-        streams.append(restructuredtext.process(*args, **kwargs))
-        return streams[-1]
-
-    yield run
-
-    for stream in streams:
-        with pytest.raises(StopIteration):
-            next(stream)
-
-
-def test_document(testapp, run_processor):
+def test_item(testapp):
     """reStructuredText processor has to work in simple case."""
 
-    stream = run_processor(
+    stream = restructuredtext.process(
         testapp,
         [
             {
@@ -67,11 +52,14 @@ def test_document(testapp, run_processor):
             'title': 'some title',
         }
 
+    with pytest.raises(StopIteration):
+        next(stream)
 
-def test_document_with_subsection(testapp, run_processor):
+
+def test_item_with_subsection(testapp):
     """reStructuredText processor has to start subsections with <h2>."""
 
-    stream = run_processor(
+    stream = restructuredtext.process(
         testapp,
         [
             {
@@ -100,11 +88,14 @@ def test_document_with_subsection(testapp, run_processor):
             'title': 'some title',
         }
 
+    with pytest.raises(StopIteration):
+        next(stream)
 
-def test_document_without_title(testapp, run_processor):
+
+def test_item_without_title(testapp):
     """reStructuredText processor has to work even without a title."""
 
-    stream = run_processor(
+    stream = restructuredtext.process(
         testapp,
         [
             {
@@ -122,11 +113,14 @@ def test_document_without_title(testapp, run_processor):
             'destination': '1.html',
         }
 
+    with pytest.raises(StopIteration):
+        next(stream)
 
-def test_document_with_sections(testapp, run_processor):
+
+def test_item_with_sections(testapp):
     """reStructuredText processor has to work with a lot of sections."""
 
-    stream = run_processor(
+    stream = restructuredtext.process(
         testapp,
         [
             {
@@ -176,11 +170,14 @@ def test_document_with_sections(testapp, run_processor):
             'destination': '1.html',
         }
 
+    with pytest.raises(StopIteration):
+        next(stream)
 
-def test_document_with_code(testapp, run_processor):
+
+def test_item_with_code(testapp):
     """reStructuredText processor has to highlight code with Pygments."""
 
-    stream = run_processor(
+    stream = restructuredtext.process(
         testapp,
         [
             {
@@ -202,11 +199,14 @@ def test_document_with_code(testapp, run_processor):
             'destination': '1.html',
         }
 
+    with pytest.raises(StopIteration):
+        next(stream)
 
-def test_document_with_inline_code(testapp, run_processor):
+
+def test_item_with_inline_code(testapp):
     """reStructuredText processor has to use <code> tag for inline code."""
 
-    stream = run_processor(
+    stream = restructuredtext.process(
         testapp,
         [
             {
@@ -223,11 +223,14 @@ def test_document_with_inline_code(testapp, run_processor):
             'destination': '1.html',
         }
 
+    with pytest.raises(StopIteration):
+        next(stream)
 
-def test_param_docutils(testapp, run_processor):
+
+def test_param_settings(testapp):
     """reStructuredText processor has to respect custom settings."""
 
-    stream = run_processor(
+    stream = restructuredtext.process(
         testapp,
         [
             {
@@ -245,7 +248,7 @@ def test_param_docutils(testapp, run_processor):
                 'destination': '1.rst',
             },
         ],
-        docutils={
+        settings={
             'initial_header_level': 3,
         })
 
@@ -261,75 +264,37 @@ def test_param_docutils(testapp, run_processor):
             'destination': '1.html',
         }
 
+    with pytest.raises(StopIteration):
+        next(stream)
 
-def test_param_when(testapp, run_processor):
-    """reStructuredText processor has to ignore non-targeted documents."""
 
-    stream = run_processor(
+@pytest.mark.parametrize('amount', [0, 1, 2, 5, 10])
+def test_item_many(testapp, amount):
+    """reStructuredText processor has to work with stream."""
+
+    stream = restructuredtext.process(
         testapp,
         [
             {
-                'content': '**wookiee**',
-                'source': '0.txt',
-                'destination': '0.txt',
-            },
-            {
-                'content': '**wookiee**',
-                'source': '1.rst',
+                'content': 'the key is **%d**' % i,
                 'destination': '1.rst',
-            },
-            {
-                'content': 'wookiee\n=======',
-                'source': '2',
-                'destination': '2',
-            },
-            {
-                'content': 'wookiee\n=======',
-                'source': '3.rest',
-                'destination': '3.rest',
-            },
-        ],
-        when=[
-            {
-                'operator': 'match',
-                'attribute': 'source',
-                'pattern': r'.*\.(rst|rest)$',
-            },
+            }
+            for i in range(amount)
         ])
 
-    assert next(stream) == \
-        {
-            'source': '0.txt',
-            'content': '**wookiee**',
-            'destination': '0.txt',
-        }
+    for i in range(amount):
+        assert next(stream) == \
+            {
+                'content': '<p>the key is <strong>%d</strong></p>' % i,
+                'destination': '1.html',
+            }
 
-    assert next(stream) == \
-        {
-            'source': '1.rst',
-            'content': '<p><strong>wookiee</strong></p>',
-            'destination': '1.html',
-        }
-
-    assert next(stream) == \
-        {
-            'source': '2',
-            'content': 'wookiee\n=======',
-            'destination': '2',
-        }
-
-    assert next(stream) == \
-        {
-            'source': '3.rest',
-            'content': '',
-            'destination': '3.html',
-            'title': 'wookiee',
-        }
+    with pytest.raises(StopIteration):
+        next(stream)
 
 
 @pytest.mark.parametrize('params, error', [
-    ({'when': [42]}, 'when: unsupported value'),
-    ({'docutils': 42}, "docutils: 42 should be instance of 'dict'"),
+    ({'settings': 42}, "settings: 42 should be instance of 'dict'"),
 ])
 def test_param_bad_value(testapp, params, error):
     """reStructuredText processor has to validate input parameters."""

@@ -86,7 +86,6 @@ class TestHolocronDefaults(HolocronTestCase):
             'feed',
             'sitemap',
             'index',
-            'tags',
             'commit',
             'jinja2',
         ]))
@@ -207,7 +206,6 @@ class TestCreateApp(HolocronTestCase):
             'feed',
             'sitemap',
             'index',
-            'tags',
             'commit',
             'jinja2',
         ]))
@@ -252,13 +250,13 @@ def test_invoke_processors_propagates_options(testapp, processor_options):
 
 
 @pytest.mark.parametrize('options, resolved', [
-    ({'a': {'$ref': ':metadata:#/is_yoda_master'}}, {'a': True}),
-    ({'a': {'$ref': ':metadata:#/extra/0/luke'}}, {'a': 'skywalker'}),
-    ({'a': {'$ref': ':metadata:#/is_yoda_master'},
-      'b': {'$ref': ':metadata:#/extra/0/luke'}},
+    ({'a': {'$ref': 'metadata://#/is_yoda_master'}}, {'a': True}),
+    ({'a': {'$ref': 'metadata://#/extra/0/luke'}}, {'a': 'skywalker'}),
+    ({'a': {'$ref': 'metadata://#/is_yoda_master'},
+      'b': {'$ref': 'metadata://#/extra/0/luke'}},
      {'a': True, 'b': 'skywalker'}),
-    ({'a': {'$ref': ':document:#/content'}},
-     {'a': {'$ref': ':document:#/content'}}),
+    ({'a': {'$ref': 'item://#/content'}},
+     {'a': {'$ref': 'item://#/content'}}),
 ])
 def test_invoke_processors_resolves_jsonref(testapp, options, resolved):
     testapp.metadata.update({
