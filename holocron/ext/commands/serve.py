@@ -63,7 +63,7 @@ class _ChangeWatcher(FileSystemEventHandler):
 
         # If some file is changed/created in output directory then do not
         # rebuild blog again, because it's senseless.
-        output = os.path.abspath(self._builder._app.conf['paths.output'])
+        output = os.path.abspath(self._builder._app.conf['paths']['output'])
         if document.startswith(output):
             return
 
@@ -155,7 +155,7 @@ class Serve(abc.Command):
     """
 
     def execute(self, app, arguments):
-        wakeup = int(app.conf['commands.serve.wakeup'])
+        wakeup = int(app.conf['commands']['serve']['wakeup'])
 
         app.run()
 
@@ -179,7 +179,7 @@ class Serve(abc.Command):
     def _watch(self, app, arguments, builder):
         # By default we're watching for events in content directory.
         watch_paths = [
-            app.conf['paths.content'],
+            app.conf['paths']['content'],
         ]
 
         # But it'd be nice to watch themes directories either.
@@ -207,11 +207,12 @@ class Serve(abc.Command):
         return observer
 
     def _serve(self, app):
-        host = app.conf['commands.serve.host']
-        port = int(app.conf['commands.serve.port'])
+        host = app.conf['commands']['serve']['host']
+        port = int(app.conf['commands']['serve']['port'])
 
         print('HTTP server started at http://{0}:{1}/'.format(host, port))
         print('In order to stop serving, press Ctrl+C')
 
-        holocron_handler = _create_holocron_handler(app.conf['paths.output'])
+        holocron_handler = \
+            _create_holocron_handler(app.conf['paths']['output'])
         return HTTPServer((host, port), holocron_handler)

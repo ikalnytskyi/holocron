@@ -15,8 +15,6 @@ import collections
 import yaml
 import stevedore
 
-from dooku.conf import Conf
-
 from .processors import _misc
 
 
@@ -91,23 +89,11 @@ class Holocron(object):
             'content': '.',
             'output': '_build',
         },
-
-        'theme': {},
-
-        'pipelines': {},
-
-        'commands': {
-            'serve': {
-                'host': '0.0.0.0',
-                'port': 5000,
-                'wakeup': 1,
-            },
-        },
     }
 
     def __init__(self, conf=None, metadata=None):
         #: The configuration dictionary.
-        self.conf = Conf(self.default_conf, conf or {})
+        self.conf = collections.ChainMap(self.default_conf, conf or {})
 
         #: metadata store
         #:
@@ -167,7 +153,7 @@ class Holocron(object):
         """
         (DEPRECATED) Starts build process.
         """
-        processors = self.conf['pipelines.build']
+        processors = self.conf['pipelines']['build']
 
         # Since processors are generators and thus are lazy evaluated, we need
         # to force evaluate them. Otherwise, the pipeline will produce nothing.

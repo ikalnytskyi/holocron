@@ -8,7 +8,6 @@
     :license: 3-clause BSD, see LICENSE for details.
 """
 
-import copy
 import textwrap
 
 import pytest
@@ -27,24 +26,6 @@ class TestHolocron(HolocronTestCase):
                 'enabled': [],
             },
         })
-
-    def test_user_settings(self):
-        """
-        Tests creating an instance with custom settings: check for settings
-        overriding.
-        """
-        app = Holocron({
-            'sitename': 'Luke Skywalker',
-            'paths': {
-                'content': 'path/to/content',
-            },
-        })
-
-        conf = copy.deepcopy(app.default_conf)
-        conf['sitename'] = 'Luke Skywalker'
-        conf['paths']['content'] = 'path/to/content'
-
-        self.assertEqual(app.conf, conf)
 
     def test_add_processor(self):
         """
@@ -142,8 +123,8 @@ class TestCreateApp(HolocronTestCase):
         app = self._create_app(conf_raw=conf_raw)
 
         self.assertIsNotNone(app)
-        self.assertEqual(app.conf['site.name'], 'MySite')
-        self.assertEqual(app.conf['site.author'], 'User')
+        self.assertEqual(app.conf['site']['name'], 'MySite')
+        self.assertEqual(app.conf['site']['author'], 'User')
 
         self.assertEqual(app.metadata['skywalker'], 'jedi')
         self.assertEqual(app.metadata['yoda'], {'rank': 'master'})
