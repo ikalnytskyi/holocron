@@ -9,7 +9,7 @@ import pytest
 import untangle
 
 from holocron import app
-from holocron.ext.processors import feed
+from holocron.processors import feed
 
 
 _HOLOCRON_VERSION = pkg_resources.get_distribution('holocron').version

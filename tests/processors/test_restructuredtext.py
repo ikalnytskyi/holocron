@@ -6,7 +6,7 @@ import textwrap
 import pytest
 
 from holocron import app
-from holocron.ext.processors import restructuredtext
+from holocron.processors import restructuredtext
 
 
 class _pytest_regex:

@@ -5,7 +5,7 @@ import os
 import pytest
 
 from holocron import app
-from holocron.ext.processors import archive
+from holocron.processors import archive
 
 
 @pytest.fixture(scope='function')

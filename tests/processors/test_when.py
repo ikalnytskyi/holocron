@@ -5,7 +5,7 @@ import os
 import pytest
 
 from holocron import app
-from holocron.ext.processors import when
+from holocron.processors import when
 
 
 @pytest.fixture(scope='function')

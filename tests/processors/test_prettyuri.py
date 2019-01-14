@@ -5,7 +5,7 @@ import os
 import pytest
 
 from holocron import app
-from holocron.ext.processors import prettyuri
+from holocron.processors import prettyuri
 
 
 @pytest.fixture(scope='function')

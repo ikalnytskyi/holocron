@@ -9,7 +9,7 @@ import pytest
 import xmltodict
 
 from holocron import app, content
-from holocron.ext.processors import sitemap
+from holocron.processors import sitemap
 
 
 class _pytest_xmlasdict:

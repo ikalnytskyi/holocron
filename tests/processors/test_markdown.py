@@ -7,7 +7,7 @@ import unittest.mock
 import pytest
 
 from holocron import app
-from holocron.ext.processors import markdown
+from holocron.processors import markdown
 
 
 class _pytest_regex:
