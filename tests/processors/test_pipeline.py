@@ -3,7 +3,7 @@
 import pytest
 
 from holocron import app
-from holocron.ext.processors import pipeline
+from holocron.processors import pipeline
 
 
 @pytest.fixture(scope='function')

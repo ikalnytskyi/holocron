@@ -3,7 +3,7 @@
 import pytest
 
 from holocron import app
-from holocron.ext.processors import metadata
+from holocron.processors import metadata
 
 
 @pytest.fixture(scope='function')

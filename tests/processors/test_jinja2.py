@@ -8,7 +8,7 @@ import pytest
 import bs4
 
 from holocron import app
-from holocron.ext.processors import jinja2
+from holocron.processors import jinja2
 
 
 @pytest.fixture(scope='function')

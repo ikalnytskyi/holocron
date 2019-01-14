@@ -7,7 +7,7 @@ import unittest.mock
 import pytest
 
 from holocron import app
-from holocron.ext.processors import source
+from holocron.processors import source
 
 
 class _pytest_timestamp:

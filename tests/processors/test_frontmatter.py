@@ -6,7 +6,7 @@ import pytest
 import yaml
 
 from holocron import app
-from holocron.ext.processors import frontmatter
+from holocron.processors import frontmatter
 
 
 @pytest.fixture(scope='function')

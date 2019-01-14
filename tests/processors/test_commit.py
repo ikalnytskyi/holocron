@@ -6,7 +6,7 @@ import py
 import pytest
 
 from holocron import app
-from holocron.ext.processors import commit
+from holocron.processors import commit
 
 
 @pytest.fixture(scope='function')

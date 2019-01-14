@@ -17,7 +17,7 @@ import yaml
 from dooku.conf import Conf
 from dooku.ext import ExtensionManager
 
-from .ext.processors import _misc
+from .processors import _misc
 
 
 logger = logging.getLogger(__name__)
@@ -63,7 +63,7 @@ def create_app(confpath=None):
     metadata = conf.pop('metadata', None) if conf else None
     app = Holocron(conf, metadata)
 
-    for name, ext in ExtensionManager(namespace='holocron.ext.processors'):
+    for name, ext in ExtensionManager(namespace='holocron.processors'):
         app.add_processor(name, ext)
 
     return app
