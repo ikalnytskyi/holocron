@@ -11,7 +11,7 @@
 import logging
 
 import mock
-from dooku.ext import ExtensionManager
+import stevedore
 
 from holocron.app import Holocron
 from holocron.main import main, parse_command_line
@@ -19,22 +19,15 @@ from holocron.main import main, parse_command_line
 from tests import HolocronTestCase
 
 
-class _FakeExtensionManager(ExtensionManager):
-    def __init__(self, *args, **kwargs):
-        super(_FakeExtensionManager, self).__init__(*args, **kwargs)
-
-        self._extensions = {
-            'cmd1': [mock.Mock()],
-            'cmd2': [mock.Mock()],
-        }
-
-
 class TestCli(HolocronTestCase):
 
     def _get_fake_extension_manager(self):
-        ext_manager = ExtensionManager('holocron.fake')
-        ext_manager._extensions = \
-            {name: [command] for name, command in self._commands.items()}
+        ext_manager = stevedore.ExtensionManager.make_test_instance(
+            [
+                stevedore.extension.Extension(name, None, command, None)
+                for name, command in self._commands.items()
+            ],
+            namespace='holocron.fake')
         return ext_manager
 
     def setUp(self):
@@ -44,7 +37,7 @@ class TestCli(HolocronTestCase):
             'init': mock.Mock(),
         }
         self._extension_manager = mock.patch(
-            'holocron.main.ExtensionManager',
+            'holocron.main.stevedore.ExtensionManager',
             return_value=self._get_fake_extension_manager())
         self._extension_manager.start()
 

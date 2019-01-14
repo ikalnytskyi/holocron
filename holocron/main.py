@@ -5,7 +5,7 @@ import logging
 import argparse
 import warnings
 
-from dooku.ext import ExtensionManager
+import stevedore
 
 from holocron import __version__ as holocron_version
 from holocron.app import create_app
@@ -106,8 +106,8 @@ def parse_command_line(args, commands):
 
 def main(args=sys.argv[1:]):
     # get available commands and build cli based on it
-    commands_manager = ExtensionManager('holocron.ext.commands')
-    commands = {name: command() for name, command in commands_manager}
+    commands_manager = stevedore.ExtensionManager('holocron.ext.commands')
+    commands = {ext.name: ext.plugin() for ext in commands_manager}
     arguments = parse_command_line(args, commands)
 
     # initial logger configuration - use custom format for records

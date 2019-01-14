@@ -13,9 +13,7 @@ import logging
 import collections
 
 import yaml
-
-from dooku.conf import Conf
-from dooku.ext import ExtensionManager
+import stevedore
 
 from .processors import _misc
 
@@ -63,8 +61,8 @@ def create_app(confpath=None):
     metadata = conf.pop('metadata', None) if conf else None
     app = Holocron(conf, metadata)
 
-    for name, ext in ExtensionManager(namespace='holocron.processors'):
-        app.add_processor(name, ext)
+    for ext in stevedore.ExtensionManager(namespace='holocron.processors'):
+        app.add_processor(ext.name, ext.plugin)
 
     return app
 
@@ -91,23 +89,11 @@ class Holocron(object):
             'content': '.',
             'output': '_build',
         },
-
-        'theme': {},
-
-        'pipelines': {},
-
-        'commands': {
-            'serve': {
-                'host': '0.0.0.0',
-                'port': 5000,
-                'wakeup': 1,
-            },
-        },
     }
 
     def __init__(self, conf=None, metadata=None):
         #: The configuration dictionary.
-        self.conf = Conf(self.default_conf, conf or {})
+        self.conf = collections.ChainMap(self.default_conf, conf or {})
 
         #: metadata store
         #:
@@ -167,7 +153,7 @@ class Holocron(object):
         """
         (DEPRECATED) Starts build process.
         """
-        processors = self.conf['pipelines.build']
+        processors = self.conf['pipelines']['build']
 
         # Since processors are generators and thus are lazy evaluated, we need
         # to force evaluate them. Otherwise, the pipeline will produce nothing.

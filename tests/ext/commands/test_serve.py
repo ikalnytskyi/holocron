@@ -11,7 +11,6 @@
 import os
 
 import mock
-from dooku.conf import Conf
 
 from holocron.app import Holocron
 from holocron.ext.commands import serve
@@ -23,7 +22,7 @@ class TestServeCommand(HolocronTestCase):
 
     def setUp(self):
         self.fake_app = mock.Mock(
-            conf=Conf({
+            conf={
                 'paths': {
                     'content': 'path/content',
                     'output': 'path/output',
@@ -36,7 +35,7 @@ class TestServeCommand(HolocronTestCase):
                         'wakeup': 13,
                     },
                 },
-            }),
+            },
             _themes=[
                 'theme_a',
                 'theme_b',
@@ -126,11 +125,11 @@ class TestServeCommand(HolocronTestCase):
 class TestChangeWatcher(HolocronTestCase):
 
     def setUp(self):
-        self.fake_app = mock.Mock(conf=Conf({
+        self.fake_app = mock.Mock(conf={
             'paths': {
                 'output': 'path/output',
             },
-        }), spec=Holocron)
+        }, spec=Holocron)
         self.fake_builder = mock.Mock(_app=self.fake_app, spec=serve._Builder)
         self.watcher = serve._ChangeWatcher(self.fake_builder)
 

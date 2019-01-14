@@ -8,8 +8,6 @@
     :license: 3-clause BSD, see LICENSE for details.
 """
 
-from dooku.conf import Conf
-
 from holocron.app import Holocron
 from holocron import content
 
@@ -21,16 +19,6 @@ class DocumentTestCase(HolocronTestCase):
     A testcase helper that prepares a document instance.
     """
 
-    _conf = Conf({
-        'encoding': {
-            'content': 'utf-8',
-            'output': 'out-enc',
-        },
-        'paths': {
-            'content': './content',
-            'output': './_output',
-        }
-    })
     _metadata = {
         'url': 'http://example.com',
     }
@@ -42,7 +30,7 @@ class DocumentTestCase(HolocronTestCase):
         """
         Prepares a document instance with a fake config.
         """
-        self.app = Holocron(self._conf, self._metadata)
+        self.app = Holocron(metadata=self._metadata)
         self.doc = self.document_class(self.app)
         self.doc['destination'] = self.document_filename
 

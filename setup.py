@@ -37,11 +37,11 @@ setup(
     install_requires=[
         'Jinja2   >= 2.7',      # core
         'PyYAML   >= 3.11',     # core
-        'dooku    >= 0.3.0',    # core
         'Pygments >= 2.0',      # core since required for various converters
         'python-dateutil >= 2.7',
         'jsonpointer >= 2.0',
         'schema >= 0.6',
+        'stevedore >=1.30',
 
         'Markdown >= 2.4',      # deps of markdown converter
         'docutils >= 0.12',     # deps of restructuredtext converter

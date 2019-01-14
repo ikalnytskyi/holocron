@@ -7,7 +7,6 @@ import urllib.parse
 
 import jsonpointer
 import schema
-import dooku.conf
 
 
 def resolve_json_references(value, context, keep_unknown=True):
@@ -58,11 +57,6 @@ class parameters:
                             {'metadata:': app.metadata})
                     except (jsonpointer.JsonPointerException, KeyError):
                         continue
-
-                # this is a temporary hack to workaround schema error
-                # that dooku.conf.Conf is not a dict
-                if isinstance(value, dooku.conf.Conf):
-                    value = dict(value)
 
                 if param in self._schema:
                     try:
