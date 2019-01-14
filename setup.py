@@ -42,6 +42,7 @@ setup(
         'python-dateutil >= 2.7',
         'jsonpointer >= 2.0',
         'schema >= 0.6',
+        'stevedore >=1.30',
 
         'Markdown >= 2.4',      # deps of markdown converter
         'docutils >= 0.12',     # deps of restructuredtext converter

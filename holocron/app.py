@@ -13,9 +13,9 @@ import logging
 import collections
 
 import yaml
+import stevedore
 
 from dooku.conf import Conf
-from dooku.ext import ExtensionManager
 
 from .processors import _misc
 
@@ -63,8 +63,8 @@ def create_app(confpath=None):
     metadata = conf.pop('metadata', None) if conf else None
     app = Holocron(conf, metadata)
 
-    for name, ext in ExtensionManager(namespace='holocron.processors'):
-        app.add_processor(name, ext)
+    for ext in stevedore.ExtensionManager(namespace='holocron.processors'):
+        app.add_processor(ext.name, ext.plugin)
 
     return app
 
