@@ -1,7 +1,6 @@
 """Source processor test suite."""
 
 import os
-import datetime
 import unittest.mock
 
 import pytest
@@ -50,31 +49,6 @@ def test_item(testapp, monkeypatch, tmpdir, path):
             'content': 'Obi-Wan',
             'created': _pytest_timestamp(tmpdir.join(*path).stat().ctime),
             'updated': _pytest_timestamp(tmpdir.join(*path).stat().mtime),
-        }
-
-    with pytest.raises(StopIteration):
-        next(stream)
-
-
-@pytest.mark.parametrize('path, published', [
-    (('2017', '09', '17', 'cv.pdf'), datetime.date(2017, 9, 17)),
-    (('2018', '3', '2', 'cv.pdf'), datetime.date(2018, 3, 2)),
-])
-def test_item_published(testapp, monkeypatch, tmpdir, path, published):
-    """Source processor has to set published property for posts."""
-
-    monkeypatch.chdir(tmpdir)
-    tmpdir.ensure(*path).write_text('Obi-Wan', encoding='UTF-8')
-
-    stream = source.process(testapp, [])
-    assert next(stream) == \
-        {
-            'source': os.path.join(*path),
-            'destination': os.path.join(*path),
-            'content': 'Obi-Wan',
-            'created': _pytest_timestamp(tmpdir.join(*path).stat().ctime),
-            'updated': _pytest_timestamp(tmpdir.join(*path).stat().mtime),
-            'published': published,
         }
 
     with pytest.raises(StopIteration):

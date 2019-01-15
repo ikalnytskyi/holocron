@@ -69,6 +69,7 @@ setup(
             'commit = holocron.processors.commit:process',
             'jinja2 = holocron.processors.jinja2:process',
             'when = holocron.processors.when:process',
+            'todatetime = holocron.processors.todatetime:process',
         ],
         'holocron.ext.commands': [
             'init = holocron.ext.commands.init:Init',

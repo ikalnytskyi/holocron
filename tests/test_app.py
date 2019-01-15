@@ -70,6 +70,7 @@ class TestHolocronDefaults(HolocronTestCase):
             'commit',
             'jinja2',
             'when',
+            'todatetime',
         ]))
 
 
@@ -191,6 +192,7 @@ class TestCreateApp(HolocronTestCase):
             'commit',
             'jinja2',
             'when',
+            'todatetime',
         ]))
 
 
