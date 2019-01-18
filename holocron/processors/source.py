@@ -57,14 +57,13 @@ def _finditems(app, path, pattern, encoding, tzinfo):
 
 
 def _createitem(app, path, basepath, encoding, tzinfo):
-    source = os.path.relpath(path, basepath)
-    item = _getinstance(source, app)
+    item = content.Document(app)
 
     # A path to an input (source) item. Despite reading its content into
     # a memory, we still want to have this attribute in order to do pattern
     # matching against it.
-    item['source'] = source
-    item['destination'] = source
+    item['source'] = os.path.relpath(path, basepath)
+    item['destination'] = item['source']
 
     item['created'] = \
         datetime.datetime.fromtimestamp(os.path.getctime(path), tzinfo)
@@ -78,22 +77,4 @@ def _createitem(app, path, basepath, encoding, tzinfo):
         with open(path, 'rb') as f:
             item['content'] = f.read()
 
-    return item
-
-
-def _getinstance(filename, app):
-    post_pattern = re.compile(r'^\d{2,4}/\d{1,2}/\d{1,2}')
-
-    # Extract 'published' date out of item path.
-    published = None
-    if post_pattern.search(filename):
-        published = ''.join(
-            post_pattern.search(filename).group(0).split(os.sep)[:3])
-        published = datetime.datetime.strptime(published, '%Y%m%d')
-
-    _, ext = os.path.splitext(filename)
-
-    item = content.Document(app)
-    if published:
-        item['published'] = published.date()
     return item
