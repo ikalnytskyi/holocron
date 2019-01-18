@@ -5,8 +5,6 @@ import logging
 import argparse
 import warnings
 
-import stevedore
-
 from holocron import __version__ as holocron_version
 from holocron.app import create_app
 
@@ -44,13 +42,12 @@ def configure_logger(level):
     logging.captureWarnings(True)
 
 
-def parse_command_line(args, commands):
+def parse_command_line(args):
     """
     Builds a command line interface, and parses its arguments. Returns
     an object with attributes, that are represent CLI arguments.
 
     :param args: a list of command line arguments
-    :param commands: a dict with available commands (name -> instance)
     :returns: a parsed object with cli options
     """
     parser = argparse.ArgumentParser(
@@ -84,10 +81,8 @@ def parse_command_line(args, commands):
     command_parser = parser.add_subparsers(
         dest='command', help='command to execute')
 
-    # declare commands
-    for name, command in commands.items():
-        subparser = command_parser.add_parser(name)
-        command.set_arguments(subparser)
+    run_parser = command_parser.add_parser('run')
+    run_parser.add_argument('pipeline', help='a pipeline to run')
 
     # parse cli and form arguments object
     arguments = parser.parse_args(args)
@@ -97,18 +92,21 @@ def parse_command_line(args, commands):
         parser.print_help()
         parser.exit(1)
 
-    # this hack's used to bypass lack of user's config file when init invoked
-    if arguments.command in ('init', ):
-        arguments.conf = None
-
     return arguments
 
 
+def run_pipeline(app, arguments):
+    if arguments.pipeline not in app.conf['pipelines']:
+        raise ValueError('%s: no such pipeline' % arguments.pipeline)
+
+    pipeline = app.conf['pipelines'][arguments.pipeline]
+
+    for _ in app.invoke_processors([], pipeline):
+        pass
+
+
 def main(args=sys.argv[1:]):
-    # get available commands and build cli based on it
-    commands_manager = stevedore.ExtensionManager('holocron.ext.commands')
-    commands = {ext.name: ext.plugin() for ext in commands_manager}
-    arguments = parse_command_line(args, commands)
+    arguments = parse_command_line(args)
 
     # initial logger configuration - use custom format for records
     # and print records with WARNING level and higher.
@@ -123,5 +121,4 @@ def main(args=sys.argv[1:]):
     if holocron is None:
         sys.exit(1)
 
-    # execute passed command
-    commands[arguments.command].execute(holocron, arguments)
+    run_pipeline(holocron, arguments)
