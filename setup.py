@@ -46,7 +46,6 @@ setup(
         'Markdown >= 2.4',      # deps of markdown converter
         'docutils >= 0.12',     # deps of restructuredtext converter
         'feedgen  >= 0.7',      # deps of feed processor
-        'watchdog >= 0.8.0',    # deps of serve command
     ],
     tests_require=['mock >= 1.1.0'],
     python_requires='>=3.4',
@@ -70,11 +69,6 @@ setup(
             'jinja2 = holocron.processors.jinja2:process',
             'when = holocron.processors.when:process',
             'todatetime = holocron.processors.todatetime:process',
-        ],
-        'holocron.ext.commands': [
-            'init = holocron.ext.commands.init:Init',
-            'serve = holocron.ext.commands.serve:Serve',
-            'run = holocron.ext.commands.run:Run',
         ],
     },
 
