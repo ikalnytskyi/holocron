@@ -1,0 +1,72 @@
+[tool.poetry]
+name = "holocron"
+version = "0.4.0"
+description = "An extendable static site generator powered by the Force. =/"
+authors = ["Ihor Kalnytskyi <ihor@kalnytskyi.com>"]
+license = "BSD-3-Clause"
+readme = "README.rst"
+homepage = "https://github.com/ikalnytskyi/holocron"
+repository = "https://github.com/ikalnytskyi/holocron"
+documentation = "https://holocron.readthedocs.io/"
+keywords = ["static", "site", "blog", "generator", "markdown"]
+classifiers = [
+    "Environment :: Console",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Intended Audience :: End Users/Desktop",
+    "Intended Audience :: Information Technology",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Terminals",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.4",
+    "Programming Language :: Python :: 3.5",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+]
+
+[tool.poetry.dependencies]
+python = "^3.4"
+Jinja2 = "^2.10"
+PyYAML = "^3.13"
+Pygments = "^2.3"
+python-dateutil = "^2.7"
+jsonpointer = "^2.0"
+schema = "^0.6.8"
+stevedore = "^1.30"
+Markdown = "^3.0"
+docutils = "^0.14.0"
+feedgen = "^0.7.0"
+
+[tool.poetry.dev-dependencies]
+mock = "^2.0"
+coverage = "^4.5"
+pytest = "^4.1"
+pytest-randomly = "^1.2"
+flake8 = "^3.6"
+xmltodict = "^0.11.0"
+beautifulsoup4 = "^4.7"
+untangle = "^1.1"
+
+[tool.poetry.plugins."holocron.processors"]
+"archive" = "holocron.processors.archive:process"
+"commit" = "holocron.processors.commit:process"
+"feed" = "holocron.processors.feed:process"
+"frontmatter" = "holocron.processors.frontmatter:process"
+"jinja2" = "holocron.processors.jinja2:process"
+"markdown" = "holocron.processors.markdown:process"
+"metadata" = "holocron.processors.metadata:process"
+"pipeline" = "holocron.processors.pipeline:process"
+"prettyuri" = "holocron.processors.prettyuri:process"
+"restructuredtext" = "holocron.processors.restructuredtext:process"
+"sitemap" = "holocron.processors.sitemap:process"
+"source" = "holocron.processors.source:process"
+"todatetime" = "holocron.processors.todatetime:process"
+"when" = "holocron.processors.when:process"
+
+[tool.poetry.scripts]
+holocron = "holocron.main:main"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"

@@ -44,3 +44,5 @@ if not os.environ.get('READTHEDOCS') == 'True':
 from docutils.parsers.rst import directives
 from sphinx.directives.code import CodeBlock
 directives.register_directive('code', CodeBlock)
+
+# flake8: noqa
