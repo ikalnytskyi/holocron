@@ -7,6 +7,7 @@ import feedgen.feed
 import pkg_resources
 import schema
 
+from ..core import WebSiteItem
 from ._misc import parameters, resolve_json_references
 
 
@@ -143,11 +144,13 @@ def process(app,
     to_bytes = {'atom': feed_generator.atom_str, 'rss': feed_generator.rss_str}
     to_bytes = to_bytes[syndication_format]
 
-    feed_item = {
-        'source': 'feed://%s' % save_as,
-        'destination': save_as,
-        'content': to_bytes(pretty=pretty, encoding=encoding),
-    }
+    feed_item = WebSiteItem(
+        {
+            'source': 'feed://%s' % save_as,
+            'destination': save_as,
+            'content': to_bytes(pretty=pretty, encoding=encoding),
+            'baseurl': app.metadata['url'],
+        })
 
     yield from passthrough
     yield feed_item

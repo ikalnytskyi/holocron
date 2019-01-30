@@ -8,33 +8,31 @@ import codecs
 import dateutil.tz
 import schema
 
-from holocron import content
+import holocron.core
 from ._misc import parameters
 
 
-@parameters(
-    fallback={
-        'encoding': 'metadata://#/encoding',
-        'timezone': 'metadata://#/timezone',
-    },
-    schema={
-        'path': str,
-        'pattern': str,
-        'encoding': schema.Schema(codecs.lookup, 'unsupported encoding'),
-        'timezone': schema.Schema(dateutil.tz.gettz, 'unsupported timezone'),
-    }
-)
-def process(app,
-            stream,
-            *,
-            path='.',
-            pattern=None,
-            encoding='UTF-8',
-            timezone='UTC'):
-    tzinfo = dateutil.tz.gettz(timezone)
+def _createitem(app, path, basepath, encoding, tzinfo):
+    try:
+        with open(path, "rt", encoding=encoding) as f:
+            content = f.read()
+    except UnicodeDecodeError:
+        with open(path, "rb") as f:
+            content = f.read()
 
-    yield from stream
-    yield from _finditems(app, path, pattern, encoding, tzinfo)
+    created = datetime.datetime.fromtimestamp(os.path.getctime(path), tzinfo)
+    updated = datetime.datetime.fromtimestamp(os.path.getmtime(path), tzinfo)
+
+    return holocron.core.WebSiteItem(
+        # Memorizing 'source' property is not required for the application
+        # core, however, it may be useful for pipeline troubleshooting as well
+        # specifying conditions.
+        source=os.path.relpath(path, basepath),
+        destination=os.path.relpath(path, basepath),
+        content=content,
+        created=created,
+        updated=updated,
+        baseurl=app.metadata["url"])
 
 
 def _finditems(app, path, pattern, encoding, tzinfo):
@@ -56,25 +54,26 @@ def _finditems(app, path, pattern, encoding, tzinfo):
                 tzinfo=tzinfo)
 
 
-def _createitem(app, path, basepath, encoding, tzinfo):
-    item = content.Document(app)
+@parameters(
+    fallback={
+        "encoding": "metadata://#/encoding",
+        "timezone": "metadata://#/timezone",
+    },
+    schema={
+        "path": str,
+        "pattern": str,
+        "encoding": schema.Schema(codecs.lookup, "unsupported encoding"),
+        "timezone": schema.Schema(dateutil.tz.gettz, "unsupported timezone"),
+    }
+)
+def process(app,
+            stream,
+            *,
+            path=".",
+            pattern=None,
+            encoding="UTF-8",
+            timezone="UTC"):
+    tzinfo = dateutil.tz.gettz(timezone)
 
-    # A path to an input (source) item. Despite reading its content into
-    # a memory, we still want to have this attribute in order to do pattern
-    # matching against it.
-    item['source'] = os.path.relpath(path, basepath)
-    item['destination'] = item['source']
-
-    item['created'] = \
-        datetime.datetime.fromtimestamp(os.path.getctime(path), tzinfo)
-    item['updated'] = \
-        datetime.datetime.fromtimestamp(os.path.getmtime(path), tzinfo)
-
-    try:
-        with open(path, 'rt', encoding=encoding) as f:
-            item['content'] = f.read()
-    except UnicodeDecodeError:
-        with open(path, 'rb') as f:
-            item['content'] = f.read()
-
-    return item
+    yield from stream
+    yield from _finditems(app, path, pattern, encoding, tzinfo)

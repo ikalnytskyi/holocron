@@ -8,7 +8,7 @@ import pkg_resources
 import pytest
 import untangle
 
-from holocron import app
+from holocron import app, core
 from holocron.processors import feed
 
 
@@ -17,9 +17,7 @@ _HOLOCRON_VERSION = pkg_resources.get_distribution('holocron').version
 
 @pytest.fixture(scope='function')
 def testapp():
-    return app.Holocron({}, metadata={
-        'url': 'http://obi-wan.jedi',
-    })
+    return app.Holocron(metadata={'url': 'https://yoda.ua'})
 
 
 def test_item_atom(testapp):
@@ -28,10 +26,11 @@ def test_item_atom(testapp):
     stream = feed.process(
         testapp,
         [
-            {
-                'content': 'the way of the Force',
-                'published': datetime.date(2017, 9, 25),
-            },
+            core.Item(
+                {
+                    'content': 'the way of the Force',
+                    'published': datetime.date(2017, 9, 25),
+                }),
         ],
         feed={
             'id': 'kenobi-way',
@@ -45,19 +44,20 @@ def test_item_atom(testapp):
             'content': 'Once upon a time',
         })
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             'content': 'the way of the Force',
             'published': datetime.date(2017, 9, 25),
-        }
+        })
 
     item = next(stream)
-    assert item == \
+    assert item == core.WebSiteItem(
         {
             'source': 'feed://feed.xml',
             'destination': 'feed.xml',
             'content': unittest.mock.ANY,
-        }
+            'baseurl': testapp.metadata['url']
+        })
 
     parsed = untangle.parse(item['content'].decode('UTF-8'))
     assert set(dir(parsed.feed)) == {
@@ -100,10 +100,11 @@ def test_item_atom_feed_metadata(testapp):
     stream = feed.process(
         testapp,
         [
-            {
-                'content': 'the way of the Force',
-                'published': published,
-            },
+            core.Item(
+                {
+                    'content': 'the way of the Force',
+                    'published': published,
+                }),
         ],
         feed={
             'id': 'kenobi-way',
@@ -129,19 +130,20 @@ def test_item_atom_feed_metadata(testapp):
             'rights': '(c) Obi-Wan and the Jedi Order',
         })
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             'content': 'the way of the Force',
             'published': published,
-        }
+        })
 
     item = next(stream)
-    assert item == \
+    assert item == core.WebSiteItem(
         {
             'source': 'feed://feed.xml',
             'destination': 'feed.xml',
             'content': unittest.mock.ANY,
-        }
+            'baseurl': testapp.metadata['url']
+        })
 
     parsed = untangle.parse(item['content'].decode('UTF-8'))
     assert set(dir(parsed.feed)) == {
@@ -211,10 +213,11 @@ def test_item_rss(testapp):
     stream = feed.process(
         testapp,
         [
-            {
-                'content': 'the way of the Force',
-                'published': datetime.date(2017, 9, 25),
-            },
+            core.Item(
+                {
+                    'content': 'the way of the Force',
+                    'published': datetime.date(2017, 9, 25),
+                }),
         ],
         syndication_format='rss',
         feed={
@@ -227,19 +230,20 @@ def test_item_rss(testapp):
             'content': 'Once upon a time',
         })
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             'content': 'the way of the Force',
             'published': datetime.date(2017, 9, 25),
-        }
+        })
 
     item = next(stream)
-    assert item == \
+    assert item == core.WebSiteItem(
         {
             'source': 'feed://feed.xml',
             'destination': 'feed.xml',
             'content': unittest.mock.ANY,
-        }
+            'baseurl': testapp.metadata['url']
+        })
 
     parsed = untangle.parse(item['content'].decode('UTF-8'))
     assert set(dir(parsed.rss.channel)) == {
@@ -279,10 +283,11 @@ def test_item_rss_feed_metadata(testapp):
     stream = feed.process(
         testapp,
         [
-            {
-                'content': 'the way of the Force',
-                'published': published,
-            },
+            core.Item(
+                {
+                    'content': 'the way of the Force',
+                    'published': published,
+                }),
         ],
         syndication_format='rss',
         feed={
@@ -331,19 +336,20 @@ def test_item_rss_feed_metadata(testapp):
             'itunes_summary': 'berry',
         })
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             'content': 'the way of the Force',
             'published': published,
-        }
+        })
 
     item = next(stream)
-    assert item == \
+    assert item == core.WebSiteItem(
         {
             'source': 'feed://feed.xml',
             'destination': 'feed.xml',
             'content': unittest.mock.ANY,
-        }
+            'baseurl': testapp.metadata['url']
+        })
 
     parsed = untangle.parse(item['content'].decode('UTF-8'))
     assert set(dir(parsed.rss.channel)) == {
@@ -465,10 +471,11 @@ def test_item_many(testapp, syndication_format, amount):
     stream = feed.process(
         testapp,
         [
-            {
-                'content': 'the key is %d' % i,
-                'published': datetime.date(2017, 9, 25),
-            }
+            core.Item(
+                {
+                    'content': 'the key is %d' % i,
+                    'published': datetime.date(2017, 9, 25),
+                })
             for i in range(amount)
         ],
         syndication_format=syndication_format,
@@ -485,18 +492,19 @@ def test_item_many(testapp, syndication_format, amount):
         })
 
     for i in range(amount):
-        assert next(stream) == \
+        assert next(stream) == core.Item(
             {
                 'content': 'the key is %d' % i,
                 'published': datetime.date(2017, 9, 25),
-            }
+            })
 
-    assert next(stream) == \
+    assert next(stream) == core.WebSiteItem(
         {
             'source': 'feed://feed.xml',
             'destination': 'feed.xml',
             'content': unittest.mock.ANY,
-        }
+            'baseurl': testapp.metadata['url']
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -511,10 +519,11 @@ def test_param_encoding(testapp, syndication_format, encoding):
     stream = feed.process(
         testapp,
         [
-            {
-                'content': 'the way of the Force',
-                'published': published,
-            },
+            core.Item(
+                {
+                    'content': 'the way of the Force',
+                    'published': published,
+                }),
         ],
         syndication_format=syndication_format,
         encoding=encoding,
@@ -530,19 +539,20 @@ def test_param_encoding(testapp, syndication_format, encoding):
             'content': 'Once upon a time',
         })
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             'content': 'the way of the Force',
             'published': published,
-        }
+        })
 
     item = next(stream)
-    assert item == \
+    assert item == core.WebSiteItem(
         {
             'source': 'feed://feed.xml',
             'destination': 'feed.xml',
             'content': unittest.mock.ANY,
-        }
+            'baseurl': testapp.metadata['url']
+        })
 
     assert untangle.parse(item['content'].decode(encoding))
 
@@ -561,10 +571,11 @@ def test_param_encoding_fallback(testapp, syndication_format, encoding):
     stream = feed.process(
         testapp,
         [
-            {
-                'content': 'the way of the Force',
-                'published': published,
-            },
+            core.Item(
+                {
+                    'content': 'the way of the Force',
+                    'published': published,
+                }),
         ],
         syndication_format=syndication_format,
         feed={
@@ -579,19 +590,20 @@ def test_param_encoding_fallback(testapp, syndication_format, encoding):
             'content': 'Once upon a time',
         })
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             'content': 'the way of the Force',
             'published': published,
-        }
+        })
 
     item = next(stream)
-    assert item == \
+    assert item == core.WebSiteItem(
         {
             'source': 'feed://feed.xml',
             'destination': 'feed.xml',
             'content': unittest.mock.ANY,
-        }
+            'baseurl': testapp.metadata['url']
+        })
 
     assert untangle.parse(item['content'].decode(encoding))
 
@@ -610,10 +622,11 @@ def test_param_save_as(testapp, syndication_format, save_as):
     stream = feed.process(
         testapp,
         [
-            {
-                'content': 'the way of the Force',
-                'published': datetime.date(2017, 9, 25),
-            },
+            core.Item(
+                {
+                    'content': 'the way of the Force',
+                    'published': datetime.date(2017, 9, 25),
+                }),
         ],
         syndication_format=syndication_format,
         save_as=save_as,
@@ -629,19 +642,20 @@ def test_param_save_as(testapp, syndication_format, save_as):
             'content': 'Once upon a time',
         })
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             'content': 'the way of the Force',
             'published': datetime.date(2017, 9, 25),
-        }
+        })
 
     item = next(stream)
-    assert item == \
+    assert item == core.WebSiteItem(
         {
             'source': 'feed://%s' % save_as,
             'destination': save_as,
             'content': unittest.mock.ANY,
-        }
+            'baseurl': testapp.metadata['url']
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -655,10 +669,11 @@ def test_param_limit(testapp, syndication_format, limit):
     stream = feed.process(
         testapp,
         [
-            {
-                'content': 'the way of the Force, part %d' % i,
-                'published': datetime.date(2017, 9, i + 1),
-            }
+            core.Item(
+                {
+                    'content': 'the way of the Force, part %d' % i,
+                    'published': datetime.date(2017, 9, i + 1),
+                })
             for i in range(10)
         ],
         syndication_format=syndication_format,
@@ -676,19 +691,20 @@ def test_param_limit(testapp, syndication_format, limit):
         })
 
     for i, item in zip(range(10), stream):
-        assert item == \
+        assert item == core.Item(
             {
                 'content': 'the way of the Force, part %d' % i,
                 'published': datetime.date(2017, 9, i + 1),
-            }
+            })
 
     item = next(stream)
-    assert item == \
+    assert item == core.WebSiteItem(
         {
             'source': 'feed://feed.xml',
             'destination': 'feed.xml',
             'content': unittest.mock.ANY,
-        }
+            'baseurl': testapp.metadata['url']
+        })
 
     parsed = untangle.parse(item['content'].decode('UTF-8'))
 
@@ -723,10 +739,11 @@ def test_param_pretty(testapp, syndication_format, pretty, check_fn):
     stream = feed.process(
         testapp,
         [
-            {
-                'content': 'the way of the Force',
-                'published': datetime.date(2017, 9, 25),
-            },
+            core.Item(
+                {
+                    'content': 'the way of the Force',
+                    'published': datetime.date(2017, 9, 25),
+                }),
         ],
         syndication_format=syndication_format,
         pretty=pretty,
@@ -742,19 +759,20 @@ def test_param_pretty(testapp, syndication_format, pretty, check_fn):
             'content': 'Once upon a time',
         })
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             'content': 'the way of the Force',
             'published': datetime.date(2017, 9, 25),
-        }
+        })
 
     item = next(stream)
-    assert item == \
+    assert item == core.WebSiteItem(
         {
             'source': 'feed://feed.xml',
             'destination': 'feed.xml',
             'content': unittest.mock.ANY,
-        }
+            'baseurl': testapp.metadata['url']
+        })
     assert check_fn(len(item['content'].splitlines()))
 
     with pytest.raises(StopIteration):
