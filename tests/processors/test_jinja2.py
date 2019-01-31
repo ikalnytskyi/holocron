@@ -7,13 +7,13 @@ import unittest.mock
 import pytest
 import bs4
 
-from holocron import app
+from holocron import app, core
 from holocron.processors import jinja2
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def testapp():
-    return app.Holocron({})
+    return app.Holocron(metadata={"url": "https://yoda.ua"})
 
 
 def test_item(testapp):
@@ -22,149 +22,154 @@ def test_item(testapp):
     stream = jinja2.process(
         testapp,
         [
-            {
-                'title': 'History of the Force',
-                'content': 'the Force',
-            },
+            core.Item(
+                {
+                    "title": "History of the Force",
+                    "content": "the Force",
+                }),
         ])
 
     item = next(stream)
-    assert item == \
+    assert item == core.Item(
         {
-            'title': 'History of the Force',
-            'content': unittest.mock.ANY,
-        }
+            "title": "History of the Force",
+            "content": unittest.mock.ANY,
+        })
 
-    soup = bs4.BeautifulSoup(item['content'], 'html.parser')
-    assert soup.meta['charset'] == 'UTF-8'
-    assert soup.article.header.h1.string == 'History of the Force'
-    assert list(soup.article.stripped_strings)[1] == 'the Force'
+    soup = bs4.BeautifulSoup(item["content"], "html.parser")
+    assert soup.meta["charset"] == "UTF-8"
+    assert soup.article.header.h1.string == "History of the Force"
+    assert list(soup.article.stripped_strings)[1] == "the Force"
 
     # Since we don't know in which order statics are discovered, we sort them
     # so we can avoid possible flakes.
-    static = sorted(stream, key=lambda d: d['source'])
-    assert static[0]['source'] == os.path.join('static', 'logo.svg')
-    assert static[0]['destination'] == static[0]['source']
-    assert static[1]['source'] == os.path.join('static', 'pygments.css')
-    assert static[1]['destination'] == static[1]['source']
-    assert static[2]['source'] == os.path.join('static', 'style.css')
-    assert static[2]['destination'] == static[2]['source']
+    static = sorted(stream, key=lambda d: d["source"])
+    assert static[0]["source"] == os.path.join("static", "logo.svg")
+    assert static[0]["destination"] == static[0]["source"]
+    assert static[1]["source"] == os.path.join("static", "pygments.css")
+    assert static[1]["destination"] == static[1]["source"]
+    assert static[2]["source"] == os.path.join("static", "style.css")
+    assert static[2]["destination"] == static[2]["source"]
     assert len(static) == 3
 
 
 def test_item_template(testapp, tmpdir):
     """Jinja2 processor has to respect item suggested template."""
 
-    tmpdir.ensure('theme_a', 'templates', 'holiday.j2').write_text(
-        textwrap.dedent('''\
+    tmpdir.ensure("theme_a", "templates", "holiday.j2").write_text(
+        textwrap.dedent("""\
             template: my super template
             rendered: {{ document.title }}
-        '''),
-        encoding='UTF-8')
+        """),
+        encoding="UTF-8")
 
     stream = jinja2.process(
         testapp,
         [
-            {
-                'title': 'History of the Force',
-                'content': 'the Force',
-                'template': 'holiday.j2',
-            },
+            core.Item(
+                {
+                    "title": "History of the Force",
+                    "content": "the Force",
+                    "template": "holiday.j2",
+                }),
         ],
-        themes=[tmpdir.join('theme_a').strpath])
+        themes=[tmpdir.join("theme_a").strpath])
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
-            'title': 'History of the Force',
-            'template': 'holiday.j2',
-            'content': textwrap.dedent('''\
+            "title": "History of the Force",
+            "template": "holiday.j2",
+            "content": textwrap.dedent("""\
                 template: my super template
-                rendered: History of the Force''')
-        }
+                rendered: History of the Force""")
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
 
 
-@pytest.mark.parametrize('amount', [0, 1, 2, 5, 10])
+@pytest.mark.parametrize("amount", [0, 1, 2, 5, 10])
 def test_item_many(testapp, tmpdir, amount):
     """Jinja2 processor has to work with stream."""
 
     stream = jinja2.process(
         testapp,
         [
-            {
-                'title': 'History of the Force',
-                'content': 'the Force #%d' % i,
-            }
+            core.Item(
+                {
+                    "title": "History of the Force",
+                    "content": "the Force #%d" % i,
+                })
             for i in range(amount)
         ])
 
     for i in range(amount):
         item = next(stream)
-        assert item == \
+        assert item == core.Item(
             {
-                'title': 'History of the Force',
-                'content': unittest.mock.ANY,
-            }
+                "title": "History of the Force",
+                "content": unittest.mock.ANY,
+            })
 
-        soup = bs4.BeautifulSoup(item['content'], 'html.parser')
-        assert soup.meta['charset'] == 'UTF-8'
-        assert soup.article.header.h1.string == 'History of the Force'
-        assert list(soup.article.stripped_strings)[1] == 'the Force #%d' % i
+        soup = bs4.BeautifulSoup(item["content"], "html.parser")
+        assert soup.meta["charset"] == "UTF-8"
+        assert soup.article.header.h1.string == "History of the Force"
+        assert list(soup.article.stripped_strings)[1] == "the Force #%d" % i
 
     # Since we don't know in which order statics are discovered, we sort them
     # so we can avoid possible flakes.
-    static = sorted(stream, key=lambda d: d['source'])
-    assert static[0]['source'] == os.path.join('static', 'logo.svg')
-    assert static[0]['destination'] == static[0]['source']
-    assert static[1]['source'] == os.path.join('static', 'pygments.css')
-    assert static[1]['destination'] == static[1]['source']
-    assert static[2]['source'] == os.path.join('static', 'style.css')
-    assert static[2]['destination'] == static[2]['source']
+    static = sorted(stream, key=lambda d: d["source"])
+    assert static[0]["source"] == os.path.join("static", "logo.svg")
+    assert static[0]["destination"] == static[0]["source"]
+    assert static[1]["source"] == os.path.join("static", "pygments.css")
+    assert static[1]["destination"] == static[1]["source"]
+    assert static[2]["source"] == os.path.join("static", "style.css")
+    assert static[2]["destination"] == static[2]["source"]
     assert len(static) == 3
 
 
 def test_param_themes(testapp, tmpdir):
     """Jinja2 processor has to respect themes parameter."""
 
-    tmpdir.ensure('theme_a', 'templates', 'page.j2').write_text(
-        textwrap.dedent('''\
+    tmpdir.ensure("theme_a", "templates", "page.j2").write_text(
+        textwrap.dedent("""\
             template: my super template
             rendered: {{ document.title }}
-        '''),
-        encoding='UTF-8')
+        """),
+        encoding="UTF-8")
 
-    tmpdir.ensure('theme_a', 'static', 'style.css').write_text(
-        'article { margin: 0 }',
-        encoding='UTF-8')
+    tmpdir.ensure("theme_a", "static", "style.css").write_text(
+        "article { margin: 0 }",
+        encoding="UTF-8")
 
     stream = jinja2.process(
         testapp,
         [
-            {
-                'title': 'History of the Force',
-                'content': 'the Force',
-            },
+            core.Item(
+                {
+                    "title": "History of the Force",
+                    "content": "the Force",
+                }),
         ],
-        themes=[tmpdir.join('theme_a').strpath])
+        themes=[tmpdir.join("theme_a").strpath])
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
-            'title': 'History of the Force',
-            'content': textwrap.dedent('''\
+            "title": "History of the Force",
+            "content": textwrap.dedent("""\
                 template: my super template
-                rendered: History of the Force''')
-        }
+                rendered: History of the Force""")
+        })
 
-    assert next(stream) == \
+    assert next(stream) == core.WebSiteItem(
         {
-            'content': 'article { margin: 0 }',
-            'source': os.path.join('static', 'style.css'),
-            'destination': os.path.join('static', 'style.css'),
-            'created': unittest.mock.ANY,
-            'updated': unittest.mock.ANY,
-        }
+            "content": "article { margin: 0 }",
+            "source": os.path.join("static", "style.css"),
+            "destination": os.path.join("static", "style.css"),
+            "created": unittest.mock.ANY,
+            "updated": unittest.mock.ANY,
+            "baseurl": testapp.metadata["url"],
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -173,72 +178,74 @@ def test_param_themes(testapp, tmpdir):
 def test_param_themes_two_themes(testapp, tmpdir):
     """Jinja2 processor has to respect themes parameter."""
 
-    tmpdir.ensure('theme_a', 'templates', 'page.j2').write_text(
-        textwrap.dedent('''\
+    tmpdir.ensure("theme_a", "templates", "page.j2").write_text(
+        textwrap.dedent("""\
             template: my super template from theme_a
             rendered: {{ document.title }}
-        '''),
-        encoding='UTF-8')
+        """),
+        encoding="UTF-8")
 
-    tmpdir.ensure('theme_b', 'templates', 'page.j2').write_text(
-        textwrap.dedent('''\
+    tmpdir.ensure("theme_b", "templates", "page.j2").write_text(
+        textwrap.dedent("""\
             template: my super template from theme_b
             rendered: {{ document.title }}
-        '''),
-        encoding='UTF-8')
+        """),
+        encoding="UTF-8")
 
-    tmpdir.ensure('theme_b', 'templates', 'holiday.j2').write_text(
-        textwrap.dedent('''\
+    tmpdir.ensure("theme_b", "templates", "holiday.j2").write_text(
+        textwrap.dedent("""\
             template: my holiday template from theme_b
             rendered: {{ document.title }}
-        '''),
-        encoding='UTF-8')
+        """),
+        encoding="UTF-8")
 
     stream = jinja2.process(
         testapp,
         [
-            {
-                'title': 'History of the Force',
-                'content': 'the Force',
-                'template': 'page.j2',
-            },
-            {
-                'title': 'History of the Force',
-                'content': 'the Force',
-                'template': 'holiday.j2',
-            },
+            core.Item(
+                {
+                    "title": "History of the Force",
+                    "content": "the Force",
+                    "template": "page.j2",
+                }),
+            core.Item(
+                {
+                    "title": "History of the Force",
+                    "content": "the Force",
+                    "template": "holiday.j2",
+                }),
         ],
         themes=[
-            tmpdir.join('theme_a').strpath,
-            tmpdir.join('theme_b').strpath,
+            tmpdir.join("theme_a").strpath,
+            tmpdir.join("theme_b").strpath,
         ])
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
-            'title': 'History of the Force',
-            'template': 'page.j2',
-            'content': textwrap.dedent('''\
+            "title": "History of the Force",
+            "template": "page.j2",
+            "content": textwrap.dedent("""\
                 template: my super template from theme_a
-                rendered: History of the Force''')
-        }
+                rendered: History of the Force""")
+        })
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
-            'title': 'History of the Force',
-            'template': 'holiday.j2',
-            'content': textwrap.dedent('''\
+            "title": "History of the Force",
+            "template": "holiday.j2",
+            "content": textwrap.dedent("""\
                 template: my holiday template from theme_b
-                rendered: History of the Force''')
-        }
+                rendered: History of the Force""")
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
 
 
-@pytest.mark.parametrize('params, error', [
-    ({'template': 42}, "template: 42 should be instance of 'str'"),
-    ({'context': 42}, 'context: must be a dict'),
-    ({'themes': {'foo': 1}}, 'themes: unsupported value'),
+@pytest.mark.parametrize("params, error", [
+    ({"template": 42}, "template: 42 should be instance of 'str'"),
+    ({"context": 42}, "context: must be a dict"),
+    ({"themes": {"foo": 1}}, "themes: unsupported value"),
 ])
 def test_param_bad_value(testapp, params, error):
     """Commit processor has to validate input parameters."""

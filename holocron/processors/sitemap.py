@@ -7,8 +7,8 @@ import xml.dom.minidom as minidom
 
 import schema
 
+from ..core import WebSiteItem
 from ._misc import parameters
-from holocron.content import Document
 
 
 @parameters(
@@ -21,11 +21,12 @@ from holocron.content import Document
 def process(app, stream, *, gzip=False, save_as='sitemap.xml', pretty=True):
     passthrough, stream = itertools.tee(stream)
 
-    sitemap = Document(app)
-    sitemap.update({
-        'source': 'sitemap://%s' % save_as,
-        'destination': save_as,
-    })
+    sitemap = WebSiteItem(
+        {
+            'source': 'sitemap://%s' % save_as,
+            'destination': save_as,
+            'baseurl': app.metadata['url'],
+        })
     sitemap['content'] = _create_sitemap_xml(stream, sitemap, pretty)
 
     # According to the Sitemap protocol, the sitemap.xml can be compressed
@@ -49,19 +50,19 @@ def _create_sitemap_xml(stream, sitemap, pretty):
 
     # Everything under the same directory is owned by a sitemap, and thus can
     # be enlisted in the sitemap.
-    owned_url = os.path.dirname(sitemap.abs_url) + '/'
+    owned_url = os.path.dirname(sitemap['absurl']) + '/'
 
     for item in stream:
-        if not item.abs_url.startswith(owned_url):
+        if not item['absurl'].startswith(owned_url):
             raise ValueError(
                 "The location of a Sitemap file determines the set of URLs "
                 "that can be included in that Sitemap. A Sitemap file located "
                 "at %s can include any URLs starting with %s but can not "
-                "include %s." % (sitemap.abs_url, owned_url, item.abs_url))
+                "include %s." % (sitemap['absurl'], owned_url, item['absurl']))
 
         url = dom.createElement('url')
         loc = dom.createElement('loc')
-        loc.appendChild(dom.createTextNode(item.abs_url))
+        loc.appendChild(dom.createTextNode(item['absurl']))
         url.appendChild(loc)
         lastmod = dom.createElement('lastmod')
         lastmod.appendChild(dom.createTextNode(item['updated'].isoformat()))

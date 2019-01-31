@@ -4,13 +4,13 @@ import os
 
 import pytest
 
-from holocron import app
+from holocron import app, core
 from holocron.processors import archive
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def testapp():
-    return app.Holocron()
+    return app.Holocron(metadata={"url": "https://yoda.ua"})
 
 
 def test_item(testapp):
@@ -19,66 +19,66 @@ def test_item(testapp):
     stream = archive.process(
         testapp,
         [
-            {
-                'title': 'the way of the Force',
-                'content': 'Obi-Wan',
-            },
+            core.Item(
+                {
+                    "title": "the way of the Force",
+                    "content": "Obi-Wan",
+                }),
         ])
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
-            'title': 'the way of the Force',
-            'content': 'Obi-Wan',
-        }
+            "title": "the way of the Force",
+            "content": "Obi-Wan",
+        })
 
-    assert next(stream) == \
+    assert next(stream) == core.WebSiteItem(
         {
-            'source': 'archive://index.html',
-            'destination': 'index.html',
-            'template': 'archive.j2',
-            'items': [
-                {
-                    'title': 'the way of the Force',
-                    'content': 'Obi-Wan'
-                },
+            "source": "archive://index.html",
+            "destination": "index.html",
+            "template": "archive.j2",
+            "items": [
+                core.Item(
+                    {
+                        "title": "the way of the Force",
+                        "content": "Obi-Wan"
+                    }),
             ],
-        }
+            "baseurl": testapp.metadata["url"],
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
 
 
-@pytest.mark.parametrize('amount', [0, 1, 2, 5, 10])
+@pytest.mark.parametrize("amount", [0, 1, 2, 5, 10])
 def test_item_many(testapp, amount):
     """archive processor has to work with stream."""
 
     stream = archive.process(
         testapp,
         [
-            {
-                'title': 'the way of the Force #%d' % i,
-            }
+            core.Item({"title": "the way of the Force #%d" % i})
             for i in range(amount)
         ])
 
     for i in range(amount):
-        assert next(stream) == \
+        assert next(stream) == core.Item(
             {
-                'title': 'the way of the Force #%d' % i,
-            }
+                "title": "the way of the Force #%d" % i,
+            })
 
-    assert next(stream) == \
+    assert next(stream) == core.WebSiteItem(
         {
-            'source': 'archive://index.html',
-            'destination': 'index.html',
-            'template': 'archive.j2',
-            'items': [
-                {
-                    'title': 'the way of the Force #%d' % i,
-                }
+            "source": "archive://index.html",
+            "destination": "index.html",
+            "template": "archive.j2",
+            "items": [
+                core.Item({"title": "the way of the Force #%d" % i})
                 for i in range(amount)
             ],
-        }
+            "baseurl": testapp.metadata["url"],
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -90,39 +90,42 @@ def test_param_template(testapp):
     stream = archive.process(
         testapp,
         [
-            {
-                'title': 'the way of the Force',
-                'content': 'Obi-Wan',
-            },
-        ],
-        template='foobar.txt')
-
-    assert next(stream) == \
-        {
-            'title': 'the way of the Force',
-            'content': 'Obi-Wan',
-        }
-
-    assert next(stream) == \
-        {
-            'source': 'archive://index.html',
-            'destination': 'index.html',
-            'template': 'foobar.txt',
-            'items': [
+            core.Item(
                 {
-                    'title': 'the way of the Force',
-                    'content': 'Obi-Wan'
-                },
+                    "title": "the way of the Force",
+                    "content": "Obi-Wan",
+                }),
+        ],
+        template="foobar.txt")
+
+    assert next(stream) == core.Item(
+        {
+            "title": "the way of the Force",
+            "content": "Obi-Wan",
+        })
+
+    assert next(stream) == core.WebSiteItem(
+        {
+            "source": "archive://index.html",
+            "destination": "index.html",
+            "template": "foobar.txt",
+            "items": [
+                core.Item(
+                    {
+                        "title": "the way of the Force",
+                        "content": "Obi-Wan",
+                    }),
             ],
-        }
+            "baseurl": testapp.metadata["url"],
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
 
 
-@pytest.mark.parametrize('save_as', [
-    os.path.join('posts', 'skywalker.luke'),
-    os.path.join('yoda.jedi'),
+@pytest.mark.parametrize("save_as", [
+    os.path.join("posts", "skywalker.luke"),
+    os.path.join("yoda.jedi"),
 ])
 def test_param_save_as(testapp, save_as):
     """archive processor has to respect save_as parameter."""
@@ -130,39 +133,42 @@ def test_param_save_as(testapp, save_as):
     stream = archive.process(
         testapp,
         [
-            {
-                'title': 'the way of the Force',
-                'content': 'Obi-Wan',
-            },
+            core.Item(
+                {
+                    "title": "the way of the Force",
+                    "content": "Obi-Wan",
+                }),
         ],
         save_as=save_as)
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
-            'title': 'the way of the Force',
-            'content': 'Obi-Wan',
-        }
+            "title": "the way of the Force",
+            "content": "Obi-Wan",
+        })
 
-    assert next(stream) == \
+    assert next(stream) == core.WebSiteItem(
         {
-            'source': 'archive://%s' % save_as,
-            'destination': save_as,
-            'template': 'archive.j2',
-            'items': [
-                {
-                    'title': 'the way of the Force',
-                    'content': 'Obi-Wan'
-                },
+            "source": "archive://%s" % save_as,
+            "destination": save_as,
+            "template": "archive.j2",
+            "items": [
+                core.Item(
+                    {
+                        "title": "the way of the Force",
+                        "content": "Obi-Wan",
+                    }),
             ],
-        }
+            "baseurl": testapp.metadata["url"],
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
 
 
-@pytest.mark.parametrize('params, error', [
-    ({'save_as': 42}, "save_as: 42 should be instance of 'str'"),
-    ({'template': 42}, "template: 42 should be instance of 'str'"),
+@pytest.mark.parametrize("params, error", [
+    ({"save_as": 42}, "save_as: 42 should be instance of 'str'"),
+    ({"template": 42}, "template: 42 should be instance of 'str'"),
 ])
 def test_param_bad_value(testapp, params, error):
     """archive processor has to validate input parameters."""

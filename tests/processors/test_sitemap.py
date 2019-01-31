@@ -8,7 +8,7 @@ import unittest.mock
 import pytest
 import xmltodict
 
-from holocron import app, content
+from holocron import app, core
 from holocron.processors import sitemap
 
 
@@ -29,48 +29,43 @@ class _pytest_xmlasdict:
         return self._expected
 
 
-def _get_document(**kwargs):
-    document = content.Document(app.Holocron({}, metadata={
-        'url': 'http://obi-wan.jedi',
-    }))
-    document.update(kwargs)
-    return document
-
-
 @pytest.fixture(scope='function')
 def testapp():
-    instance = app.Holocron({}, metadata={
-        'url': 'http://obi-wan.jedi',
-    })
-    return instance
+    return app.Holocron(metadata={'url': 'https://yoda.ua'})
 
 
-@pytest.mark.parametrize('filename', [
-    's.html',       # test basic case works
-    'ы.html',       # test for proper UTF-8 encoding/decoding
-    'a&b.html',     # test escaping, otherwise XML is invalid
-    'a<b.html',     # test escaping, otherwise XML is invalid
-    'a>b.html',     # test escaping, otherwise XML is invalid
-    'a"b.html',     # test escaping, otherwise XML is invalid
-    "a'b.html",     # test escaping, otherwise XML is invalid
+@pytest.mark.parametrize("filename, escaped", [
+    ("s.html",   "s.html"),         # test basic case works
+    ("ы.html",   "%D1%8B.html"),    # test for proper UTF-8 encoding/decoding
+    ("a&b.html", "a%26b.html"),     # test escaping, otherwise XML is invalid
+    ("a<b.html", "a%3Cb.html"),     # test escaping, otherwise XML is invalid
+    ("a>b.html", "a%3Eb.html"),     # test escaping, otherwise XML is invalid
+    ("a\"b.html", "a%22b.html"),    # test escaping, otherwise XML is invalid
+    ("a'b.html", "a%27b.html"),     # test escaping, otherwise XML is invalid
 ])
-def test_item(testapp, filename):
+def test_item(testapp, filename, escaped):
     """Sitemap processor has to work!"""
 
     timepoint = datetime.datetime.fromtimestamp(0, tz=datetime.timezone.utc)
     stream = sitemap.process(
         testapp,
         [
-            _get_document(destination=filename, updated=timepoint),
+            core.WebSiteItem(
+                {
+                    'destination': filename,
+                    'updated': timepoint,
+                    'baseurl': testapp.metadata['url'],
+                }),
         ])
 
-    assert next(stream) == \
+    assert next(stream) == core.WebSiteItem(
         {
             'destination': filename,
             'updated': timepoint,
-        }
+            'baseurl': testapp.metadata['url'],
+        })
 
-    assert next(stream) == \
+    assert next(stream) == core.WebSiteItem(
         {
             'source': 'sitemap://sitemap.xml',
             'destination': 'sitemap.xml',
@@ -78,12 +73,13 @@ def test_item(testapp, filename):
                 'urlset': {
                     '@xmlns': 'http://www.sitemaps.org/schemas/sitemap/0.9',
                     'url': {
-                        'loc': 'http://obi-wan.jedi/' + filename,
+                        'loc': 'https://yoda.ua/' + escaped,
                         'lastmod': '1970-01-01T00:00:00+00:00',
                     },
                 },
             }),
-        }
+            'baseurl': testapp.metadata['url'],
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -97,18 +93,24 @@ def test_item_many(testapp, amount):
     stream = sitemap.process(
         testapp,
         [
-            _get_document(destination=str(i), updated=timepoint)
+            core.WebSiteItem(
+                {
+                    'destination': str(i),
+                    'updated': timepoint,
+                    'baseurl': testapp.metadata['url'],
+                })
             for i in range(amount)
         ])
 
     for i in range(amount):
-        assert next(stream) == \
+        assert next(stream) == core.WebSiteItem(
             {
                 'destination': str(i),
                 'updated': timepoint,
-            }
+                'baseurl': testapp.metadata['url'],
+            })
 
-    assert next(stream) == \
+    assert next(stream) == core.WebSiteItem(
         {
             'source': 'sitemap://sitemap.xml',
             'destination': 'sitemap.xml',
@@ -117,14 +119,15 @@ def test_item_many(testapp, amount):
                     '@xmlns': 'http://www.sitemaps.org/schemas/sitemap/0.9',
                     'url': [
                         {
-                            'loc': 'http://obi-wan.jedi/%d' % i,
+                            'loc': 'https://yoda.ua/%d' % i,
                             'lastmod': '1970-01-01T00:00:00+00:00',
                         }
                         for i in range(amount)
                     ],
                 },
             }),
-        }
+            'baseurl': testapp.metadata['url'],
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -137,17 +140,23 @@ def test_param_gzip(testapp):
     stream = sitemap.process(
         testapp,
         [
-            _get_document(destination='1.html', updated=timepoint),
+            core.WebSiteItem(
+                {
+                    'destination': '1.html',
+                    'updated': timepoint,
+                    'baseurl': testapp.metadata['url'],
+                }),
         ],
         gzip=True)
 
-    assert next(stream) == \
+    assert next(stream) == core.WebSiteItem(
         {
             'destination': '1.html',
             'updated': timepoint,
-        }
+            'baseurl': testapp.metadata['url'],
+        })
 
-    assert next(stream) == \
+    assert next(stream) == core.WebSiteItem(
         {
             'source': 'sitemap://sitemap.xml.gz',
             'destination': 'sitemap.xml.gz',
@@ -155,12 +164,13 @@ def test_param_gzip(testapp):
                 'urlset': {
                     '@xmlns': 'http://www.sitemaps.org/schemas/sitemap/0.9',
                     'url': {
-                        'loc': 'http://obi-wan.jedi/1.html',
+                        'loc': 'https://yoda.ua/1.html',
                         'lastmod': '1970-01-01T00:00:00+00:00',
                     },
                 },
             }, ungzip=True),
-        }
+            'baseurl': testapp.metadata['url'],
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -177,24 +187,29 @@ def test_param_save_as(testapp, save_as):
     stream = sitemap.process(
         testapp,
         [
-            _get_document(
-                destination=os.path.join('posts', '1.html'),
-                updated=timepoint),
+            core.WebSiteItem(
+                {
+                    'destination': os.path.join('posts', '1.html'),
+                    'updated': timepoint,
+                    'baseurl': testapp.metadata['url'],
+                }),
         ],
         save_as=save_as)
 
-    assert next(stream) == \
+    assert next(stream) == core.WebSiteItem(
         {
             'destination': os.path.join('posts', '1.html'),
             'updated': timepoint,
-        }
+            'baseurl': testapp.metadata['url'],
+        })
 
-    assert next(stream) == \
+    assert next(stream) == core.WebSiteItem(
         {
             'source': 'sitemap://%s' % save_as,
             'destination': save_as,
             'content': unittest.mock.ANY,
-        }
+            'baseurl': testapp.metadata['url'],
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -213,7 +228,12 @@ def test_param_save_as_unsupported(testapp, document_path, sitemap_path):
     stream = sitemap.process(
         testapp,
         [
-            _get_document(destination=document_path, updated=timepoint),
+            core.WebSiteItem(
+                {
+                    'destination': document_path,
+                    'updated': timepoint,
+                    'baseurl': testapp.metadata['url'],
+                }),
         ],
         save_as=sitemap_path)
 
@@ -241,23 +261,30 @@ def test_param_pretty(testapp, pretty, lines):
     stream = sitemap.process(
         testapp,
         [
-            _get_document(destination='1.html', updated=timepoint),
+            core.WebSiteItem(
+                {
+                    'destination': '1.html',
+                    'updated': timepoint,
+                    'baseurl': testapp.metadata['url'],
+                }),
         ],
         pretty=pretty)
 
-    assert next(stream) == \
+    assert next(stream) == core.WebSiteItem(
         {
             'destination': '1.html',
             'updated': timepoint,
-        }
+            'baseurl': testapp.metadata['url'],
+        })
 
     item = next(stream)
-    assert item == \
+    assert item == core.WebSiteItem(
         {
             'source': 'sitemap://sitemap.xml',
             'destination': 'sitemap.xml',
             'content': unittest.mock.ANY,
-        }
+            'baseurl': testapp.metadata['url'],
+        })
     assert len(item['content'].splitlines()) == lines
 
     with pytest.raises(StopIteration):
