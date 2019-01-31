@@ -22,7 +22,7 @@ class _pytest_regex:
         return self._regex.pattern
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def testapp():
     return app.Holocron()
 
@@ -34,22 +34,22 @@ def test_item(testapp):
         testapp,
         [
             {
-                'content': textwrap.dedent('''\
+                "content": textwrap.dedent("""\
                     some title
                     ==========
 
                     text with **bold**
-                '''),
-                'destination': '1.rst',
+                """),
+                "destination": "1.rst",
             },
         ])
 
     assert next(stream) == \
         {
-            'content': _pytest_regex(
-                r'<p>text with <strong>bold</strong></p>\s*'),
-            'destination': '1.html',
-            'title': 'some title',
+            "content": _pytest_regex(
+                r"<p>text with <strong>bold</strong></p>\s*"),
+            "destination": "1.html",
+            "title": "some title",
         }
 
     with pytest.raises(StopIteration):
@@ -63,7 +63,7 @@ def test_item_with_subsection(testapp):
         testapp,
         [
             {
-                'content': textwrap.dedent('''\
+                "content": textwrap.dedent("""\
                     some title
                     ==========
 
@@ -73,19 +73,19 @@ def test_item_with_subsection(testapp):
                     ------------
 
                     text with **bold**
-                '''),
-                'destination': '1.rst',
+                """),
+                "destination": "1.rst",
             },
         ])
 
     assert next(stream) == \
         {
-            'content': _pytest_regex(
-                r'<p>abstract</p>\s*'
-                r'<h2>some section</h2>\s*'
-                r'<p>text with <strong>bold</strong></p>\s*'),
-            'destination': '1.html',
-            'title': 'some title',
+            "content": _pytest_regex(
+                r"<p>abstract</p>\s*"
+                r"<h2>some section</h2>\s*"
+                r"<p>text with <strong>bold</strong></p>\s*"),
+            "destination": "1.html",
+            "title": "some title",
         }
 
     with pytest.raises(StopIteration):
@@ -99,18 +99,18 @@ def test_item_without_title(testapp):
         testapp,
         [
             {
-                'content': textwrap.dedent('''\
+                "content": textwrap.dedent("""\
                     text with **bold**
-                '''),
-                'destination': '1.rst',
+                """),
+                "destination": "1.rst",
             },
         ])
 
     assert next(stream) == \
         {
-            'content': _pytest_regex(
-                r'<p>text with <strong>bold</strong></p>\s*'),
-            'destination': '1.html',
+            "content": _pytest_regex(
+                r"<p>text with <strong>bold</strong></p>\s*"),
+            "destination": "1.html",
         }
 
     with pytest.raises(StopIteration):
@@ -124,7 +124,7 @@ def test_item_with_sections(testapp):
         testapp,
         [
             {
-                'content': textwrap.dedent('''\
+                "content": textwrap.dedent("""\
                     some title 1
                     ============
 
@@ -149,25 +149,25 @@ def test_item_with_sections(testapp):
                     --------------
 
                     yyy
-                '''),
-                'destination': '1.rst',
+                """),
+                "destination": "1.rst",
             },
         ])
 
     assert next(stream) == \
         {
-            'content': _pytest_regex(
-                r'<h2>some title 1</h2>\s*'
-                r'<p>aaa</p>\s*'
-                r'<h3>some section 1</h3>\s*'
-                r'<p>bbb</p>\s*'
-                r'<h3>some section 2</h3>\s*'
-                r'<p>ccc</p>\s*'
-                r'<h2>some title 2</h2>\s*'
-                r'<p>xxx</p>\s*'
-                r'<h3>some section 3</h3>\s*'
-                r'<p>yyy</p>\s*'),
-            'destination': '1.html',
+            "content": _pytest_regex(
+                r"<h2>some title 1</h2>\s*"
+                r"<p>aaa</p>\s*"
+                r"<h3>some section 1</h3>\s*"
+                r"<p>bbb</p>\s*"
+                r"<h3>some section 2</h3>\s*"
+                r"<p>ccc</p>\s*"
+                r"<h2>some title 2</h2>\s*"
+                r"<p>xxx</p>\s*"
+                r"<h3>some section 3</h3>\s*"
+                r"<p>yyy</p>\s*"),
+            "destination": "1.html",
         }
 
     with pytest.raises(StopIteration):
@@ -181,22 +181,22 @@ def test_item_with_code(testapp):
         testapp,
         [
             {
-                'content': textwrap.dedent('''\
+                "content": textwrap.dedent("""\
                     test codeblock
 
                     .. code:: python
 
                         lambda x: pass
-                '''),
-                'destination': '1.rst',
+                """),
+                "destination": "1.rst",
             },
         ])
 
     assert next(stream) == \
         {
-            'content': _pytest_regex(
-                r'<p>test codeblock</p>\s*<pre.*python[^>]*>[\s\S]+</pre>'),
-            'destination': '1.html',
+            "content": _pytest_regex(
+                r"<p>test codeblock</p>\s*<pre.*python[^>]*>[\s\S]+</pre>"),
+            "destination": "1.html",
         }
 
     with pytest.raises(StopIteration):
@@ -210,17 +210,17 @@ def test_item_with_inline_code(testapp):
         testapp,
         [
             {
-                'content': textwrap.dedent('''\
+                "content": textwrap.dedent("""\
                     test ``code``
-                '''),
-                'destination': '1.rst',
+                """),
+                "destination": "1.rst",
             },
         ])
 
     assert next(stream) == \
         {
-            'content': _pytest_regex(r'<p>test <code>code</code></p>'),
-            'destination': '1.html',
+            "content": _pytest_regex(r"<p>test <code>code</code></p>"),
+            "destination": "1.html",
         }
 
     with pytest.raises(StopIteration):
@@ -234,7 +234,7 @@ def test_param_settings(testapp):
         testapp,
         [
             {
-                'content': textwrap.dedent('''\
+                "content": textwrap.dedent("""\
                     section 1
                     =========
 
@@ -244,31 +244,31 @@ def test_param_settings(testapp):
                     =========
 
                     bbb
-                '''),
-                'destination': '1.rst',
+                """),
+                "destination": "1.rst",
             },
         ],
         settings={
-            'initial_header_level': 3,
+            "initial_header_level": 3,
         })
 
     assert next(stream) == \
         {
-            'content': _pytest_regex(
+            "content": _pytest_regex(
                 # by default, initial header level is 2 and so the sections
                 # would start with <h2>
-                r'<h3>section 1</h3>\s*'
-                r'<p>aaa</p>\s*'
-                r'<h3>section 2</h3>\s*'
-                r'<p>bbb</p>\s*'),
-            'destination': '1.html',
+                r"<h3>section 1</h3>\s*"
+                r"<p>aaa</p>\s*"
+                r"<h3>section 2</h3>\s*"
+                r"<p>bbb</p>\s*"),
+            "destination": "1.html",
         }
 
     with pytest.raises(StopIteration):
         next(stream)
 
 
-@pytest.mark.parametrize('amount', [0, 1, 2, 5, 10])
+@pytest.mark.parametrize("amount", [0, 1, 2, 5, 10])
 def test_item_many(testapp, amount):
     """reStructuredText processor has to work with stream."""
 
@@ -276,8 +276,8 @@ def test_item_many(testapp, amount):
         testapp,
         [
             {
-                'content': 'the key is **%d**' % i,
-                'destination': '1.rst',
+                "content": "the key is **%d**" % i,
+                "destination": "1.rst",
             }
             for i in range(amount)
         ])
@@ -285,16 +285,16 @@ def test_item_many(testapp, amount):
     for i in range(amount):
         assert next(stream) == \
             {
-                'content': '<p>the key is <strong>%d</strong></p>' % i,
-                'destination': '1.html',
+                "content": "<p>the key is <strong>%d</strong></p>" % i,
+                "destination": "1.html",
             }
 
     with pytest.raises(StopIteration):
         next(stream)
 
 
-@pytest.mark.parametrize('params, error', [
-    ({'settings': 42}, "settings: 42 should be instance of 'dict'"),
+@pytest.mark.parametrize("params, error", [
+    ({"settings": 42}, "settings: 42 should be instance of 'dict'"),
 ])
 def test_param_bad_value(testapp, params, error):
     """reStructuredText processor has to validate input parameters."""

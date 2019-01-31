@@ -9,7 +9,7 @@ from holocron import app
 from holocron.processors import frontmatter
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def testapp():
     return app.Holocron()
 
@@ -21,7 +21,7 @@ def test_item(testapp):
         testapp,
         [
             {
-                'content': textwrap.dedent('''\
+                "content": textwrap.dedent("""\
                     ---
                     author: Yoda
                     master: true
@@ -29,16 +29,16 @@ def test_item(testapp):
                     ---
 
                     May the Force be with you!
-                '''),
+                """),
             },
         ])
 
     assert next(stream) == \
         {
-            'content': 'May the Force be with you!\n',
-            'author': 'Yoda',
-            'master': True,
-            'labels': ['force', 'motto'],
+            "content": "May the Force be with you!\n",
+            "author": "Yoda",
+            "master": True,
+            "labels": ["force", "motto"],
         }
 
     with pytest.raises(StopIteration):
@@ -52,7 +52,7 @@ def test_item_without_frontmatter(testapp):
         testapp,
         [
             {
-                'content': textwrap.dedent('''\
+                "content": textwrap.dedent("""\
                     ---
                     author: Yoda
                     master: true
@@ -60,13 +60,13 @@ def test_item_without_frontmatter(testapp):
                     ...
 
                     May the Force be with you!
-                '''),
+                """),
             },
         ])
 
     assert next(stream) == \
         {
-            'content': textwrap.dedent('''\
+            "content": textwrap.dedent("""\
                 ---
                 author: Yoda
                 master: true
@@ -74,7 +74,7 @@ def test_item_without_frontmatter(testapp):
                 ...
 
                 May the Force be with you!
-            '''),
+            """),
         }
 
     with pytest.raises(StopIteration):
@@ -88,7 +88,7 @@ def test_item_with_frontmatter_in_text(testapp):
         testapp,
         [
             {
-                'content': textwrap.dedent('''\
+                "content": textwrap.dedent("""\
                     I am a Jedi, like my father before me.
 
                     ---
@@ -98,13 +98,13 @@ def test_item_with_frontmatter_in_text(testapp):
                     ---
 
                     May the Force be with you!
-                '''),
+                """),
             },
         ])
 
     assert next(stream) == \
         {
-            'content': textwrap.dedent('''\
+            "content": textwrap.dedent("""\
                 I am a Jedi, like my father before me.
 
                 ---
@@ -114,7 +114,7 @@ def test_item_with_frontmatter_in_text(testapp):
                 ---
 
                 May the Force be with you!
-            '''),
+            """),
         }
 
     with pytest.raises(StopIteration):
@@ -128,14 +128,14 @@ def test_item_invalid_yaml(testapp):
         testapp,
         [
             {
-                'content': textwrap.dedent('''\
+                "content": textwrap.dedent("""\
                     ---
                     author: Yoda
                      the best jedi ever:
                     ---
 
                     May the Force be with you!
-                '''),
+                """),
             },
         ])
 
@@ -150,7 +150,7 @@ def test_item_with_exploit(testapp):
         testapp,
         [
             {
-                'content': textwrap.dedent('''\
+                "content": textwrap.dedent("""\
                     ---
                     author: !!python/object/apply:subprocess.check_output
                       args: [ cat ~/.ssh/id_rsa ]
@@ -158,7 +158,7 @@ def test_item_with_exploit(testapp):
                     ---
 
                     May the Force be with you!
-                '''),
+                """),
             },
         ])
 
@@ -166,7 +166,7 @@ def test_item_with_exploit(testapp):
         next(stream)
 
 
-@pytest.mark.parametrize('amount', [0, 1, 2, 5, 10])
+@pytest.mark.parametrize("amount", [0, 1, 2, 5, 10])
 def test_item_many(testapp, amount):
     """Frontmatter processor has to work with stream."""
 
@@ -174,14 +174,14 @@ def test_item_many(testapp, amount):
         testapp,
         [
             {
-                'content': textwrap.dedent('''\
+                "content": textwrap.dedent("""\
                     ---
                     master: %d
                     labels: [force, motto]
                     ---
 
                     May the Force be with you!
-                ''' % i)
+                """ % i)
             }
             for i in range(amount)
         ])
@@ -189,16 +189,16 @@ def test_item_many(testapp, amount):
     for i in range(amount):
         assert next(stream) == \
             {
-                'master': i,
-                'labels': ['force', 'motto'],
-                'content': 'May the Force be with you!\n',
+                "master": i,
+                "labels": ["force", "motto"],
+                "content": "May the Force be with you!\n",
             }
 
     with pytest.raises(StopIteration):
         next(stream)
 
 
-@pytest.mark.parametrize('delimiter', ['+++', '***'])
+@pytest.mark.parametrize("delimiter", ["+++", "***"])
 def test_param_delimiter(testapp, delimiter):
     """Frontmatter processor has to respect delimiter parameter."""
 
@@ -206,7 +206,7 @@ def test_param_delimiter(testapp, delimiter):
         testapp,
         [
             {
-                'content': textwrap.dedent('''\
+                "content": textwrap.dedent("""\
                     %s
                     author: Yoda
                     master: true
@@ -214,24 +214,24 @@ def test_param_delimiter(testapp, delimiter):
                     %s
 
                     May the Force be with you!
-                ''' % (delimiter, delimiter)),
+                """ % (delimiter, delimiter)),
             },
         ],
         delimiter=delimiter)
 
     assert next(stream) == \
         {
-            'content': 'May the Force be with you!\n',
-            'author': 'Yoda',
-            'master': True,
-            'labels': ['force', 'motto'],
+            "content": "May the Force be with you!\n",
+            "author": "Yoda",
+            "master": True,
+            "labels": ["force", "motto"],
         }
 
     with pytest.raises(StopIteration):
         next(stream)
 
 
-@pytest.mark.parametrize('overwrite', [False, True])
+@pytest.mark.parametrize("overwrite", [False, True])
 def test_param_overwrite(testapp, overwrite):
     """Frontmatter processor has to respect overwrite parameter."""
 
@@ -239,8 +239,8 @@ def test_param_overwrite(testapp, overwrite):
         testapp,
         [
             {
-                'author': 'Obi-Wan Kenobi',
-                'content': textwrap.dedent('''\
+                "author": "Obi-Wan Kenobi",
+                "content": textwrap.dedent("""\
                     ---
                     author: Yoda
                     master: true
@@ -248,26 +248,26 @@ def test_param_overwrite(testapp, overwrite):
                     ---
 
                     May the Force be with you!
-                '''),
+                """),
             },
         ],
         overwrite=overwrite)
 
     assert next(stream) == \
         {
-            'content': 'May the Force be with you!\n',
-            'author': 'Yoda' if overwrite else 'Obi-Wan Kenobi',
-            'master': True,
-            'labels': ['force', 'motto'],
+            "content": "May the Force be with you!\n",
+            "author": "Yoda" if overwrite else "Obi-Wan Kenobi",
+            "master": True,
+            "labels": ["force", "motto"],
         }
 
     with pytest.raises(StopIteration):
         next(stream)
 
 
-@pytest.mark.parametrize('params, error', [
-    ({'delimiter': 42}, "delimiter: 42 should be instance of 'str'"),
-    ({'overwrite': 'true'}, "overwrite: 'true' should be instance of 'bool'"),
+@pytest.mark.parametrize("params, error", [
+    ({"delimiter": 42}, "delimiter: 42 should be instance of 'str'"),
+    ({"overwrite": "true"}, "overwrite: 'true' should be instance of 'bool'"),
 ])
 def test_param_bad_value(testapp, params, error):
     """Frontmatter processor has to validate input parameters."""

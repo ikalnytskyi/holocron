@@ -16,5 +16,5 @@
     :license: 3-clause BSD, see LICENSE for details.
 """
 
-__version__ = '0.4.0'
-__license__ = 'BSD'
+__version__ = "0.4.0"
+__license__ = "BSD"

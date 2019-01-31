@@ -21,12 +21,12 @@ class _WhenEvaluator:
 
     def __init__(self):
         self._env = jinja2.Environment()
-        self._env.filters.update({'match': _re_match})
+        self._env.filters.update({"match": _re_match})
 
     def eval(self, when, **context):
         template = self._env.from_string(
-            '{%% if %s %%}true{%% endif %%}' % when)
-        return template.render(**context) == 'true'
+            "{%% if %s %%}true{%% endif %%}" % when)
+        return template.render(**context) == "true"
 
 
 def process(app, stream, *, when, processor):

@@ -6,7 +6,7 @@ from holocron import app
 from holocron.processors import metadata
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def testapp():
     return app.Holocron()
 
@@ -18,20 +18,20 @@ def test_item(testapp):
         testapp,
         [
             {
-                'content': 'the Force',
-                'author': 'skywalker',
+                "content": "the Force",
+                "author": "skywalker",
             },
         ],
         metadata={
-            'author': 'yoda',
-            'type': 'memoire',
+            "author": "yoda",
+            "type": "memoire",
         })
 
     assert next(stream) == \
         {
-            'content': 'the Force',
-            'author': 'yoda',
-            'type': 'memoire',
+            "content": "the Force",
+            "author": "yoda",
+            "type": "memoire",
         }
 
     with pytest.raises(StopIteration):
@@ -45,22 +45,22 @@ def test_item_untouched(testapp):
         testapp,
         [
             {
-                'content': 'the Force',
-                'author': 'skywalker',
+                "content": "the Force",
+                "author": "skywalker",
             },
         ])
 
     assert next(stream) == \
         {
-            'content': 'the Force',
-            'author': 'skywalker',
+            "content": "the Force",
+            "author": "skywalker",
         }
 
     with pytest.raises(StopIteration):
         next(stream)
 
 
-@pytest.mark.parametrize('amount', [0, 1, 2, 5, 10])
+@pytest.mark.parametrize("amount", [0, 1, 2, 5, 10])
 def test_item_many(testapp, amount):
     """Metadata processor has to work with stream."""
 
@@ -68,31 +68,31 @@ def test_item_many(testapp, amount):
         testapp,
         [
             {
-                'content': 'the key is #%d' % i,
-                'author': 'luke',
+                "content": "the key is #%d" % i,
+                "author": "luke",
             }
             for i in range(amount)
         ],
         metadata={
-            'author': 'yoda',
-            'type': 'memoire',
+            "author": "yoda",
+            "type": "memoire",
         })
 
     for i in range(amount):
         assert next(stream) == \
             {
-                'content': 'the key is #%d' % i,
-                'author': 'yoda',
-                'type': 'memoire',
+                "content": "the key is #%d" % i,
+                "author": "yoda",
+                "type": "memoire",
             }
 
     with pytest.raises(StopIteration):
         next(stream)
 
 
-@pytest.mark.parametrize('overwrite, author', [
-    (True, 'yoda'),
-    (False, 'skywalker'),
+@pytest.mark.parametrize("overwrite, author", [
+    (True, "yoda"),
+    (False, "skywalker"),
 ])
 def test_param_overwrite(testapp, overwrite, author):
     """Metadata processor has to respect overwrite option."""
@@ -101,30 +101,30 @@ def test_param_overwrite(testapp, overwrite, author):
         testapp,
         [
             {
-                'content': 'the Force',
-                'author': 'skywalker',
+                "content": "the Force",
+                "author": "skywalker",
             },
         ],
         metadata={
-            'author': 'yoda',
-            'type': 'memoire',
+            "author": "yoda",
+            "type": "memoire",
         },
         overwrite=overwrite)
 
     assert next(stream) == \
         {
-            'content': 'the Force',
-            'author': author,
-            'type': 'memoire',
+            "content": "the Force",
+            "author": author,
+            "type": "memoire",
         }
 
     with pytest.raises(StopIteration):
         next(stream)
 
 
-@pytest.mark.parametrize('params, error', [
-    ({'metadata': 42}, "metadata: 42 should be instance of 'dict'"),
-    ({'overwrite': 'true'}, "overwrite: 'true' should be instance of 'bool'"),
+@pytest.mark.parametrize("params, error", [
+    ({"metadata": 42}, "metadata: 42 should be instance of 'dict'"),
+    ({"overwrite": "true"}, "overwrite: 'true' should be instance of 'bool'"),
 ])
 def test_param_bad_value(testapp, params, error):
     """Metadata processor has to validate input parameters."""

@@ -22,8 +22,8 @@ class TestHolocron(HolocronTestCase):
 
     def setUp(self):
         self.app = Holocron({
-            'ext': {
-                'enabled': [],
+            "ext": {
+                "enabled": [],
             },
         })
 
@@ -35,14 +35,14 @@ class TestHolocron(HolocronTestCase):
             return documents
 
         self.assertEqual(len(self.app._processors), 0)
-        self.app.add_processor('test', process)
+        self.app.add_processor("test", process)
         self.assertEqual(len(self.app._processors), 1)
-        self.assertIs(self.app._processors['test'], process)
+        self.assertIs(self.app._processors["test"], process)
 
         # registration under the same name is not allowed
-        self.app.add_processor('test', lambda: 0)
+        self.app.add_processor("test", lambda: 0)
         self.assertEqual(len(self.app._processors), 1)
-        self.assertIs(self.app._processors['test'], process)
+        self.assertIs(self.app._processors["test"], process)
 
 
 class TestHolocronDefaults(HolocronTestCase):
@@ -57,35 +57,35 @@ class TestHolocronDefaults(HolocronTestCase):
         app = create_app()
 
         self.assertEqual(set(app._processors), set([
-            'source',
-            'metadata',
-            'pipeline',
-            'frontmatter',
-            'markdown',
-            'restructuredtext',
-            'prettyuri',
-            'feed',
-            'sitemap',
-            'archive',
-            'commit',
-            'jinja2',
-            'when',
-            'todatetime',
+            "source",
+            "metadata",
+            "pipeline",
+            "frontmatter",
+            "markdown",
+            "restructuredtext",
+            "prettyuri",
+            "feed",
+            "sitemap",
+            "archive",
+            "commit",
+            "jinja2",
+            "when",
+            "todatetime",
         ]))
 
 
 class TestCreateApp(HolocronTestCase):
 
     def setUp(self):
-        # By its design 'warnings.warn' spawn a warning only once, and info
-        # whether it's spawned or not keeps in per-module registry. Since
-        # it's global by nature, it's shared between test cases and break
-        # them. Since Python 3.4 there's a versioned registry, so any
-        # changes to filters or calling to 'catch_warnings' context manager
+        # By its design "warnings.warn" spawn a warning only once, and info
+        # whether it"s spawned or not keeps in per-module registry. Since
+        # it"s global by nature, it"s shared between test cases and break
+        # them. Since Python 3.4 there"s a versioned registry, so any
+        # changes to filters or calling to "catch_warnings" context manager
         # will reset it, but Holocron supports Python 3.3 too. So we use
         # manual registry resetting as temporary solution.
         import sys
-        getattr(sys.modules['holocron.app'], '__warningregistry__', {}).clear()
+        getattr(sys.modules["holocron.app"], "__warningregistry__", {}).clear()
 
     def _create_app(self, conf_raw=None, side_effect=None):
         """
@@ -95,8 +95,8 @@ class TestCreateApp(HolocronTestCase):
         mopen = mock.mock_open(read_data=conf_raw)
         mopen.side_effect = side_effect if side_effect else None
 
-        with mock.patch('holocron.app.open', mopen, create=True):
-            return create_app('_config.yml')
+        with mock.patch("holocron.app.open", mopen, create=True):
+            return create_app("_config.yml")
 
     def test_default(self):
         """
@@ -112,7 +112,7 @@ class TestCreateApp(HolocronTestCase):
         """
         Tests that custom conf overrides default one.
         """
-        conf_raw = textwrap.dedent('''\
+        conf_raw = textwrap.dedent("""\
             metadata:
                 skywalker: jedi
                 yoda:
@@ -120,33 +120,33 @@ class TestCreateApp(HolocronTestCase):
             site:
                 name: MySite
                 author: User
-        ''')
+        """)
         app = self._create_app(conf_raw=conf_raw)
 
         self.assertIsNotNone(app)
-        self.assertEqual(app.conf['site']['name'], 'MySite')
-        self.assertEqual(app.conf['site']['author'], 'User')
+        self.assertEqual(app.conf["site"]["name"], "MySite")
+        self.assertEqual(app.conf["site"]["author"], "User")
 
-        self.assertEqual(app.metadata['skywalker'], 'jedi')
-        self.assertEqual(app.metadata['yoda'], {'rank': 'master'})
+        self.assertEqual(app.metadata["skywalker"], "jedi")
+        self.assertEqual(app.metadata["yoda"], {"rank": "master"})
 
     def test_illformed_conf(self):
         """
-        Tests that in case of ill-formed conf we can't create app instance.
+        Tests that in case of ill-formed conf we can"t create app instance.
         """
-        conf_raw = textwrap.dedent('''\
+        conf_raw = textwrap.dedent("""\
             error
             site:
                 name: MySite
-        ''')
+        """)
         app = self._create_app(conf_raw=conf_raw)
 
         self.assertIsNone(app)
 
     def test_filenotfounderror(self):
         """
-        Tests that we create application with default settings in case user's
-        settings wasn't found.
+        Tests that we create application with default settings in case user"s
+        settings wasn"t found.
         """
         app = self._create_app(side_effect=FileNotFoundError)
 
@@ -156,7 +156,7 @@ class TestCreateApp(HolocronTestCase):
     def test_permissionerror(self):
         """
         Tests that we create application with default settings in case we
-        don't have permissions to read user settings.
+        don"t have permissions to read user settings.
         """
         app = self._create_app(side_effect=PermissionError)
 
@@ -165,7 +165,7 @@ class TestCreateApp(HolocronTestCase):
 
     def test_isadirectoryerror(self):
         """
-        Tests that we can't create app instance if we pass a directory as
+        Tests that we can"t create app instance if we pass a directory as
         settings file.
         """
         app = self._create_app(side_effect=IsADirectoryError)
@@ -179,102 +179,102 @@ class TestCreateApp(HolocronTestCase):
         app = create_app()
 
         self.assertEqual(set(app._processors), set([
-            'source',
-            'metadata',
-            'pipeline',
-            'frontmatter',
-            'markdown',
-            'restructuredtext',
-            'prettyuri',
-            'feed',
-            'sitemap',
-            'archive',
-            'commit',
-            'jinja2',
-            'when',
-            'todatetime',
+            "source",
+            "metadata",
+            "pipeline",
+            "frontmatter",
+            "markdown",
+            "restructuredtext",
+            "prettyuri",
+            "feed",
+            "sitemap",
+            "archive",
+            "commit",
+            "jinja2",
+            "when",
+            "todatetime",
         ]))
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def testapp():
     return Holocron({})
 
 
 def test_metadata_empty(testapp):
-    with pytest.raises(KeyError, match='skywalker'):
-        testapp.metadata['skywalker']
-    assert testapp.metadata.get('skywalker', 'yoda') == 'yoda'
+    with pytest.raises(KeyError, match="skywalker"):
+        testapp.metadata["skywalker"]
+    assert testapp.metadata.get("skywalker", "yoda") == "yoda"
 
-    testapp.metadata['skywalker'] = 'jedi'
-    assert testapp.metadata['skywalker'] == 'jedi'
+    testapp.metadata["skywalker"] = "jedi"
+    assert testapp.metadata["skywalker"] == "jedi"
 
 
 def test_metadata():
-    testapp = Holocron({}, {'skywalker': 'jedi', 'yoda': 'master'})
-    assert testapp.metadata['skywalker'] == 'jedi'
-    assert testapp.metadata['yoda'] == 'master'
+    testapp = Holocron({}, {"skywalker": "jedi", "yoda": "master"})
+    assert testapp.metadata["skywalker"] == "jedi"
+    assert testapp.metadata["yoda"] == "master"
 
-    testapp.metadata['skywalker'] = 'luke'
-    assert testapp.metadata['skywalker'] == 'luke'
-    assert testapp.metadata['yoda'] == 'master'
+    testapp.metadata["skywalker"] = "luke"
+    assert testapp.metadata["skywalker"] == "luke"
+    assert testapp.metadata["yoda"] == "master"
 
 
-@pytest.mark.parametrize('processor_options', [
-    {'a': 1},
-    {'b': 1.13},
-    {'a': 1, 'b': 1.13},
-    {'a': {'x': [1, 2]}, 'b': ['1', 2]},
+@pytest.mark.parametrize("processor_options", [
+    {"a": 1},
+    {"b": 1.13},
+    {"a": 1, "b": 1.13},
+    {"a": {"x": [1, 2]}, "b": ["1", 2]},
 ])
 def test_invoke_processors_propagates_options(testapp, processor_options):
     def processor(app, documents, **options):
         assert options == processor_options
         yield from documents
-    testapp.add_processor('processor', processor)
-    testapp.invoke_processors([], [dict(processor_options, name='processor')])
+    testapp.add_processor("processor", processor)
+    testapp.invoke_processors([], [dict(processor_options, name="processor")])
 
 
-@pytest.mark.parametrize('options, resolved', [
-    ({'a': {'$ref': 'metadata://#/is_yoda_master'}}, {'a': True}),
-    ({'a': {'$ref': 'metadata://#/extra/0/luke'}}, {'a': 'skywalker'}),
-    ({'a': {'$ref': 'metadata://#/is_yoda_master'},
-      'b': {'$ref': 'metadata://#/extra/0/luke'}},
-     {'a': True, 'b': 'skywalker'}),
-    ({'a': {'$ref': 'item://#/content'}},
-     {'a': {'$ref': 'item://#/content'}}),
+@pytest.mark.parametrize("options, resolved", [
+    ({"a": {"$ref": "metadata://#/is_yoda_master"}}, {"a": True}),
+    ({"a": {"$ref": "metadata://#/extra/0/luke"}}, {"a": "skywalker"}),
+    ({"a": {"$ref": "metadata://#/is_yoda_master"},
+      "b": {"$ref": "metadata://#/extra/0/luke"}},
+     {"a": True, "b": "skywalker"}),
+    ({"a": {"$ref": "item://#/content"}},
+     {"a": {"$ref": "item://#/content"}}),
 ])
 def test_invoke_processors_resolves_jsonref(testapp, options, resolved):
     testapp.metadata.update({
-        'extra': [{'luke': 'skywalker'}],
-        'is_yoda_master': True,
+        "extra": [{"luke": "skywalker"}],
+        "is_yoda_master": True,
     })
 
     def processor(app, documents, **options):
         assert options == resolved
         yield from documents
-    testapp.add_processor('processor', processor)
-    testapp.invoke_processors([], [dict(options, name='processor')])
+    testapp.add_processor("processor", processor)
+    testapp.invoke_processors([], [dict(options, name="processor")])
 
 
-@pytest.mark.parametrize('initial_documents', [
-    [{'a': 1}],
-    [{'a': 1, 'b': 1.13}],
-    [{'a': 1}, {'b': 1.13}],
-    [{'a': {'x': [1, 2]}, 'b': ['1', 2]}],
+@pytest.mark.parametrize("initial_documents", [
+    [{"a": 1}],
+    [{"a": 1, "b": 1.13}],
+    [{"a": 1}, {"b": 1.13}],
+    [{"a": {"x": [1, 2]}, "b": ["1", 2]}],
 ])
 def test_invoke_processors_initial_documents(testapp, initial_documents):
     def processor(app, documents):
         assert documents == initial_documents
         yield from documents
-    testapp.add_processor('processor', processor)
-    testapp.invoke_processors(initial_documents, [{'name': 'processor'}])
+    testapp.add_processor("processor", processor)
+    testapp.invoke_processors(initial_documents, [{"name": "processor"}])
 
 
-@pytest.mark.parametrize('documents', [
-    [{'a': 1}],
-    [{'a': 1, 'b': 1.13}],
-    [{'a': 1}, {'b': 1.13}],
-    [{'a': {'x': [1, 2]}, 'b': ['1', 2]}],
+@pytest.mark.parametrize("documents", [
+    [{"a": 1}],
+    [{"a": 1, "b": 1.13}],
+    [{"a": 1}, {"b": 1.13}],
+    [{"a": {"x": [1, 2]}, "b": ["1", 2]}],
 ])
 def test_invoke_processors_empty_pipeline(testapp, documents):
     assert list(testapp.invoke_processors(documents, [])) == documents
@@ -283,37 +283,37 @@ def test_invoke_processors_empty_pipeline(testapp, documents):
 def test_invoke_processors_pipeline(testapp):
     def processor_a(app, documents):
         documents = list(documents)
-        assert documents == [{'a': 'b'}]
-        documents[0]['x'] = 42
+        assert documents == [{"a": "b"}]
+        documents[0]["x"] = 42
         yield from documents
 
     def processor_b(app, documents):
         documents = list(documents)
-        assert documents == [{'a': 'b', 'x': 42}]
-        documents.append({'z': 13})
+        assert documents == [{"a": "b", "x": 42}]
+        documents.append({"z": 13})
         yield from documents
 
     def processor_c(app, documents):
         documents = list(documents)
-        assert documents == [{'a': 'b', 'x': 42}, {'z': 13}]
+        assert documents == [{"a": "b", "x": 42}, {"z": 13}]
         yield from documents
 
-    testapp.add_processor('processor_a', processor_a)
-    testapp.add_processor('processor_b', processor_b)
-    testapp.add_processor('processor_c', processor_c)
+    testapp.add_processor("processor_a", processor_a)
+    testapp.add_processor("processor_b", processor_b)
+    testapp.add_processor("processor_c", processor_c)
 
-    pipeline = [{'name': 'processor_a'},
-                {'name': 'processor_b'}]
-    assert list(testapp.invoke_processors([{'a': 'b'}], pipeline)) \
-        == [{'a': 'b', 'x': 42}, {'z': 13}]
+    pipeline = [{"name": "processor_a"},
+                {"name": "processor_b"}]
+    assert list(testapp.invoke_processors([{"a": "b"}], pipeline)) \
+        == [{"a": "b", "x": 42}, {"z": 13}]
 
 
 def test_invoke_processors_processor_errors(testapp):
     def processor(app, documents):
-        raise ValueError('something bad happened')
+        raise ValueError("something bad happened")
         yield
-    testapp.add_processor('processor', processor)
+    testapp.add_processor("processor", processor)
 
-    with pytest.raises(ValueError, match='something bad happened'):
-        for _ in testapp.invoke_processors([], [{'name': 'processor'}]):
+    with pytest.raises(ValueError, match="something bad happened"):
+        for _ in testapp.invoke_processors([], [{"name": "processor"}]):
             pass

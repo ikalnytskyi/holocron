@@ -7,7 +7,7 @@ from ._misc import parameters
 
 @parameters(
     schema={
-        'pipeline': schema.Schema([{str: object}]),
+        "pipeline": schema.Schema([{str: object}]),
     }
 )
 def process(app, stream, *, pipeline=[]):

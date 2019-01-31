@@ -31,7 +31,7 @@ def create_app(confpath=None):
     try:
         conf = None
         if confpath is not None:
-            with open(confpath, 'r', encoding='utf-8') as f:
+            with open(confpath, "r", encoding="utf-8") as f:
                 # the conf may contain the {here} macro, so we have to
                 # replace it with actual value.
                 here = os.path.dirname(os.path.abspath(confpath))
@@ -41,27 +41,27 @@ def create_app(confpath=None):
         # it's ok that a user doesn't have a settings file or doesn't have
         # permissions to read it, so just treat a warning and continue
         # execution.
-        logger.warning('%s: %s', exc.filename, exc.strerror)
-        logger.warning('Fallback to default settings')
+        logger.warning("%s: %s", exc.filename, exc.strerror)
+        logger.warning("Fallback to default settings")
 
     except (IsADirectoryError, ) as exc:
         # well, if we try to read settings from a directory, it's probably
         # a user have a wrong setup. we have no choice but treat error and
         # do not create application instance.
-        logger.error('%s: %s', exc.filename, exc.strerror)
+        logger.error("%s: %s", exc.filename, exc.strerror)
         return None
 
     except (yaml.YAMLError, ) as exc:
         # we have an ill-formed settings file, thus we can't apply users'
         # settings. in this case it's better show errors and do not create
         # application instance.
-        logger.error('%s: %s', confpath, str(exc))
+        logger.error("%s: %s", confpath, str(exc))
         return None
 
-    metadata = conf.pop('metadata', None) if conf else None
+    metadata = conf.pop("metadata", None) if conf else None
     app = Holocron(conf, metadata)
 
-    for ext in stevedore.ExtensionManager(namespace='holocron.processors'):
+    for ext in stevedore.ExtensionManager(namespace="holocron.processors"):
         app.add_processor(ext.name, ext.plugin)
 
     return app
@@ -71,7 +71,7 @@ class Holocron(object):
     """
     The Holocron class implements a blog instance.
 
-    Once it's created it will act as a central registry for the extensions,
+    Once it"s created it will act as a central registry for the extensions,
     converters, template configuration and much more.
 
     Here the interaction workflow for end-users:
@@ -85,9 +85,9 @@ class Holocron(object):
 
     #: Default settings.
     default_conf = {
-        'paths': {
-            'content': '.',
-            'output': '_build',
+        "paths": {
+            "content": ".",
+            "output": "_build",
         },
     }
 
@@ -126,7 +126,7 @@ class Holocron(object):
         :param processor: a process function to be registered
         """
         if name in self._processors:
-            logger.warning('%s processor skipped: already registered', name)
+            logger.warning("%s processor skipped: already registered", name)
             return
 
         self._processors[name] = processor
@@ -136,14 +136,14 @@ class Holocron(object):
 
         for processor in pipeline:
             processor = processor.copy()
-            processfn = self._processors[processor.pop('name')]
+            processfn = self._processors[processor.pop("name")]
 
             # Resolve every JSON reference we encounter in a processor's
             # parameters. Please note, we're doing this so late because we
             # want to take into account metadata and other changes produced
             # by previous processors in the pipeline.
             processor = _misc.resolve_json_references(
-                processor, {'metadata:': self.metadata})
+                processor, {"metadata:": self.metadata})
 
             stream = processfn(self, stream, **processor)
 
@@ -153,7 +153,7 @@ class Holocron(object):
         """
         (DEPRECATED) Starts build process.
         """
-        processors = self.conf['pipelines']['build']
+        processors = self.conf["pipelines"]["build"]
 
         # Since processors are generators and thus are lazy evaluated, we need
         # to force evaluate them. Otherwise, the pipeline will produce nothing.
