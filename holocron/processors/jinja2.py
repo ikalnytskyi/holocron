@@ -43,4 +43,4 @@ def process(app, stream, *, template="page.j2", context={}, themes=None):
     # depend on. That's why we need to inject these statics to a pipeline;
     # otherwise, rendered items may look improperly.
     for theme in themes:
-        yield from source.process(app, [], path=theme, pattern=r'static/')
+        yield from source.process(app, [], path=theme, pattern=r"static/")

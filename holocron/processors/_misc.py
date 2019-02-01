@@ -11,8 +11,8 @@ import schema
 
 def resolve_json_references(value, context, keep_unknown=True):
     def _do_resolve(node):
-        if isinstance(node, collections.Mapping) and '$ref' in node:
-            uri, fragment = urllib.parse.urldefrag(node['$ref'])
+        if isinstance(node, collections.Mapping) and "$ref" in node:
+            uri, fragment = urllib.parse.urldefrag(node["$ref"])
             try:
                 return jsonpointer.resolve_pointer(context[uri], fragment)
             except KeyError:
@@ -53,8 +53,8 @@ class parameters:
                 except KeyError:
                     try:
                         value = resolve_json_references(
-                            {'$ref': self._fallback[param]},
-                            {'metadata:': app.metadata})
+                            {"$ref": self._fallback[param]},
+                            {"metadata:": app.metadata})
                     except (jsonpointer.JsonPointerException, KeyError):
                         continue
 
@@ -62,7 +62,7 @@ class parameters:
                     try:
                         schema.Schema(self._schema[param]).validate(value)
                     except schema.SchemaError as exc:
-                        raise ValueError('%s: %s' % (param, str(exc)))
+                        raise ValueError("%s: %s" % (param, str(exc)))
 
                 kwargs[param] = value
             return fn(app, *args, **kwargs)

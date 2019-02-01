@@ -22,16 +22,16 @@ class _pytest_xmlasdict:
     def __eq__(self, actual):
         if self._ungzip:
             actual = gzip.decompress(actual)
-        actual = xmltodict.parse(actual, 'UTF-8')
+        actual = xmltodict.parse(actual, "UTF-8")
         return self._expected == actual
 
     def __repr__(self):
         return self._expected
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def testapp():
-    return app.Holocron(metadata={'url': 'https://yoda.ua'})
+    return app.Holocron(metadata={"url": "https://yoda.ua"})
 
 
 @pytest.mark.parametrize("filename, escaped", [
@@ -52,40 +52,40 @@ def test_item(testapp, filename, escaped):
         [
             core.WebSiteItem(
                 {
-                    'destination': filename,
-                    'updated': timepoint,
-                    'baseurl': testapp.metadata['url'],
+                    "destination": filename,
+                    "updated": timepoint,
+                    "baseurl": testapp.metadata["url"],
                 }),
         ])
 
     assert next(stream) == core.WebSiteItem(
         {
-            'destination': filename,
-            'updated': timepoint,
-            'baseurl': testapp.metadata['url'],
+            "destination": filename,
+            "updated": timepoint,
+            "baseurl": testapp.metadata["url"],
         })
 
     assert next(stream) == core.WebSiteItem(
         {
-            'source': 'sitemap://sitemap.xml',
-            'destination': 'sitemap.xml',
-            'content': _pytest_xmlasdict({
-                'urlset': {
-                    '@xmlns': 'http://www.sitemaps.org/schemas/sitemap/0.9',
-                    'url': {
-                        'loc': 'https://yoda.ua/' + escaped,
-                        'lastmod': '1970-01-01T00:00:00+00:00',
+            "source": "sitemap://sitemap.xml",
+            "destination": "sitemap.xml",
+            "content": _pytest_xmlasdict({
+                "urlset": {
+                    "@xmlns": "http://www.sitemaps.org/schemas/sitemap/0.9",
+                    "url": {
+                        "loc": "https://yoda.ua/" + escaped,
+                        "lastmod": "1970-01-01T00:00:00+00:00",
                     },
                 },
             }),
-            'baseurl': testapp.metadata['url'],
+            "baseurl": testapp.metadata["url"],
         })
 
     with pytest.raises(StopIteration):
         next(stream)
 
 
-@pytest.mark.parametrize('amount', [2, 5, 10])
+@pytest.mark.parametrize("amount", [2, 5, 10])
 def test_item_many(testapp, amount):
     """Sitemap processor has to work with stream."""
 
@@ -95,9 +95,9 @@ def test_item_many(testapp, amount):
         [
             core.WebSiteItem(
                 {
-                    'destination': str(i),
-                    'updated': timepoint,
-                    'baseurl': testapp.metadata['url'],
+                    "destination": str(i),
+                    "updated": timepoint,
+                    "baseurl": testapp.metadata["url"],
                 })
             for i in range(amount)
         ])
@@ -105,28 +105,28 @@ def test_item_many(testapp, amount):
     for i in range(amount):
         assert next(stream) == core.WebSiteItem(
             {
-                'destination': str(i),
-                'updated': timepoint,
-                'baseurl': testapp.metadata['url'],
+                "destination": str(i),
+                "updated": timepoint,
+                "baseurl": testapp.metadata["url"],
             })
 
     assert next(stream) == core.WebSiteItem(
         {
-            'source': 'sitemap://sitemap.xml',
-            'destination': 'sitemap.xml',
-            'content': _pytest_xmlasdict({
-                'urlset': {
-                    '@xmlns': 'http://www.sitemaps.org/schemas/sitemap/0.9',
-                    'url': [
+            "source": "sitemap://sitemap.xml",
+            "destination": "sitemap.xml",
+            "content": _pytest_xmlasdict({
+                "urlset": {
+                    "@xmlns": "http://www.sitemaps.org/schemas/sitemap/0.9",
+                    "url": [
                         {
-                            'loc': 'https://yoda.ua/%d' % i,
-                            'lastmod': '1970-01-01T00:00:00+00:00',
+                            "loc": "https://yoda.ua/%d" % i,
+                            "lastmod": "1970-01-01T00:00:00+00:00",
                         }
                         for i in range(amount)
                     ],
                 },
             }),
-            'baseurl': testapp.metadata['url'],
+            "baseurl": testapp.metadata["url"],
         })
 
     with pytest.raises(StopIteration):
@@ -142,43 +142,43 @@ def test_param_gzip(testapp):
         [
             core.WebSiteItem(
                 {
-                    'destination': '1.html',
-                    'updated': timepoint,
-                    'baseurl': testapp.metadata['url'],
+                    "destination": "1.html",
+                    "updated": timepoint,
+                    "baseurl": testapp.metadata["url"],
                 }),
         ],
         gzip=True)
 
     assert next(stream) == core.WebSiteItem(
         {
-            'destination': '1.html',
-            'updated': timepoint,
-            'baseurl': testapp.metadata['url'],
+            "destination": "1.html",
+            "updated": timepoint,
+            "baseurl": testapp.metadata["url"],
         })
 
     assert next(stream) == core.WebSiteItem(
         {
-            'source': 'sitemap://sitemap.xml.gz',
-            'destination': 'sitemap.xml.gz',
-            'content': _pytest_xmlasdict({
-                'urlset': {
-                    '@xmlns': 'http://www.sitemaps.org/schemas/sitemap/0.9',
-                    'url': {
-                        'loc': 'https://yoda.ua/1.html',
-                        'lastmod': '1970-01-01T00:00:00+00:00',
+            "source": "sitemap://sitemap.xml.gz",
+            "destination": "sitemap.xml.gz",
+            "content": _pytest_xmlasdict({
+                "urlset": {
+                    "@xmlns": "http://www.sitemaps.org/schemas/sitemap/0.9",
+                    "url": {
+                        "loc": "https://yoda.ua/1.html",
+                        "lastmod": "1970-01-01T00:00:00+00:00",
                     },
                 },
             }, ungzip=True),
-            'baseurl': testapp.metadata['url'],
+            "baseurl": testapp.metadata["url"],
         })
 
     with pytest.raises(StopIteration):
         next(stream)
 
 
-@pytest.mark.parametrize('save_as', [
-    os.path.join('posts', 'skywalker.luke'),
-    os.path.join('yoda.jedi'),
+@pytest.mark.parametrize("save_as", [
+    os.path.join("posts", "skywalker.luke"),
+    os.path.join("yoda.jedi"),
 ])
 def test_param_save_as(testapp, save_as):
     """Sitemap processor has to respect save_as parameter."""
@@ -189,37 +189,37 @@ def test_param_save_as(testapp, save_as):
         [
             core.WebSiteItem(
                 {
-                    'destination': os.path.join('posts', '1.html'),
-                    'updated': timepoint,
-                    'baseurl': testapp.metadata['url'],
+                    "destination": os.path.join("posts", "1.html"),
+                    "updated": timepoint,
+                    "baseurl": testapp.metadata["url"],
                 }),
         ],
         save_as=save_as)
 
     assert next(stream) == core.WebSiteItem(
         {
-            'destination': os.path.join('posts', '1.html'),
-            'updated': timepoint,
-            'baseurl': testapp.metadata['url'],
+            "destination": os.path.join("posts", "1.html"),
+            "updated": timepoint,
+            "baseurl": testapp.metadata["url"],
         })
 
     assert next(stream) == core.WebSiteItem(
         {
-            'source': 'sitemap://%s' % save_as,
-            'destination': save_as,
-            'content': unittest.mock.ANY,
-            'baseurl': testapp.metadata['url'],
+            "source": "sitemap://%s" % save_as,
+            "destination": save_as,
+            "content": unittest.mock.ANY,
+            "baseurl": testapp.metadata["url"],
         })
 
     with pytest.raises(StopIteration):
         next(stream)
 
 
-@pytest.mark.parametrize('document_path, sitemap_path', [
-    (os.path.join('1.html'), os.path.join('b', 'sitemap.xml')),
-    (os.path.join('a', '1.html'), os.path.join('b', 'sitemap.xml')),
-    (os.path.join('a', '1.html'), os.path.join('a', 'c', 'sitemap.xml')),
-    (os.path.join('ab', '1.html'), os.path.join('a', 'sitemap.xml')),
+@pytest.mark.parametrize("document_path, sitemap_path", [
+    (os.path.join("1.html"), os.path.join("b", "sitemap.xml")),
+    (os.path.join("a", "1.html"), os.path.join("b", "sitemap.xml")),
+    (os.path.join("a", "1.html"), os.path.join("a", "c", "sitemap.xml")),
+    (os.path.join("ab", "1.html"), os.path.join("a", "sitemap.xml")),
 ])
 def test_param_save_as_unsupported(testapp, document_path, sitemap_path):
     """Sitemap process has to check enlisted URLs for compatibility."""
@@ -230,9 +230,9 @@ def test_param_save_as_unsupported(testapp, document_path, sitemap_path):
         [
             core.WebSiteItem(
                 {
-                    'destination': document_path,
-                    'updated': timepoint,
-                    'baseurl': testapp.metadata['url'],
+                    "destination": document_path,
+                    "updated": timepoint,
+                    "baseurl": testapp.metadata["url"],
                 }),
         ],
         save_as=sitemap_path)
@@ -250,7 +250,7 @@ def test_param_save_as_unsupported(testapp, document_path, sitemap_path):
         next(stream)
 
 
-@pytest.mark.parametrize('pretty, lines', (
+@pytest.mark.parametrize("pretty, lines", (
     (False, 1),
     (True, 7),
 ))
@@ -263,37 +263,37 @@ def test_param_pretty(testapp, pretty, lines):
         [
             core.WebSiteItem(
                 {
-                    'destination': '1.html',
-                    'updated': timepoint,
-                    'baseurl': testapp.metadata['url'],
+                    "destination": "1.html",
+                    "updated": timepoint,
+                    "baseurl": testapp.metadata["url"],
                 }),
         ],
         pretty=pretty)
 
     assert next(stream) == core.WebSiteItem(
         {
-            'destination': '1.html',
-            'updated': timepoint,
-            'baseurl': testapp.metadata['url'],
+            "destination": "1.html",
+            "updated": timepoint,
+            "baseurl": testapp.metadata["url"],
         })
 
     item = next(stream)
     assert item == core.WebSiteItem(
         {
-            'source': 'sitemap://sitemap.xml',
-            'destination': 'sitemap.xml',
-            'content': unittest.mock.ANY,
-            'baseurl': testapp.metadata['url'],
+            "source": "sitemap://sitemap.xml",
+            "destination": "sitemap.xml",
+            "content": unittest.mock.ANY,
+            "baseurl": testapp.metadata["url"],
         })
-    assert len(item['content'].splitlines()) == lines
+    assert len(item["content"].splitlines()) == lines
 
     with pytest.raises(StopIteration):
         next(stream)
 
 
-@pytest.mark.parametrize('params, error', [
-    ({'gzip': 'true'}, "gzip: 'true' should be instance of 'bool'"),
-    ({'save_as': 42}, "save_as: 42 should be instance of 'str'"),
+@pytest.mark.parametrize("params, error", [
+    ({"gzip": "true"}, "gzip: 'true' should be instance of 'bool'"),
+    ({"save_as": 42}, "save_as: 42 should be instance of 'str'"),
 ])
 def test_param_bad_value(testapp, params, error):
     """Sitemap processor has to validate input parameters."""

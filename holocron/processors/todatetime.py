@@ -11,22 +11,22 @@ from ._misc import parameters
 
 @parameters(
     fallback={
-        'timezone': 'metadata://#/timezone',
+        "timezone": "metadata://#/timezone",
     },
     schema={
-        'todatetime': schema.Or(str, [str], error='unsupported todatetime'),
-        'parsearea': schema.Schema(re.compile, 'unsupported regexp'),
-        'timezone': schema.Schema(dateutil.tz.gettz, 'unsupported timezone'),
-        'fuzzy': schema.Schema(bool),
+        "todatetime": schema.Or(str, [str], error="unsupported todatetime"),
+        "parsearea": schema.Schema(re.compile, "unsupported regexp"),
+        "timezone": schema.Schema(dateutil.tz.gettz, "unsupported timezone"),
+        "fuzzy": schema.Schema(bool),
     }
 )
 def process(app,
             stream,
             *,
             todatetime,
-            parsearea='.*',
+            parsearea=".*",
             fuzzy=False,
-            timezone='UTC'):
+            timezone="UTC"):
     tzinfo = dateutil.tz.gettz(timezone)
     re_parsearea = re.compile(parsearea)
 

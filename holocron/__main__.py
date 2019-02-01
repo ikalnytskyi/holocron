@@ -31,7 +31,7 @@ def configure_logger(level):
 
     # create stream handler with custom formatter
     stream_handler = logging.StreamHandler()
-    stream_handler.setFormatter(_Formatter('[%(levelname)s] %(message)s'))
+    stream_handler.setFormatter(_Formatter("[%(levelname)s] %(message)s"))
 
     # configure root logger
     logger = logging.getLogger()
@@ -52,37 +52,37 @@ def parse_command_line(args):
     """
     parser = argparse.ArgumentParser(
         description=(
-            'Holocron is an easy and lightweight static blog generator, '
-            'based on markup text and Jinja2 templates.'),
+            "Holocron is an easy and lightweight static blog generator, "
+            "based on markup text and Jinja2 templates."),
         epilog=(
-            'With no CONF, read _config.yml in the current working dir. '
-            'If no CONF found, the default settings will be used.'))
+            "With no CONF, read _config.yml in the current working dir. "
+            "If no CONF found, the default settings will be used."))
 
     parser.add_argument(
-        '-c', '--conf', dest='conf', default='_config.yml',
-        help='set path to the settings file')
+        "-c", "--conf", dest="conf", default="_config.yml",
+        help="set path to the settings file")
 
     parser.add_argument(
-        '-q', '--quiet', dest='verbosity', action='store_const',
-        const=logging.CRITICAL, help='show only critical errors')
+        "-q", "--quiet", dest="verbosity", action="store_const",
+        const=logging.CRITICAL, help="show only critical errors")
 
     parser.add_argument(
-        '-v', '--verbose', dest='verbosity', action='store_const',
-        const=logging.INFO, help='show additional messages')
+        "-v", "--verbose", dest="verbosity", action="store_const",
+        const=logging.INFO, help="show additional messages")
 
     parser.add_argument(
-        '-d', '--debug', dest='verbosity', action='store_const',
-        const=logging.DEBUG, help='show all messages')
+        "-d", "--debug", dest="verbosity", action="store_const",
+        const=logging.DEBUG, help="show all messages")
 
     parser.add_argument(
-        '--version', action='version', version=holocron_version,
-        help='show the holocron version and exit')
+        "--version", action="version", version=holocron_version,
+        help="show the holocron version and exit")
 
     command_parser = parser.add_subparsers(
-        dest='command', help='command to execute')
+        dest="command", help="command to execute")
 
-    run_parser = command_parser.add_parser('run')
-    run_parser.add_argument('pipeline', help='a pipeline to run')
+    run_parser = command_parser.add_parser("run")
+    run_parser.add_argument("pipeline", help="a pipeline to run")
 
     # parse cli and form arguments object
     arguments = parser.parse_args(args)
@@ -96,10 +96,10 @@ def parse_command_line(args):
 
 
 def run_pipeline(app, arguments):
-    if arguments.pipeline not in app.conf['pipelines']:
-        raise ValueError('%s: no such pipeline' % arguments.pipeline)
+    if arguments.pipeline not in app.conf["pipelines"]:
+        raise ValueError("%s: no such pipeline" % arguments.pipeline)
 
-    pipeline = app.conf['pipelines'][arguments.pipeline]
+    pipeline = app.conf["pipelines"][arguments.pipeline]
 
     for _ in app.invoke_processors([], pipeline):
         pass
@@ -114,7 +114,7 @@ def main(args=sys.argv[1:]):
 
     # show deprecation warnings in order to be prepared for backward
     # incompatible changes
-    warnings.filterwarnings('always', category=DeprecationWarning)
+    warnings.filterwarnings("always", category=DeprecationWarning)
 
     # create app instance
     holocron = create_app(arguments.conf)
