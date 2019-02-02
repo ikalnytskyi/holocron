@@ -107,6 +107,48 @@ def test_item_many(testapp, amount):
         next(stream)
 
 
+def test_item_timestamp_missing(testapp):
+    """Todatetime processor has to ignore items with missing timestamp."""
+
+    stream = todatetime.process(
+        testapp,
+        [
+            {
+                "content": "the Force is strong with this one",
+            },
+        ],
+        todatetime="timestamp")
+
+    assert next(stream) == \
+        {
+            "content": "the Force is strong with this one",
+        }
+
+    with pytest.raises(StopIteration):
+        next(stream)
+
+
+def test_item_timestamp_bad_value(testapp):
+    """Todatetime processor has to error if a timestamp cannot be parsed."""
+
+    stream = todatetime.process(
+        testapp,
+        [
+            {
+                "content": "the Force is strong with this one",
+                "timestamp": "yoda",
+            },
+        ],
+        todatetime="timestamp")
+
+    with pytest.raises(Exception) as excinfo:
+        next(stream)
+        assert str(excinfo.value) == "('Unknown string format:', 'yoda')"
+
+    with pytest.raises(StopIteration):
+        next(stream)
+
+
 def test_param_todatetime(testapp):
     """Todatetime processor has to respect "writeto" parameter."""
 
@@ -177,13 +219,11 @@ def test_param_parsearea_not_found(testapp):
         todatetime="timestamp",
         parsearea=r"\d{4}-\d{2}-\d{2}")
 
-    with pytest.raises(RuntimeError) as excinfo:
-        next(stream)
-
-    assert str(excinfo.value) == (
-        r"'parsearea' is not found in 'timestamp' property: "
-        r"'luke-skywalker-part-1.txt' has no occurance of "
-        r"'\d{4}-\d{2}-\d{2}'")
+    assert next(stream) == \
+        {
+            "content": "the Force is strong with this one",
+            "timestamp": "luke-skywalker-part-1.txt",
+        }
 
     with pytest.raises(StopIteration):
         next(stream)

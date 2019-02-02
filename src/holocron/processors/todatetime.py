@@ -41,14 +41,23 @@ def process(app,
         else:
             parsein, saveto = todatetime
 
-        # Reduce a parse area by applying a regular expression. May be handy
-        # if you want to extract a datetime information from a filename.
+        # Usually raising an error when contract is violated is a preferred
+        # option. However, taking into account the use case of 'todatetime'
+        # processor, we better ignore such items in the pipeline to save
+        # users from wrapping with 'when' processor.
+        if parsein not in item:
+            yield item
+            continue
+
+        # Reduce a parse area by applying a regular expression. May be handy if
+        # you want to extract a datetime from, let's say, a filename. If a
+        # regular expression matches nothing, ignore and skip an item to avoid
+        # using 'when' processor to make things *safe*.
         parsearea = re_parsearea.search(item[parsein])
         if not parsearea:
-            raise RuntimeError(
-                "'parsearea' is not found in '%s' property: '%s' has no "
-                "occurance of '%s'" % (
-                    parsein, item[parsein], re_parsearea.pattern))
+            yield item
+            continue
+
         parsearea = parsearea.group(0)
         converted = dateutil.parser.parse(parsearea, fuzzy=fuzzy)
 
