@@ -8,7 +8,7 @@ import pkg_resources
 import pytest
 import untangle
 
-from holocron import app, core
+from holocron import core
 from holocron.processors import feed
 
 
@@ -17,7 +17,7 @@ _HOLOCRON_VERSION = pkg_resources.get_distribution("holocron").version
 
 @pytest.fixture(scope="function")
 def testapp():
-    return app.Holocron(metadata={"url": "https://yoda.ua"})
+    return core.Application({"url": "https://yoda.ua"})
 
 
 def test_item_atom(testapp):

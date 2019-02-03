@@ -11,4 +11,4 @@ from ._misc import parameters
     }
 )
 def process(app, stream, *, pipeline=[]):
-    yield from app.invoke_processors(stream, pipeline)
+    yield from app.invoke(pipeline, stream)

@@ -40,7 +40,7 @@ def process(app, stream, *, when, processor):
             else:
                 untouched.append(item)
 
-    for item in app.invoke_processors(smartstream(), [processor]):
+    for item in app.invoke([processor], smartstream()):
         # Some untouched items may be collected during an attempt to retrieve
         # at least one item from a processor. In order to preserve relative
         # order between items from an original input stream and items produced

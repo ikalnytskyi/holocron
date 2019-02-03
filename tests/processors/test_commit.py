@@ -5,13 +5,13 @@ import os
 import py
 import pytest
 
-from holocron import app, core
+from holocron import core
 from holocron.processors import commit
 
 
 @pytest.fixture(scope="function")
 def testapp(request):
-    return app.Holocron()
+    return core.Application()
 
 
 def test_item(testapp, monkeypatch, tmpdir):

@@ -5,13 +5,13 @@ import textwrap
 import pytest
 import yaml
 
-from holocron import app, core
+from holocron import core
 from holocron.processors import frontmatter
 
 
 @pytest.fixture(scope="function")
 def testapp():
-    return app.Holocron()
+    return core.Application()
 
 
 def test_item(testapp):
