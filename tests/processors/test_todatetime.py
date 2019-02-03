@@ -5,7 +5,7 @@ import datetime
 import pytest
 import dateutil.tz
 
-from holocron import app
+from holocron import app, core
 from holocron.processors import todatetime
 
 
@@ -64,18 +64,19 @@ def test_item(testapp, timestamp, parsed):
     stream = todatetime.process(
         testapp,
         [
-            {
-                "content": "the Force is strong with this one",
-                "timestamp": timestamp,
-            },
+            core.Item(
+                {
+                    "content": "the Force is strong with this one",
+                    "timestamp": timestamp,
+                }),
         ],
         todatetime="timestamp")
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": "the Force is strong with this one",
             "timestamp": parsed,
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -88,20 +89,21 @@ def test_item_many(testapp, amount):
     stream = todatetime.process(
         testapp,
         [
-            {
-                "content": "the Force is strong with this one",
-                "timestamp": "2019-01-%d" % (i + 1),
-            }
+            core.Item(
+                {
+                    "content": "the Force is strong with this one",
+                    "timestamp": "2019-01-%d" % (i + 1),
+                })
             for i in range(amount)
         ],
         todatetime="timestamp")
 
     for i, item in zip(range(amount), stream):
-        assert item == \
+        assert item == core.Item(
             {
                 "content": "the Force is strong with this one",
                 "timestamp": datetime.datetime(2019, 1, i + 1, tzinfo=_TZ_UTC),
-            }
+            })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -113,16 +115,17 @@ def test_item_timestamp_missing(testapp):
     stream = todatetime.process(
         testapp,
         [
-            {
-                "content": "the Force is strong with this one",
-            },
+            core.Item(
+                {
+                    "content": "the Force is strong with this one",
+                }),
         ],
         todatetime="timestamp")
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": "the Force is strong with this one",
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -134,10 +137,11 @@ def test_item_timestamp_bad_value(testapp):
     stream = todatetime.process(
         testapp,
         [
-            {
-                "content": "the Force is strong with this one",
-                "timestamp": "yoda",
-            },
+            core.Item(
+                {
+                    "content": "the Force is strong with this one",
+                    "timestamp": "yoda",
+                }),
         ],
         todatetime="timestamp")
 
@@ -155,20 +159,21 @@ def test_param_todatetime(testapp):
     stream = todatetime.process(
         testapp,
         [
-            {
-                "content": "the Force is strong with this one",
-                "timestamp": "2019-01-11",
-            },
+            core.Item(
+                {
+                    "content": "the Force is strong with this one",
+                    "timestamp": "2019-01-11",
+                }),
         ],
         todatetime=["timestamp", "published"])
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": "the Force is strong with this one",
             "timestamp": "2019-01-11",
             "published": datetime.datetime(
                 2019, 1, 11, 0, 0, 0, tzinfo=_TZ_UTC),
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -186,20 +191,21 @@ def test_param_parsearea(testapp, timestamp, parsearea):
     stream = todatetime.process(
         testapp,
         [
-            {
-                "content": "the Force is strong with this one",
-                "timestamp": timestamp,
-            },
+            core.Item(
+                {
+                    "content": "the Force is strong with this one",
+                    "timestamp": timestamp,
+                }),
         ],
         todatetime="timestamp",
         parsearea=parsearea,
         fuzzy=True)
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": "the Force is strong with this one",
             "timestamp": datetime.datetime(2019, 1, 11, tzinfo=_TZ_UTC),
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -211,19 +217,20 @@ def test_param_parsearea_not_found(testapp):
     stream = todatetime.process(
         testapp,
         [
-            {
-                "content": "the Force is strong with this one",
-                "timestamp": "luke-skywalker-part-1.txt",
-            },
+            core.Item(
+                {
+                    "content": "the Force is strong with this one",
+                    "timestamp": "luke-skywalker-part-1.txt",
+                }),
         ],
         todatetime="timestamp",
         parsearea=r"\d{4}-\d{2}-\d{2}")
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": "the Force is strong with this one",
             "timestamp": "luke-skywalker-part-1.txt",
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -247,19 +254,20 @@ def test_param_fuzzy(testapp, timestamp):
     stream = todatetime.process(
         testapp,
         [
-            {
-                "content": "the Force is strong with this one",
-                "timestamp": timestamp,
-            },
+            core.Item(
+                {
+                    "content": "the Force is strong with this one",
+                    "timestamp": timestamp,
+                }),
         ],
         todatetime="timestamp",
         fuzzy=True)
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": "the Force is strong with this one",
             "timestamp": datetime.datetime(2019, 1, 11, tzinfo=_TZ_UTC),
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -272,14 +280,16 @@ def test_param_timezone(testapp, tz):
     stream = todatetime.process(
         testapp,
         [
-            {
-                "content": "the Force is strong with this one",
-                "timestamp": "2019-01-15T21:07+00:00",
-            },
-            {
-                "content": "may the Force be with you",
-                "timestamp": "2019-01-15T21:07",
-            },
+            core.Item(
+                {
+                    "content": "the Force is strong with this one",
+                    "timestamp": "2019-01-15T21:07+00:00",
+                }),
+            core.Item(
+                {
+                    "content": "may the Force be with you",
+                    "timestamp": "2019-01-15T21:07",
+                }),
         ],
         todatetime="timestamp",
 
@@ -288,18 +298,18 @@ def test_param_timezone(testapp, tz):
         # but a fallback.
         timezone=tz)
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": "the Force is strong with this one",
             "timestamp": datetime.datetime(2019, 1, 15, 21, 7, tzinfo=_TZ_UTC),
-        }
+        })
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": "may the Force be with you",
             "timestamp": datetime.datetime(
                 2019, 1, 15, 21, 7, tzinfo=dateutil.tz.gettz(tz))
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -317,29 +327,31 @@ def test_param_timezone_fallback(testapp, tz):
     stream = todatetime.process(
         testapp,
         [
-            {
-                "content": "the Force is strong with this one",
-                "timestamp": "2019-01-15T21:07+00:00",
-            },
-            {
-                "content": "may the Force be with you",
-                "timestamp": "2019-01-15T21:07",
-            },
+            core.Item(
+                {
+                    "content": "the Force is strong with this one",
+                    "timestamp": "2019-01-15T21:07+00:00",
+                }),
+            core.Item(
+                {
+                    "content": "may the Force be with you",
+                    "timestamp": "2019-01-15T21:07",
+                }),
         ],
         todatetime="timestamp")
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": "the Force is strong with this one",
             "timestamp": datetime.datetime(2019, 1, 15, 21, 7, tzinfo=_TZ_UTC),
-        }
+        })
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": "may the Force be with you",
             "timestamp": datetime.datetime(
                 2019, 1, 15, 21, 7, tzinfo=dateutil.tz.gettz(tz))
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
