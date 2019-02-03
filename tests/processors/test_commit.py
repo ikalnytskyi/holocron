@@ -5,7 +5,7 @@ import os
 import py
 import pytest
 
-from holocron import app
+from holocron import app, core
 from holocron.processors import commit
 
 
@@ -22,17 +22,18 @@ def test_item(testapp, monkeypatch, tmpdir):
     stream = commit.process(
         testapp,
         [
-            {
-                "content": "Obi-Wan",
-                "destination": "1.html",
-            },
+            core.Item(
+                {
+                    "content": "Obi-Wan",
+                    "destination": "1.html",
+                }),
         ])
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": "Obi-Wan",
             "destination": "1.html",
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -52,17 +53,18 @@ def test_item_content_types(testapp, monkeypatch, tmpdir, data, loader):
     stream = commit.process(
         testapp,
         [
-            {
-                "content": data,
-                "destination": "1.dat",
-            },
+            core.Item(
+                {
+                    "content": data,
+                    "destination": "1.dat",
+                }),
         ])
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": data,
             "destination": "1.dat",
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -84,17 +86,18 @@ def test_item_destination(testapp, monkeypatch, tmpdir, destination):
     stream = commit.process(
         testapp,
         [
-            {
-                "content": "Obi-Wan",
-                "destination": destination,
-            },
+            core.Item(
+                {
+                    "content": "Obi-Wan",
+                    "destination": destination,
+                }),
         ])
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": "Obi-Wan",
             "destination": destination,
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -111,19 +114,20 @@ def test_item_many(testapp, monkeypatch, tmpdir, amount):
     stream = commit.process(
         testapp,
         [
-            {
-                "content": "Obi-Wan",
-                "destination": str(i),
-            }
+            core.Item(
+                {
+                    "content": "Obi-Wan",
+                    "destination": str(i),
+                })
             for i in range(amount)
         ])
 
     for i in range(amount):
-        assert next(stream) == \
+        assert next(stream) == core.Item(
             {
                 "content": "Obi-Wan",
                 "destination": str(i),
-            }
+            })
         assert tmpdir.join("_site", str(i)).read_text("UTF-8") == "Obi-Wan"
 
     with pytest.raises(StopIteration):
@@ -139,18 +143,19 @@ def test_param_encoding(testapp, monkeypatch, tmpdir, encoding):
     stream = commit.process(
         testapp,
         [
-            {
-                "content": "Оби-Ван",
-                "destination": "1.html",
-            },
+            core.Item(
+                {
+                    "content": "Оби-Ван",
+                    "destination": "1.html",
+                }),
         ],
         encoding=encoding)
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": "Оби-Ван",
             "destination": "1.html",
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -168,17 +173,18 @@ def test_param_encoding_fallback(testapp, monkeypatch, tmpdir, encoding):
     stream = commit.process(
         testapp,
         [
-            {
-                "content": "Оби-Ван",
-                "destination": "1.html",
-            },
+            core.Item(
+                {
+                    "content": "Оби-Ван",
+                    "destination": "1.html",
+                }),
         ])
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": "Оби-Ван",
             "destination": "1.html",
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -195,18 +201,19 @@ def test_param_save_to(testapp, monkeypatch, tmpdir, save_to):
     stream = commit.process(
         testapp,
         [
-            {
-                "content": "Obi-Wan",
-                "destination": "1.html",
-            },
+            core.Item(
+                {
+                    "content": "Obi-Wan",
+                    "destination": "1.html",
+                }),
         ],
         save_to=save_to)
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": "Obi-Wan",
             "destination": "1.html",
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)

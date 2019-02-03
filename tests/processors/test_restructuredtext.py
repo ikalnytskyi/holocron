@@ -5,7 +5,7 @@ import textwrap
 
 import pytest
 
-from holocron import app
+from holocron import app, core
 from holocron.processors import restructuredtext
 
 
@@ -33,24 +33,25 @@ def test_item(testapp):
     stream = restructuredtext.process(
         testapp,
         [
-            {
-                "content": textwrap.dedent("""\
-                    some title
-                    ==========
+            core.Item(
+                {
+                    "content": textwrap.dedent("""\
+                        some title
+                        ==========
 
-                    text with **bold**
-                """),
-                "destination": "1.rst",
-            },
+                        text with **bold**
+                    """),
+                    "destination": "1.rst",
+                }),
         ])
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": _pytest_regex(
                 r"<p>text with <strong>bold</strong></p>\s*"),
             "destination": "1.html",
             "title": "some title",
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -62,23 +63,24 @@ def test_item_with_subsection(testapp):
     stream = restructuredtext.process(
         testapp,
         [
-            {
-                "content": textwrap.dedent("""\
-                    some title
-                    ==========
+            core.Item(
+                {
+                    "content": textwrap.dedent("""\
+                        some title
+                        ==========
 
-                    abstract
+                        abstract
 
-                    some section
-                    ------------
+                        some section
+                        ------------
 
-                    text with **bold**
-                """),
-                "destination": "1.rst",
-            },
+                        text with **bold**
+                    """),
+                    "destination": "1.rst",
+                }),
         ])
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": _pytest_regex(
                 r"<p>abstract</p>\s*"
@@ -86,7 +88,7 @@ def test_item_with_subsection(testapp):
                 r"<p>text with <strong>bold</strong></p>\s*"),
             "destination": "1.html",
             "title": "some title",
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -98,20 +100,21 @@ def test_item_without_title(testapp):
     stream = restructuredtext.process(
         testapp,
         [
-            {
-                "content": textwrap.dedent("""\
-                    text with **bold**
-                """),
-                "destination": "1.rst",
-            },
+            core.Item(
+                {
+                    "content": textwrap.dedent("""\
+                        text with **bold**
+                    """),
+                    "destination": "1.rst",
+                }),
         ])
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": _pytest_regex(
                 r"<p>text with <strong>bold</strong></p>\s*"),
             "destination": "1.html",
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -123,38 +126,39 @@ def test_item_with_sections(testapp):
     stream = restructuredtext.process(
         testapp,
         [
-            {
-                "content": textwrap.dedent("""\
-                    some title 1
-                    ============
+            core.Item(
+                {
+                    "content": textwrap.dedent("""\
+                        some title 1
+                        ============
 
-                    aaa
+                        aaa
 
-                    some section 1
-                    --------------
+                        some section 1
+                        --------------
 
-                    bbb
+                        bbb
 
-                    some section 2
-                    --------------
+                        some section 2
+                        --------------
 
-                    ccc
+                        ccc
 
-                    some title 2
-                    ============
+                        some title 2
+                        ============
 
-                    xxx
+                        xxx
 
-                    some section 3
-                    --------------
+                        some section 3
+                        --------------
 
-                    yyy
-                """),
-                "destination": "1.rst",
-            },
+                        yyy
+                    """),
+                    "destination": "1.rst",
+                }),
         ])
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": _pytest_regex(
                 r"<h2>some title 1</h2>\s*"
@@ -168,7 +172,7 @@ def test_item_with_sections(testapp):
                 r"<h3>some section 3</h3>\s*"
                 r"<p>yyy</p>\s*"),
             "destination": "1.html",
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -180,24 +184,25 @@ def test_item_with_code(testapp):
     stream = restructuredtext.process(
         testapp,
         [
-            {
-                "content": textwrap.dedent("""\
-                    test codeblock
+            core.Item(
+                {
+                    "content": textwrap.dedent("""\
+                        test codeblock
 
-                    .. code:: python
+                        .. code:: python
 
-                        lambda x: pass
-                """),
-                "destination": "1.rst",
-            },
+                            lambda x: pass
+                    """),
+                    "destination": "1.rst",
+                }),
         ])
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": _pytest_regex(
                 r"<p>test codeblock</p>\s*<pre.*python[^>]*>[\s\S]+</pre>"),
             "destination": "1.html",
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -209,19 +214,20 @@ def test_item_with_inline_code(testapp):
     stream = restructuredtext.process(
         testapp,
         [
-            {
-                "content": textwrap.dedent("""\
-                    test ``code``
-                """),
-                "destination": "1.rst",
-            },
+            core.Item(
+                {
+                    "content": textwrap.dedent("""\
+                        test ``code``
+                    """),
+                    "destination": "1.rst",
+                }),
         ])
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": _pytest_regex(r"<p>test <code>code</code></p>"),
             "destination": "1.html",
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -233,26 +239,27 @@ def test_param_settings(testapp):
     stream = restructuredtext.process(
         testapp,
         [
-            {
-                "content": textwrap.dedent("""\
-                    section 1
-                    =========
+            core.Item(
+                {
+                    "content": textwrap.dedent("""\
+                        section 1
+                        =========
 
-                    aaa
+                        aaa
 
-                    section 2
-                    =========
+                        section 2
+                        =========
 
-                    bbb
-                """),
-                "destination": "1.rst",
-            },
+                        bbb
+                    """),
+                    "destination": "1.rst",
+                }),
         ],
         settings={
             "initial_header_level": 3,
         })
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": _pytest_regex(
                 # by default, initial header level is 2 and so the sections
@@ -262,7 +269,7 @@ def test_param_settings(testapp):
                 r"<h3>section 2</h3>\s*"
                 r"<p>bbb</p>\s*"),
             "destination": "1.html",
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -275,19 +282,20 @@ def test_item_many(testapp, amount):
     stream = restructuredtext.process(
         testapp,
         [
-            {
-                "content": "the key is **%d**" % i,
-                "destination": "1.rst",
-            }
+            core.Item(
+                {
+                    "content": "the key is **%d**" % i,
+                    "destination": "1.rst",
+                })
             for i in range(amount)
         ])
 
     for i in range(amount):
-        assert next(stream) == \
+        assert next(stream) == core.Item(
             {
                 "content": "<p>the key is <strong>%d</strong></p>" % i,
                 "destination": "1.html",
-            }
+            })
 
     with pytest.raises(StopIteration):
         next(stream)

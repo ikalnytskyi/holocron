@@ -4,7 +4,7 @@ import os
 
 import pytest
 
-from holocron import app
+from holocron import app, core
 from holocron.processors import prettyuri
 
 
@@ -19,15 +19,13 @@ def test_item(testapp):
     stream = prettyuri.process(
         testapp,
         [
-            {
-                "destination": os.path.join("about", "cv.html"),
-            },
+            core.Item({"destination": os.path.join("about", "cv.html")}),
         ])
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "destination": os.path.join("about", "cv", "index.html"),
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -43,15 +41,13 @@ def test_item_index(testapp, index):
     stream = prettyuri.process(
         testapp,
         [
-            {
-                "destination": os.path.join("about", "cv", index),
-            },
+            core.Item({"destination": os.path.join("about", "cv", index)}),
         ])
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "destination": os.path.join("about", "cv", index),
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -64,17 +60,15 @@ def test_item_many(testapp, amount):
     stream = prettyuri.process(
         testapp,
         [
-            {
-                "destination": os.path.join("about", "%d.html" % i),
-            }
+            core.Item({"destination": os.path.join("about", "%d.html" % i)})
             for i in range(amount)
         ])
 
     for i in range(amount):
-        assert next(stream) == \
+        assert next(stream) == core.Item(
             {
                 "destination": os.path.join("about", str(i), "index.html"),
-            }
+            })
 
     with pytest.raises(StopIteration):
         next(stream)

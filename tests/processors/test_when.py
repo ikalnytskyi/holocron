@@ -4,7 +4,7 @@ import os
 
 import pytest
 
-from holocron import app
+from holocron import app, core
 from holocron.processors import when
 
 
@@ -17,7 +17,7 @@ def testapp(request):
 
     def rice(app, items):
         yield from items
-        yield {"content": "rice"}
+        yield core.Item({"content": "rice"})
 
     def eggs(app, items):
         while True:
@@ -27,7 +27,7 @@ def testapp(request):
             except StopIteration:
                 break
             else:
-                yield {"key": item_a["key"] + item_b["key"]}
+                yield core.Item({"key": item_a["key"] + item_b["key"]})
 
     instance = app.Holocron()
     instance.add_processor("spam", spam)
@@ -46,15 +46,16 @@ def test_item_spam(testapp, cond, item):
     stream = when.process(
         testapp,
         [
-            {
-                "content": "eh",
-                "author": "yoda",
-            },
+            core.Item(
+                {
+                    "content": "eh",
+                    "author": "yoda",
+                }),
         ],
         processor={"name": "spam"},
         when=[cond])
 
-    assert next(stream) == item
+    assert next(stream) == core.Item(item)
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -67,10 +68,11 @@ def test_item_many_spam(testapp, amount):
     stream = when.process(
         testapp,
         [
-            {
-                "content": "the great jedi",
-                "key": i,
-            }
+            core.Item(
+                {
+                    "content": "the great jedi",
+                    "key": i,
+                })
             for i in range(amount)
         ],
         processor={"name": "spam"},
@@ -78,18 +80,18 @@ def test_item_many_spam(testapp, amount):
 
     for i, item in zip(range(amount), stream):
         if i % 2 == 0:
-            assert item == \
+            assert item == core.Item(
                 {
                     "content": "the great jedi",
                     "key": i,
                     "spam": 42,
-                }
+                })
         else:
-            assert item == \
+            assert item == core.Item(
                 {
                     "content": "the great jedi",
                     "key": i,
-                }
+                })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -102,26 +104,27 @@ def test_item_many_rice(testapp, amount):
     stream = when.process(
         testapp,
         [
-            {
-                "content": "the great jedi",
-                "key": i,
-            }
+            core.Item(
+                {
+                    "content": "the great jedi",
+                    "key": i,
+                })
             for i in range(amount)
         ],
         processor={"name": "rice"},
         when=["item.key % 2 == 0"])
 
     for i, item in zip(range(amount), stream):
-        assert item == \
+        assert item == core.Item(
             {
                 "content": "the great jedi",
                 "key": i,
-            }
+            })
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": "rice",
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -133,37 +136,38 @@ def test_item_many_eggs(testapp):
     stream = when.process(
         testapp,
         [
-            {
-                "content": "the great jedi",
-                "key": i,
-            }
+            core.Item(
+                {
+                    "content": "the great jedi",
+                    "key": i,
+                })
             for i in range(5)
         ],
         processor={"name": "eggs"},
         when=["item.key % 2 != 0"])
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": "the great jedi",
             "key": 0,
-        }
+        })
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": "the great jedi",
             "key": 2,
-        }
+        })
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "key": 4,
-        }
+        })
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": "the great jedi",
             "key": 4,
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -182,22 +186,23 @@ def test_param_when(testapp, cond):
     stream = when.process(
         testapp,
         [
-            {
-                "content": "eh",
-                "author": "yoda",
-                "source": os.path.join("about", "index.md"),
-            },
+            core.Item(
+                {
+                    "content": "eh",
+                    "author": "yoda",
+                    "source": os.path.join("about", "index.md"),
+                }),
         ],
         processor={"name": "spam"},
         when=cond)
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": "eh",
             "author": "yoda",
             "source": os.path.join("about", "index.md"),
             "spam": 42,
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)

@@ -6,7 +6,7 @@ import unittest.mock
 
 import pytest
 
-from holocron import app
+from holocron import app, core
 from holocron.processors import markdown
 
 
@@ -34,23 +34,24 @@ def test_item(testapp):
     stream = markdown.process(
         testapp,
         [
-            {
-                "content": textwrap.dedent("""\
-                    # some title
+            core.Item(
+                {
+                    "content": textwrap.dedent("""\
+                        # some title
 
-                    text with **bold**
-                """),
-                "destination": "1.md",
-            },
+                        text with **bold**
+                    """),
+                    "destination": "1.md",
+                }),
         ])
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": _pytest_regex(
                 r"<p>text with <strong>bold</strong></p>"),
             "destination": "1.html",
             "title": "some title",
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -62,24 +63,25 @@ def test_item_with_alt_title_syntax(testapp):
     stream = markdown.process(
         testapp,
         [
-            {
-                "content": textwrap.dedent("""\
-                    some title
-                    ==========
+            core.Item(
+                {
+                    "content": textwrap.dedent("""\
+                        some title
+                        ==========
 
-                    text with **bold**
-                """),
-                "destination": "1.md",
-            },
+                        text with **bold**
+                    """),
+                    "destination": "1.md",
+                }),
         ])
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": _pytest_regex(
                 r"<p>text with <strong>bold</strong></p>"),
             "destination": "1.html",
             "title": "some title",
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -91,25 +93,26 @@ def test_item_with_newlines_at_the_beginning(testapp):
     stream = markdown.process(
         testapp,
         [
-            {
-                "content": textwrap.dedent("""\
+            core.Item(
+                {
+                    "content": textwrap.dedent("""\
 
 
-                    # some title
+                        # some title
 
-                    text with **bold**
-                """),
-                "destination": "1.md",
-            },
+                        text with **bold**
+                    """),
+                    "destination": "1.md",
+                }),
         ])
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": _pytest_regex(
                 r"<p>text with <strong>bold</strong></p>"),
             "destination": "1.html",
             "title": "some title",
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -121,20 +124,21 @@ def test_item_without_title(testapp):
     stream = markdown.process(
         testapp,
         [
-            {
-                "content": textwrap.dedent("""\
-                    text with **bold**
-                """),
-                "destination": "1.md",
-            },
+            core.Item(
+                {
+                    "content": textwrap.dedent("""\
+                        text with **bold**
+                    """),
+                    "destination": "1.md",
+                }),
         ])
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": _pytest_regex(
                 r"<p>text with <strong>bold</strong></p>"),
             "destination": "1.html",
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -146,24 +150,25 @@ def test_item_title_is_not_overwritten(testapp):
     stream = markdown.process(
         testapp,
         [
-            {
-                "content": textwrap.dedent("""\
-                    # some title
+            core.Item(
+                {
+                    "content": textwrap.dedent("""\
+                        # some title
 
-                    text with **bold**
-                """),
-                "destination": "1.md",
-                "title": "another title",
-            },
+                        text with **bold**
+                    """),
+                    "destination": "1.md",
+                    "title": "another title",
+                }),
         ])
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": _pytest_regex(
                 r"<p>text with <strong>bold</strong></p>"),
             "destination": "1.html",
             "title": "another title",
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -175,26 +180,27 @@ def test_item_title_ignored_in_the_middle_of_text(testapp):
     stream = markdown.process(
         testapp,
         [
-            {
-                "content": textwrap.dedent("""\
-                    text
+            core.Item(
+                {
+                    "content": textwrap.dedent("""\
+                        text
 
-                    # some title
+                        # some title
 
-                    text with **bold**
-                """),
-                "destination": "1.md",
-            },
+                        text with **bold**
+                    """),
+                    "destination": "1.md",
+                }),
         ])
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": _pytest_regex(
                 r"<p>text</p>\s*"
                 r"<h1>some title</h1>\s*"
                 r"<p>text with <strong>bold</strong></p>"),
             "destination": "1.html",
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -206,36 +212,37 @@ def test_item_with_sections(testapp):
     stream = markdown.process(
         testapp,
         [
-            {
-                "content": textwrap.dedent("""\
-                    some title 1
-                    ============
+            core.Item(
+                {
+                    "content": textwrap.dedent("""\
+                        some title 1
+                        ============
 
-                    aaa
+                        aaa
 
-                    some section 1
-                    --------------
+                        some section 1
+                        --------------
 
-                    bbb
+                        bbb
 
-                    some section 2
-                    --------------
+                        some section 2
+                        --------------
 
-                    ccc
+                        ccc
 
-                    # some title 2
+                        # some title 2
 
-                    xxx
+                        xxx
 
-                    ## some section 3
+                        ## some section 3
 
-                    yyy
-                """),
-                "destination": "1.md",
-            },
+                        yyy
+                    """),
+                    "destination": "1.md",
+                }),
         ])
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": _pytest_regex(
                 r"<p>aaa</p>\s*"
@@ -245,7 +252,7 @@ def test_item_with_sections(testapp):
                 r"<h2>some section 3</h2>\s*<p>yyy</p>\s*"),
             "destination": "1.html",
             "title": "some title 1",
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -257,23 +264,24 @@ def test_item_with_code(testapp):
     stream = markdown.process(
         testapp,
         [
-            {
-                "content": textwrap.dedent("""\
-                    test codeblock
+            core.Item(
+                {
+                    "content": textwrap.dedent("""\
+                        test codeblock
 
-                        :::python
-                        lambda x: pass
-                """),
-                "destination": "1.md",
-            },
+                            :::python
+                            lambda x: pass
+                    """),
+                    "destination": "1.md",
+                }),
         ])
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": _pytest_regex(
                 r"<p>test codeblock</p>\s*.*codehilite.*<pre>[\s\S]+</pre>.*"),
             "destination": "1.html",
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -285,24 +293,25 @@ def test_item_with_fenced_code(testapp):
     stream = markdown.process(
         testapp,
         [
-            {
-                "content": textwrap.dedent("""\
-                    test codeblock
+            core.Item(
+                {
+                    "content": textwrap.dedent("""\
+                        test codeblock
 
-                    ```python
-                    lambda x: pass
-                    ```
-                """),
-                "destination": "1.md",
-            },
+                        ```python
+                        lambda x: pass
+                        ```
+                    """),
+                    "destination": "1.md",
+                }),
         ])
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": _pytest_regex(
                 r"<p>test codeblock</p>\s*.*codehilite.*<pre>[\s\S]+</pre>.*"),
             "destination": "1.html",
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -314,22 +323,23 @@ def test_item_with_table(testapp):
     stream = markdown.process(
         testapp,
         [
-            {
-                "content": textwrap.dedent("""\
-                    column a | column b
-                    ---------|---------
-                       foo   |   bar
-                """),
-                "destination": "1.md",
-            },
+            core.Item(
+                {
+                    "content": textwrap.dedent("""\
+                        column a | column b
+                        ---------|---------
+                           foo   |   bar
+                    """),
+                    "destination": "1.md",
+                }),
         ])
 
     item = next(stream)
-    assert item == \
+    assert item == core.Item(
         {
             "content": unittest.mock.ANY,
             "destination": "1.html",
-        }
+        })
 
     assert "table" in item["content"]
     assert "<th>column a</th>" in item["content"]
@@ -347,19 +357,20 @@ def test_item_with_inline_code(testapp):
     stream = markdown.process(
         testapp,
         [
-            {
-                "content": textwrap.dedent("""\
-                    test `code`
-                """),
-                "destination": "1.md",
-            },
+            core.Item(
+                {
+                    "content": textwrap.dedent("""\
+                        test `code`
+                    """),
+                    "destination": "1.md",
+                }),
         ])
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": _pytest_regex(r"<p>test <code>code</code></p>"),
             "destination": "1.html",
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -372,19 +383,20 @@ def test_item_many(testapp, amount):
     stream = markdown.process(
         testapp,
         [
-            {
-                "content": "the key is **%d**" % i,
-                "destination": "1.md",
-            }
+            core.Item(
+                {
+                    "content": "the key is **%d**" % i,
+                    "destination": "1.md",
+                })
             for i in range(amount)
         ])
 
     for i in range(amount):
-        assert next(stream) == \
+        assert next(stream) == core.Item(
             {
                 "content": "<p>the key is <strong>%d</strong></p>" % i,
                 "destination": "1.html",
-            }
+            })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -396,24 +408,25 @@ def test_param_extensions(testapp):
     stream = markdown.process(
         testapp,
         [
-            {
-                "content": textwrap.dedent("""\
-                    ```
-                    lambda x: pass
-                    ```
-                """),
-                "destination": "1.md",
-            },
+            core.Item(
+                {
+                    "content": textwrap.dedent("""\
+                        ```
+                        lambda x: pass
+                        ```
+                    """),
+                    "destination": "1.md",
+                }),
         ],
         extensions=[])
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": _pytest_regex(
                 # no syntax highlighting when no extensions are passed
                 r"<p><code>lambda x: pass</code></p>"),
             "destination": "1.html",
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)

@@ -5,7 +5,7 @@ import textwrap
 import pytest
 import yaml
 
-from holocron import app
+from holocron import app, core
 from holocron.processors import frontmatter
 
 
@@ -20,26 +20,27 @@ def test_item(testapp):
     stream = frontmatter.process(
         testapp,
         [
-            {
-                "content": textwrap.dedent("""\
-                    ---
-                    author: Yoda
-                    master: true
-                    labels: [force, motto]
-                    ---
+            core.Item(
+                {
+                    "content": textwrap.dedent("""\
+                        ---
+                        author: Yoda
+                        master: true
+                        labels: [force, motto]
+                        ---
 
-                    May the Force be with you!
-                """),
-            },
+                        May the Force be with you!
+                    """),
+                }),
         ])
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": "May the Force be with you!\n",
             "author": "Yoda",
             "master": True,
             "labels": ["force", "motto"],
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -51,20 +52,21 @@ def test_item_without_frontmatter(testapp):
     stream = frontmatter.process(
         testapp,
         [
-            {
-                "content": textwrap.dedent("""\
-                    ---
-                    author: Yoda
-                    master: true
-                    labels: [force, motto]
-                    ...
+            core.Item(
+                {
+                    "content": textwrap.dedent("""\
+                        ---
+                        author: Yoda
+                        master: true
+                        labels: [force, motto]
+                        ...
 
-                    May the Force be with you!
-                """),
-            },
+                        May the Force be with you!
+                    """),
+                }),
         ])
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": textwrap.dedent("""\
                 ---
@@ -75,7 +77,7 @@ def test_item_without_frontmatter(testapp):
 
                 May the Force be with you!
             """),
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -87,22 +89,23 @@ def test_item_with_frontmatter_in_text(testapp):
     stream = frontmatter.process(
         testapp,
         [
-            {
-                "content": textwrap.dedent("""\
-                    I am a Jedi, like my father before me.
+            core.Item(
+                {
+                    "content": textwrap.dedent("""\
+                        I am a Jedi, like my father before me.
 
-                    ---
-                    author: Yoda
-                    master: true
-                    labels: [force, motto]
-                    ---
+                        ---
+                        author: Yoda
+                        master: true
+                        labels: [force, motto]
+                        ---
 
-                    May the Force be with you!
-                """),
-            },
+                        May the Force be with you!
+                    """),
+                }),
         ])
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": textwrap.dedent("""\
                 I am a Jedi, like my father before me.
@@ -115,7 +118,7 @@ def test_item_with_frontmatter_in_text(testapp):
 
                 May the Force be with you!
             """),
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -127,16 +130,17 @@ def test_item_invalid_yaml(testapp):
     stream = frontmatter.process(
         testapp,
         [
-            {
-                "content": textwrap.dedent("""\
-                    ---
-                    author: Yoda
-                     the best jedi ever:
-                    ---
+            core.Item(
+                {
+                    "content": textwrap.dedent("""\
+                        ---
+                        author: Yoda
+                         the best jedi ever:
+                        ---
 
-                    May the Force be with you!
-                """),
-            },
+                        May the Force be with you!
+                    """),
+                }),
         ])
 
     with pytest.raises(yaml.YAMLError):
@@ -149,17 +153,18 @@ def test_item_with_exploit(testapp):
     stream = frontmatter.process(
         testapp,
         [
-            {
-                "content": textwrap.dedent("""\
-                    ---
-                    author: !!python/object/apply:subprocess.check_output
-                      args: [ cat ~/.ssh/id_rsa ]
-                      kwds: { shell: true }
-                    ---
+            core.Item(
+                {
+                    "content": textwrap.dedent("""\
+                        ---
+                        author: !!python/object/apply:subprocess.check_output
+                          args: [ cat ~/.ssh/id_rsa ]
+                          kwds: { shell: true }
+                        ---
 
-                    May the Force be with you!
-                """),
-            },
+                        May the Force be with you!
+                    """),
+                }),
         ])
 
     with pytest.raises(yaml.YAMLError):
@@ -173,26 +178,27 @@ def test_item_many(testapp, amount):
     stream = frontmatter.process(
         testapp,
         [
-            {
-                "content": textwrap.dedent("""\
-                    ---
-                    master: %d
-                    labels: [force, motto]
-                    ---
+            core.Item(
+                {
+                    "content": textwrap.dedent("""\
+                        ---
+                        master: %d
+                        labels: [force, motto]
+                        ---
 
-                    May the Force be with you!
-                """ % i)
-            }
+                        May the Force be with you!
+                    """ % i)
+                })
             for i in range(amount)
         ])
 
     for i in range(amount):
-        assert next(stream) == \
+        assert next(stream) == core.Item(
             {
                 "master": i,
                 "labels": ["force", "motto"],
                 "content": "May the Force be with you!\n",
-            }
+            })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -205,27 +211,28 @@ def test_param_delimiter(testapp, delimiter):
     stream = frontmatter.process(
         testapp,
         [
-            {
-                "content": textwrap.dedent("""\
-                    %s
-                    author: Yoda
-                    master: true
-                    labels: [force, motto]
-                    %s
+            core.Item(
+                {
+                    "content": textwrap.dedent("""\
+                        %s
+                        author: Yoda
+                        master: true
+                        labels: [force, motto]
+                        %s
 
-                    May the Force be with you!
-                """ % (delimiter, delimiter)),
-            },
+                        May the Force be with you!
+                    """ % (delimiter, delimiter)),
+                }),
         ],
         delimiter=delimiter)
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": "May the Force be with you!\n",
             "author": "Yoda",
             "master": True,
             "labels": ["force", "motto"],
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -238,28 +245,29 @@ def test_param_overwrite(testapp, overwrite):
     stream = frontmatter.process(
         testapp,
         [
-            {
-                "author": "Obi-Wan Kenobi",
-                "content": textwrap.dedent("""\
-                    ---
-                    author: Yoda
-                    master: true
-                    labels: [force, motto]
-                    ---
+            core.Item(
+                {
+                    "author": "Obi-Wan Kenobi",
+                    "content": textwrap.dedent("""\
+                        ---
+                        author: Yoda
+                        master: true
+                        labels: [force, motto]
+                        ---
 
-                    May the Force be with you!
-                """),
-            },
+                        May the Force be with you!
+                    """),
+                }),
         ],
         overwrite=overwrite)
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": "May the Force be with you!\n",
             "author": "Yoda" if overwrite else "Obi-Wan Kenobi",
             "master": True,
             "labels": ["force", "motto"],
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)

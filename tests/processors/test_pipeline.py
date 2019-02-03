@@ -2,7 +2,7 @@
 
 import pytest
 
-from holocron import app
+from holocron import app, core
 from holocron.processors import pipeline
 
 
@@ -20,7 +20,7 @@ def testapp():
 
     def rice(app, items, **options):
         yield from items
-        yield {"content": "rice"}
+        yield core.Item({"content": "rice"})
 
     instance = app.Holocron()
     instance.add_processor("spam", spam)
@@ -36,10 +36,11 @@ def test_item(testapp):
     stream = pipeline.process(
         testapp,
         [
-            {
-                "content": "the Force",
-                "author": "skywalker",
-            },
+            core.Item(
+                {
+                    "content": "the Force",
+                    "author": "skywalker",
+                }),
         ],
         pipeline=[
             {"name": "spam"},
@@ -47,17 +48,17 @@ def test_item(testapp):
             {"name": "rice"},
         ])
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": "the Force #friedeggs",
             "author": "skywalker",
             "spam": 42,
-        }
+        })
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": "rice",
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -69,21 +70,22 @@ def test_item_processor_with_option(testapp):
     stream = pipeline.process(
         testapp,
         [
-            {
-                "content": "the Force",
-                "author": "skywalker",
-            },
+            core.Item(
+                {
+                    "content": "the Force",
+                    "author": "skywalker",
+                }),
         ],
         pipeline=[
             {"name": "spam", "text": 1},
         ])
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": "the Force",
             "author": "skywalker",
             "spam": 1,
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -95,18 +97,19 @@ def test_param_pipeline_empty(testapp):
     stream = pipeline.process(
         testapp,
         [
-            {
-                "content": "the Force",
-                "author": "skywalker",
-            },
+            core.Item(
+                {
+                    "content": "the Force",
+                    "author": "skywalker",
+                }),
         ],
         pipeline=[])
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": "the Force",
             "author": "skywalker",
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -119,10 +122,11 @@ def test_item_many(testapp, amount):
     stream = pipeline.process(
         testapp,
         [
-            {
-                "content": "the Force (%d)" % i,
-                "author": "skywalker",
-            }
+            core.Item(
+                {
+                    "content": "the Force (%d)" % i,
+                    "author": "skywalker",
+                })
             for i in range(amount)
         ],
         pipeline=[
@@ -131,12 +135,12 @@ def test_item_many(testapp, amount):
         ])
 
     for i in range(amount):
-        assert next(stream) == \
+        assert next(stream) == core.Item(
             {
                 "content": "the Force (%d) #friedeggs" % i,
                 "author": "skywalker",
                 "spam": 42,
-            }
+            })
 
     with pytest.raises(StopIteration):
         next(stream)

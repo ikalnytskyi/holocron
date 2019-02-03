@@ -2,7 +2,7 @@
 
 import pytest
 
-from holocron import app
+from holocron import app, core
 from holocron.processors import metadata
 
 
@@ -17,22 +17,23 @@ def test_item(testapp):
     stream = metadata.process(
         testapp,
         [
-            {
-                "content": "the Force",
-                "author": "skywalker",
-            },
+            core.Item(
+                {
+                    "content": "the Force",
+                    "author": "skywalker",
+                }),
         ],
         metadata={
             "author": "yoda",
             "type": "memoire",
         })
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": "the Force",
             "author": "yoda",
             "type": "memoire",
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -44,17 +45,18 @@ def test_item_untouched(testapp):
     stream = metadata.process(
         testapp,
         [
-            {
-                "content": "the Force",
-                "author": "skywalker",
-            },
+            core.Item(
+                {
+                    "content": "the Force",
+                    "author": "skywalker",
+                }),
         ])
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": "the Force",
             "author": "skywalker",
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -67,10 +69,11 @@ def test_item_many(testapp, amount):
     stream = metadata.process(
         testapp,
         [
-            {
-                "content": "the key is #%d" % i,
-                "author": "luke",
-            }
+            core.Item(
+                {
+                    "content": "the key is #%d" % i,
+                    "author": "luke",
+                })
             for i in range(amount)
         ],
         metadata={
@@ -79,12 +82,12 @@ def test_item_many(testapp, amount):
         })
 
     for i in range(amount):
-        assert next(stream) == \
+        assert next(stream) == core.Item(
             {
                 "content": "the key is #%d" % i,
                 "author": "yoda",
                 "type": "memoire",
-            }
+            })
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -100,10 +103,11 @@ def test_param_overwrite(testapp, overwrite, author):
     stream = metadata.process(
         testapp,
         [
-            {
-                "content": "the Force",
-                "author": "skywalker",
-            },
+            core.Item(
+                {
+                    "content": "the Force",
+                    "author": "skywalker",
+                }),
         ],
         metadata={
             "author": "yoda",
@@ -111,12 +115,12 @@ def test_param_overwrite(testapp, overwrite, author):
         },
         overwrite=overwrite)
 
-    assert next(stream) == \
+    assert next(stream) == core.Item(
         {
             "content": "the Force",
             "author": author,
             "type": "memoire",
-        }
+        })
 
     with pytest.raises(StopIteration):
         next(stream)
