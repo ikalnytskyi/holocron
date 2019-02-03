@@ -7,19 +7,22 @@ import pytest
 import holocron.core
 
 
-@pytest.fixture(scope="function", params=[
-    pytest.param(42, id="int-value"),
-    pytest.param("key", id="str-value"),
-    pytest.param(42.42, id="float-value"),
-    pytest.param(True, id="bool-value"),
-    pytest.param(None, id="none-value"),
-    pytest.param({"a": 1, "b": 2}, id="dict-value"),
-    pytest.param({"a", "b", "c"}, id="set-value"),
-    pytest.param([1, 2, "c"], id="list-value"),
-    pytest.param((1, None, True), id="tuple-value"),
-    pytest.param(object(), id="object-value"),
-    pytest.param(lambda: 42, id="lambda-value"),
-])
+@pytest.fixture(
+    scope="function",
+    params=[
+        pytest.param(42, id="int-value"),
+        pytest.param("key", id="str-value"),
+        pytest.param(42.42, id="float-value"),
+        pytest.param(True, id="bool-value"),
+        pytest.param(None, id="none-value"),
+        pytest.param({"a": 1, "b": 2}, id="dict-value"),
+        pytest.param({"a", "b", "c"}, id="set-value"),
+        pytest.param([1, 2, "c"], id="list-value"),
+        pytest.param((1, None, True), id="tuple-value"),
+        pytest.param(object(), id="object-value"),
+        pytest.param(lambda: 42, id="lambda-value"),
+    ],
+)
 def supported_value(request):
     return request.param
 
@@ -27,7 +30,6 @@ def supported_value(request):
 @pytest.fixture(scope="function")
 def item_descriptors_cls():
     class methoddescriptor:
-
         def __init__(self, wrapped):
             pass
 
@@ -35,7 +37,6 @@ def item_descriptors_cls():
             return 42
 
     class Item(holocron.core.Item):
-
         @property
         def x(self):
             return 13
@@ -203,23 +204,17 @@ def test_item_as_mapping(supported_value):
 
     instance = holocron.core.Item(x=42, y="test", z=supported_value)
 
-    assert instance.as_mapping() == \
-        {
-            "x": 42,
-            "y": "test",
-            "z": supported_value,
-        }
+    assert instance.as_mapping() == {
+        "x": 42,
+        "y": "test",
+        "z": supported_value,
+    }
 
 
 def test_item_as_mapping_descriptors(item_descriptors_cls):
     """Properties defined as descriptors can be inspected."""
 
-    assert item_descriptors_cls(z=0).as_mapping() == \
-        {
-            "x": 13,
-            "y": 42,
-            "z": 0,
-        }
+    assert item_descriptors_cls(z=0).as_mapping() == {"x": 13, "y": 42, "z": 0}
 
 
 def test_item_contains():
@@ -251,7 +246,8 @@ def test_websiteitem_init_mapping(supported_value):
             "x": supported_value,
             "destination": os.path.join("path", "to", "item"),
             "baseurl": "https://yoda.ua",
-        })
+        }
+    )
 
     assert instance["x"] == supported_value
     assert instance["destination"] == os.path.join("path", "to", "item")
@@ -264,7 +260,8 @@ def test_websiteitem_init_mapping(supported_value):
             "x": supported_value,
             "destination": os.path.join("path", "to", "item"),
             "baseurl": "https://yoda.ua",
-        })
+        }
+    )
 
 
 def test_websiteitem_init_kwargs(supported_value):
@@ -273,7 +270,8 @@ def test_websiteitem_init_kwargs(supported_value):
     instance = holocron.core.WebSiteItem(
         x=supported_value,
         destination=os.path.join("path", "to", "item"),
-        baseurl="https://yoda.ua")
+        baseurl="https://yoda.ua",
+    )
 
     assert instance["x"] == supported_value
     assert instance["destination"] == os.path.join("path", "to", "item")
@@ -286,7 +284,8 @@ def test_websiteitem_init_kwargs(supported_value):
             "x": supported_value,
             "destination": os.path.join("path", "to", "item"),
             "baseurl": "https://yoda.ua",
-        })
+        }
+    )
 
 
 def test_websiteitem_init_mapping_kwargs(supported_value):
@@ -297,7 +296,8 @@ def test_websiteitem_init_mapping_kwargs(supported_value):
             "x": supported_value,
             "destination": os.path.join("path", "to", "item"),
         },
-        baseurl="https://yoda.ua")
+        baseurl="https://yoda.ua",
+    )
 
     assert instance["x"] == supported_value
     assert instance["destination"] == os.path.join("path", "to", "item")
@@ -310,7 +310,8 @@ def test_websiteitem_init_mapping_kwargs(supported_value):
             "x": supported_value,
             "destination": os.path.join("path", "to", "item"),
             "baseurl": "https://yoda.ua",
-        })
+        }
+    )
 
 
 def test_websiteitem_init_multiple_mappings(supported_value):
@@ -319,26 +320,33 @@ def test_websiteitem_init_multiple_mappings(supported_value):
     with pytest.raises(TypeError) as excinfo:
         holocron.core.WebSiteItem(
             {"destination": os.path.join("path", "to", "item")},
-            {"baseurl": "https://yoda.ua"})
+            {"baseurl": "https://yoda.ua"},
+        )
 
     assert str(excinfo.value) == "expected at most 1 argument, got 2"
 
 
-@pytest.mark.parametrize(["properties", "error"], [
-    pytest.param(
-        {},
-        "WebSiteItem is missing some required properties: "
-        "'baseurl', 'destination'",
-        id="baseurl"),
-    pytest.param(
-        {"destination": "test"},
-        "WebSiteItem is missing some required properties: 'baseurl'",
-        id="baseurl"),
-    pytest.param(
-        {"baseurl": "test"},
-        "WebSiteItem is missing some required properties: 'destination'",
-        id="destination"),
-])
+@pytest.mark.parametrize(
+    ["properties", "error"],
+    [
+        pytest.param(
+            {},
+            "WebSiteItem is missing some required properties: "
+            "'baseurl', 'destination'",
+            id="baseurl",
+        ),
+        pytest.param(
+            {"destination": "test"},
+            "WebSiteItem is missing some required properties: 'baseurl'",
+            id="baseurl",
+        ),
+        pytest.param(
+            {"baseurl": "test"},
+            "WebSiteItem is missing some required properties: 'destination'",
+            id="destination",
+        ),
+    ],
+)
 def test_websiteitem_init_required_properties(properties, error):
     """Both 'destination' and 'baseurl' are required properties."""
 
@@ -354,7 +362,8 @@ def test_websiteitem_setitem(supported_value):
         {
             "destination": os.path.join("path", "to", "item"),
             "baseurl": "https://yoda.ua",
-        })
+        }
+    )
     instance["x"] = supported_value
 
     assert instance["x"] == supported_value
@@ -368,7 +377,8 @@ def test_websiteitem_setitem(supported_value):
             "x": supported_value,
             "destination": os.path.join("path", "to", "item"),
             "baseurl": "https://yoda.ua",
-        })
+        }
+    )
 
 
 def test_websiteitem_init_setitem(supported_value):
@@ -379,7 +389,8 @@ def test_websiteitem_init_setitem(supported_value):
             "x": supported_value,
             "destination": os.path.join("path", "to", "item"),
             "baseurl": "https://yoda.ua",
-        })
+        }
+    )
     instance["y"] = 42
 
     assert instance["x"] == supported_value
@@ -395,7 +406,8 @@ def test_websiteitem_init_setitem(supported_value):
             "y": 42,
             "destination": os.path.join("path", "to", "item"),
             "baseurl": "https://yoda.ua",
-        })
+        }
+    )
 
 
 def test_websiteitem_getitem():
@@ -405,7 +417,8 @@ def test_websiteitem_getitem():
         {
             "destination": os.path.join("path", "to", "item"),
             "baseurl": "https://yoda.ua",
-        })
+        }
+    )
 
     assert instance["destination"] == os.path.join("path", "to", "item")
     assert instance["baseurl"] == "https://yoda.ua"
@@ -420,7 +433,8 @@ def test_websiteitem_getitem_keyerror():
         {
             "destination": os.path.join("path", "to", "item"),
             "baseurl": "https://yoda.ua",
-        })
+        }
+    )
 
     with pytest.raises(KeyError, match="'the-key'"):
         instance["the-key"]
@@ -433,15 +447,15 @@ def test_websiteitem_items():
         {
             "destination": os.path.join("path", "to", "item"),
             "baseurl": "https://yoda.ua",
-        })
-
-    assert set(instance.items()) == \
-        {
-            ("destination", os.path.join("path", "to", "item")),
-            ("baseurl", "https://yoda.ua"),
-            ("url", "/path/to/item"),
-            ("absurl", "https://yoda.ua/path/to/item"),
         }
+    )
+
+    assert set(instance.items()) == {
+        ("destination", os.path.join("path", "to", "item")),
+        ("baseurl", "https://yoda.ua"),
+        ("url", "/path/to/item"),
+        ("absurl", "https://yoda.ua/path/to/item"),
+    }
 
 
 def test_websiteitem_keys():
@@ -451,15 +465,10 @@ def test_websiteitem_keys():
         {
             "destination": os.path.join("path", "to", "item"),
             "baseurl": "https://yoda.ua",
-        })
-
-    assert set(instance.keys()) == \
-        {
-            "destination",
-            "baseurl",
-            "url",
-            "absurl",
         }
+    )
+
+    assert set(instance.keys()) == {"destination", "baseurl", "url", "absurl"}
 
 
 def test_websiteitem_values():
@@ -469,15 +478,15 @@ def test_websiteitem_values():
         {
             "destination": os.path.join("path", "to", "item"),
             "baseurl": "https://yoda.ua",
-        })
-
-    assert set(instance.values()) == \
-        {
-            os.path.join("path", "to", "item"),
-            "https://yoda.ua",
-            "/path/to/item",
-            "https://yoda.ua/path/to/item",
         }
+    )
+
+    assert set(instance.values()) == {
+        os.path.join("path", "to", "item"),
+        "https://yoda.ua",
+        "/path/to/item",
+        "https://yoda.ua/path/to/item",
+    }
 
 
 def test_websiteitem_as_mapping(supported_value):
@@ -488,16 +497,16 @@ def test_websiteitem_as_mapping(supported_value):
             "x": supported_value,
             "destination": os.path.join("path", "to", "item"),
             "baseurl": "https://yoda.ua",
-        })
-
-    assert instance.as_mapping() == \
-        {
-            "x": supported_value,
-            "destination": os.path.join("path", "to", "item"),
-            "baseurl": "https://yoda.ua",
-            "url": "/path/to/item",
-            "absurl": "https://yoda.ua/path/to/item",
         }
+    )
+
+    assert instance.as_mapping() == {
+        "x": supported_value,
+        "destination": os.path.join("path", "to", "item"),
+        "baseurl": "https://yoda.ua",
+        "url": "/path/to/item",
+        "absurl": "https://yoda.ua/path/to/item",
+    }
 
 
 def test_websiteitem_contains():
@@ -508,7 +517,8 @@ def test_websiteitem_contains():
             "x": supported_value,
             "destination": os.path.join("path", "to", "item"),
             "baseurl": "https://yoda.ua",
-        })
+        }
+    )
 
     assert "x" in instance
     assert "destination" in instance
@@ -518,83 +528,89 @@ def test_websiteitem_contains():
     assert "z" not in instance
 
 
-@pytest.mark.parametrize(["destination", "url"], [
-    pytest.param(
-        os.path.join("path-to-item"),
-        "/path-to-item",
-        id="flat"),
-    pytest.param(
-        os.path.join("path", "to", "item"),
-        "/path/to/item",
-        id="nested"),
-    pytest.param(
-        os.path.join("path to item"),
-        "/path%20to%20item",
-        id="quoted"),
-])
+@pytest.mark.parametrize(
+    ["destination", "url"],
+    [
+        pytest.param(os.path.join("path-to-item"), "/path-to-item", id="flat"),
+        pytest.param(
+            os.path.join("path", "to", "item"), "/path/to/item", id="nested"
+        ),
+        pytest.param(
+            os.path.join("path to item"), "/path%20to%20item", id="quoted"
+        ),
+    ],
+)
 def test_websiteitem_url(destination, url):
     """'url' property is based on 'destination'."""
 
     instance = holocron.core.WebSiteItem(
-        {
-            "destination": destination,
-            "baseurl": "https://yoda.ua",
-        })
+        {"destination": destination, "baseurl": "https://yoda.ua"}
+    )
 
     assert instance["url"] == url
 
 
-@pytest.mark.parametrize(["properties", "absurl"], [
-    pytest.param(
-        {
-            "destination": os.path.join("path-to-item"),
-            "baseurl": "https://yoda.ua",
-        },
-        "https://yoda.ua/path-to-item",
-        id="flat"),
-    pytest.param(
-        {
-            "destination": os.path.join("path", "to", "item"),
-            "baseurl": "https://yoda.ua",
-        },
-        "https://yoda.ua/path/to/item",
-        id="nested"),
-    pytest.param(
-        {
-            "destination": os.path.join("path to item"),
-            "baseurl": "https://yoda.ua",
-        },
-        "https://yoda.ua/path%20to%20item",
-        id="quoted"),
-    pytest.param(
-        {
-            "destination": os.path.join("path", "to", "item"),
-            "baseurl": "https://skywalker.org",
-        },
-        "https://skywalker.org/path/to/item",
-        id="baseurl"),
-    pytest.param(
-        {
-            "destination": os.path.join("path", "to", "item"),
-            "baseurl": "https://skywalker.org/",
-        },
-        "https://skywalker.org/path/to/item",
-        id="trailing-/"),
-    pytest.param(
-        {
-            "destination": os.path.join("path", "to", "item"),
-            "baseurl": "https://skywalker.org/blog",
-        },
-        "https://skywalker.org/blog/path/to/item",
-        id="subdir"),
-    pytest.param(
-        {
-            "destination": os.path.join("path", "to", "item"),
-            "baseurl": "https://skywalker.org/blog/",
-        },
-        "https://skywalker.org/blog/path/to/item",
-        id="subdir-trailing-/"),
-])
+@pytest.mark.parametrize(
+    ["properties", "absurl"],
+    [
+        pytest.param(
+            {
+                "destination": os.path.join("path-to-item"),
+                "baseurl": "https://yoda.ua",
+            },
+            "https://yoda.ua/path-to-item",
+            id="flat",
+        ),
+        pytest.param(
+            {
+                "destination": os.path.join("path", "to", "item"),
+                "baseurl": "https://yoda.ua",
+            },
+            "https://yoda.ua/path/to/item",
+            id="nested",
+        ),
+        pytest.param(
+            {
+                "destination": os.path.join("path to item"),
+                "baseurl": "https://yoda.ua",
+            },
+            "https://yoda.ua/path%20to%20item",
+            id="quoted",
+        ),
+        pytest.param(
+            {
+                "destination": os.path.join("path", "to", "item"),
+                "baseurl": "https://skywalker.org",
+            },
+            "https://skywalker.org/path/to/item",
+            id="baseurl",
+        ),
+        pytest.param(
+            {
+                "destination": os.path.join("path", "to", "item"),
+                "baseurl": "https://skywalker.org/",
+            },
+            "https://skywalker.org/path/to/item",
+            id="trailing-/",
+        ),
+        pytest.param(
+            {
+                "destination": os.path.join("path", "to", "item"),
+                "baseurl": "https://skywalker.org/blog",
+            },
+            "https://skywalker.org/blog/path/to/item",
+            id="subdir",
+        ),
+        pytest.param(
+            {
+                "destination": os.path.join("path", "to", "item"),
+                "baseurl": "https://skywalker.org/blog/",
+            },
+            "https://skywalker.org/blog/path/to/item",
+            id="subdir-trailing-/",
+        ),
+    ],
+)
 def test_websiteitem_absurl(properties, absurl):
     """'absurl' property is based on 'destination' and 'baseurl'."""
 

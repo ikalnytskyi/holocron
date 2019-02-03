@@ -25,7 +25,8 @@ class _WhenEvaluator:
 
     def eval(self, when, **context):
         template = self._env.from_string(
-            "{%% if %s %%}true{%% endif %%}" % when)
+            "{%% if %s %%}true{%% endif %%}" % when
+        )
         return template.render(**context) == "true"
 
 

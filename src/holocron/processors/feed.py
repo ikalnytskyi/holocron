@@ -12,28 +12,31 @@ from ._misc import parameters, resolve_json_references
 
 
 @parameters(
-    fallback={
-        "encoding": "metadata://#/encoding",
-    },
+    fallback={"encoding": "metadata://#/encoding"},
     schema={
         "save_as": schema.Schema(str),
-        "limit": schema.Or(None, schema.And(int, lambda x: x > 0),
-                           error="must be null or positive integer"),
+        "limit": schema.Or(
+            None,
+            schema.And(int, lambda x: x > 0),
+            error="must be null or positive integer",
+        ),
         "encoding": schema.Schema(codecs.lookup, "unsupported encoding"),
         "pretty": schema.Schema(bool),
         "syndication_format": schema.Or("atom", "rss"),
-    }
+    },
 )
-def process(app,
-            stream,
-            *,
-            feed,
-            item,
-            syndication_format="atom",
-            save_as="feed.xml",
-            limit=10,
-            encoding="UTF-8",
-            pretty=True):
+def process(
+    app,
+    stream,
+    *,
+    feed,
+    item,
+    syndication_format="atom",
+    save_as="feed.xml",
+    limit=10,
+    encoding="UTF-8",
+    pretty=True
+):
     passthrough, stream = itertools.tee(stream)
 
     # In order to decrease amount of traffic required to deliver feed content
@@ -45,15 +48,12 @@ def process(app,
         stream = stream[:limit]
 
     def _resolvefeed(name):
-        return resolve_json_references(feed.get(name), {
-            "feed:": feed,
-        })
+        return resolve_json_references(feed.get(name), {"feed:": feed})
 
     def _resolveitem(name, streamitem):
-        return resolve_json_references(item.get(name), {
-            "item:": streamitem,
-            "feed:": feed,
-        })
+        return resolve_json_references(
+            item.get(name), {"item:": streamitem, "feed:": feed}
+        )
 
     feed_generator = feedgen.feed.FeedGenerator()
 
@@ -62,17 +62,19 @@ def process(app,
         feed_generator.podcast.itunes_author(_resolvefeed("itunes_author"))
         feed_generator.podcast.itunes_block(_resolvefeed("itunes_block"))
         feed_generator.podcast.itunes_category(
-            _resolvefeed("itunes_category"), replace=True)
+            _resolvefeed("itunes_category"), replace=True
+        )
         feed_generator.podcast.itunes_image(_resolvefeed("itunes_image"))
         feed_generator.podcast.itunes_explicit(_resolvefeed("itunes_explicit"))
         feed_generator.podcast.itunes_complete(_resolvefeed("itunes_complete"))
         feed_generator.podcast.itunes_owner(
-            **(_resolvefeed("itunes_owner") or {}))
-        feed_generator.podcast.itunes_subtitle(
-            _resolvefeed("itunes_subtitle"))
+            **(_resolvefeed("itunes_owner") or {})
+        )
+        feed_generator.podcast.itunes_subtitle(_resolvefeed("itunes_subtitle"))
         feed_generator.podcast.itunes_summary(_resolvefeed("itunes_summary"))
         feed_generator.podcast.itunes_new_feed_url(
-            _resolvefeed("itunes_new_feed_url"))
+            _resolvefeed("itunes_new_feed_url")
+        )
 
     feed_generator.title(_resolvefeed("title"))
     feed_generator.id(_resolvefeed("id"))
@@ -84,7 +86,8 @@ def process(app,
     feed_generator.generator(
         generator="Holocron/v%s" % _generator_version,
         version=_generator_version,
-        uri="https://holocron.readthedocs.io")
+        uri="https://holocron.readthedocs.io",
+    )
     feed_generator.icon(_resolvefeed("icon"))
     feed_generator.logo(_resolvefeed("logo"))
     feed_generator.image(**(_resolvefeed("image") or {}))
@@ -113,7 +116,8 @@ def process(app,
         feed_entry.summary(_resolveitem("summary", streamitem))
         feed_entry.category(_resolveitem("category", streamitem), replace=True)
         feed_entry.contributor(
-            _resolveitem("contributor", streamitem), replace=True)
+            _resolveitem("contributor", streamitem), replace=True
+        )
         feed_entry.published(_resolveitem("published", streamitem))
         feed_entry.rights(_resolveitem("rights", streamitem))
         feed_entry.comments(_resolveitem("comments", streamitem))
@@ -121,25 +125,35 @@ def process(app,
 
         if hasattr(feed_generator, "podcast"):
             feed_entry.podcast.itunes_author(
-                _resolveitem("itunes_author", streamitem))
+                _resolveitem("itunes_author", streamitem)
+            )
             feed_entry.podcast.itunes_block(
-                _resolveitem("itunes_block", streamitem))
+                _resolveitem("itunes_block", streamitem)
+            )
             feed_entry.podcast.itunes_image(
-                _resolveitem("itunes_image", streamitem))
+                _resolveitem("itunes_image", streamitem)
+            )
             feed_entry.podcast.itunes_duration(
-                _resolveitem("itunes_duration", streamitem))
+                _resolveitem("itunes_duration", streamitem)
+            )
             feed_entry.podcast.itunes_duration(
-                _resolveitem("itunes_duration", streamitem))
+                _resolveitem("itunes_duration", streamitem)
+            )
             feed_entry.podcast.itunes_explicit(
-                _resolveitem("itunes_explicit", streamitem))
+                _resolveitem("itunes_explicit", streamitem)
+            )
             feed_entry.podcast.itunes_is_closed_captioned(
-                _resolveitem("itunes_is_closed_captioned", streamitem))
+                _resolveitem("itunes_is_closed_captioned", streamitem)
+            )
             feed_entry.podcast.itunes_order(
-                _resolveitem("itunes_order", streamitem))
+                _resolveitem("itunes_order", streamitem)
+            )
             feed_entry.podcast.itunes_subtitle(
-                _resolveitem("itunes_subtitle", streamitem))
+                _resolveitem("itunes_subtitle", streamitem)
+            )
             feed_entry.podcast.itunes_summary(
-                _resolveitem("itunes_summary", streamitem))
+                _resolveitem("itunes_summary", streamitem)
+            )
 
     to_bytes = {"atom": feed_generator.atom_str, "rss": feed_generator.rss_str}
     to_bytes = to_bytes[syndication_format]
@@ -150,7 +164,8 @@ def process(app,
             "destination": save_as,
             "content": to_bytes(pretty=pretty, encoding=encoding),
             "baseurl": app.metadata["url"],
-        })
+        }
+    )
 
     yield from passthrough
     yield feed_item

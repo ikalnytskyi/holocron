@@ -22,7 +22,8 @@ def test_item(testapp):
         [
             core.Item(
                 {
-                    "content": textwrap.dedent("""\
+                    "content": textwrap.dedent(
+                        """\
                         ---
                         author: Yoda
                         master: true
@@ -30,9 +31,12 @@ def test_item(testapp):
                         ---
 
                         May the Force be with you!
-                    """),
-                }),
-        ])
+                    """
+                    )
+                }
+            )
+        ],
+    )
 
     assert next(stream) == core.Item(
         {
@@ -40,7 +44,8 @@ def test_item(testapp):
             "author": "Yoda",
             "master": True,
             "labels": ["force", "motto"],
-        })
+        }
+    )
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -54,7 +59,8 @@ def test_item_without_frontmatter(testapp):
         [
             core.Item(
                 {
-                    "content": textwrap.dedent("""\
+                    "content": textwrap.dedent(
+                        """\
                         ---
                         author: Yoda
                         master: true
@@ -62,13 +68,17 @@ def test_item_without_frontmatter(testapp):
                         ...
 
                         May the Force be with you!
-                    """),
-                }),
-        ])
+                    """
+                    )
+                }
+            )
+        ],
+    )
 
     assert next(stream) == core.Item(
         {
-            "content": textwrap.dedent("""\
+            "content": textwrap.dedent(
+                """\
                 ---
                 author: Yoda
                 master: true
@@ -76,8 +86,10 @@ def test_item_without_frontmatter(testapp):
                 ...
 
                 May the Force be with you!
-            """),
-        })
+            """
+            )
+        }
+    )
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -91,7 +103,8 @@ def test_item_with_frontmatter_in_text(testapp):
         [
             core.Item(
                 {
-                    "content": textwrap.dedent("""\
+                    "content": textwrap.dedent(
+                        """\
                         I am a Jedi, like my father before me.
 
                         ---
@@ -101,13 +114,17 @@ def test_item_with_frontmatter_in_text(testapp):
                         ---
 
                         May the Force be with you!
-                    """),
-                }),
-        ])
+                    """
+                    )
+                }
+            )
+        ],
+    )
 
     assert next(stream) == core.Item(
         {
-            "content": textwrap.dedent("""\
+            "content": textwrap.dedent(
+                """\
                 I am a Jedi, like my father before me.
 
                 ---
@@ -117,8 +134,10 @@ def test_item_with_frontmatter_in_text(testapp):
                 ---
 
                 May the Force be with you!
-            """),
-        })
+            """
+            )
+        }
+    )
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -132,16 +151,20 @@ def test_item_invalid_yaml(testapp):
         [
             core.Item(
                 {
-                    "content": textwrap.dedent("""\
+                    "content": textwrap.dedent(
+                        """\
                         ---
                         author: Yoda
                          the best jedi ever:
                         ---
 
                         May the Force be with you!
-                    """),
-                }),
-        ])
+                    """
+                    )
+                }
+            )
+        ],
+    )
 
     with pytest.raises(yaml.YAMLError):
         next(stream)
@@ -155,7 +178,8 @@ def test_item_with_exploit(testapp):
         [
             core.Item(
                 {
-                    "content": textwrap.dedent("""\
+                    "content": textwrap.dedent(
+                        """\
                         ---
                         author: !!python/object/apply:subprocess.check_output
                           args: [ cat ~/.ssh/id_rsa ]
@@ -163,9 +187,12 @@ def test_item_with_exploit(testapp):
                         ---
 
                         May the Force be with you!
-                    """),
-                }),
-        ])
+                    """
+                    )
+                }
+            )
+        ],
+    )
 
     with pytest.raises(yaml.YAMLError):
         next(stream)
@@ -180,17 +207,22 @@ def test_item_many(testapp, amount):
         [
             core.Item(
                 {
-                    "content": textwrap.dedent("""\
+                    "content": textwrap.dedent(
+                        """\
                         ---
                         master: %d
                         labels: [force, motto]
                         ---
 
                         May the Force be with you!
-                    """ % i)
-                })
+                    """
+                        % i
+                    )
+                }
+            )
             for i in range(amount)
-        ])
+        ],
+    )
 
     for i in range(amount):
         assert next(stream) == core.Item(
@@ -198,7 +230,8 @@ def test_item_many(testapp, amount):
                 "master": i,
                 "labels": ["force", "motto"],
                 "content": "May the Force be with you!\n",
-            })
+            }
+        )
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -213,7 +246,8 @@ def test_param_delimiter(testapp, delimiter):
         [
             core.Item(
                 {
-                    "content": textwrap.dedent("""\
+                    "content": textwrap.dedent(
+                        """\
                         %s
                         author: Yoda
                         master: true
@@ -221,10 +255,14 @@ def test_param_delimiter(testapp, delimiter):
                         %s
 
                         May the Force be with you!
-                    """ % (delimiter, delimiter)),
-                }),
+                    """
+                        % (delimiter, delimiter)
+                    )
+                }
+            )
         ],
-        delimiter=delimiter)
+        delimiter=delimiter,
+    )
 
     assert next(stream) == core.Item(
         {
@@ -232,7 +270,8 @@ def test_param_delimiter(testapp, delimiter):
             "author": "Yoda",
             "master": True,
             "labels": ["force", "motto"],
-        })
+        }
+    )
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -248,7 +287,8 @@ def test_param_overwrite(testapp, overwrite):
             core.Item(
                 {
                     "author": "Obi-Wan Kenobi",
-                    "content": textwrap.dedent("""\
+                    "content": textwrap.dedent(
+                        """\
                         ---
                         author: Yoda
                         master: true
@@ -256,10 +296,13 @@ def test_param_overwrite(testapp, overwrite):
                         ---
 
                         May the Force be with you!
-                    """),
-                }),
+                    """
+                    ),
+                }
+            )
         ],
-        overwrite=overwrite)
+        overwrite=overwrite,
+    )
 
     assert next(stream) == core.Item(
         {
@@ -267,16 +310,23 @@ def test_param_overwrite(testapp, overwrite):
             "author": "Yoda" if overwrite else "Obi-Wan Kenobi",
             "master": True,
             "labels": ["force", "motto"],
-        })
+        }
+    )
 
     with pytest.raises(StopIteration):
         next(stream)
 
 
-@pytest.mark.parametrize("params, error", [
-    ({"delimiter": 42}, "delimiter: 42 should be instance of 'str'"),
-    ({"overwrite": "true"}, "overwrite: 'true' should be instance of 'bool'"),
-])
+@pytest.mark.parametrize(
+    "params, error",
+    [
+        ({"delimiter": 42}, "delimiter: 42 should be instance of 'str'"),
+        (
+            {"overwrite": "true"},
+            "overwrite: 'true' should be instance of 'bool'",
+        ),
+    ],
+)
 def test_param_bad_value(testapp, params, error):
     """Frontmatter processor has to validate input parameters."""
 

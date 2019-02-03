@@ -49,9 +49,14 @@ xmltodict = "^0.11.0"
 beautifulsoup4 = "^4.7"
 untangle = "^1.1"
 flake8-quotes = "^1.0"
+black = {version = "^18.9b0", allows-prereleases = true, python = "^3.6"}
 
 [tool.poetry.scripts]
 holocron = "holocron.__main__:main"
+
+[tool.black]
+line-length = 79
+py36 = false
 
 [build-system]
 requires = ["poetry>=0.12"]

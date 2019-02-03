@@ -20,20 +20,12 @@ def test_item(testapp, monkeypatch, tmpdir):
     monkeypatch.chdir(tmpdir)
 
     stream = commit.process(
-        testapp,
-        [
-            core.Item(
-                {
-                    "content": "Obi-Wan",
-                    "destination": "1.html",
-                }),
-        ])
+        testapp, [core.Item({"content": "Obi-Wan", "destination": "1.html"})]
+    )
 
     assert next(stream) == core.Item(
-        {
-            "content": "Obi-Wan",
-            "destination": "1.html",
-        })
+        {"content": "Obi-Wan", "destination": "1.html"}
+    )
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -41,30 +33,20 @@ def test_item(testapp, monkeypatch, tmpdir):
     assert tmpdir.join("_site", "1.html").read_text("UTF-8") == "Obi-Wan"
 
 
-@pytest.mark.parametrize("data, loader", [
-    (u"text", py.path.local.read),
-    (b"\xf1", py.path.local.read_binary),
-])
+@pytest.mark.parametrize(
+    "data, loader",
+    [(u"text", py.path.local.read), (b"\xf1", py.path.local.read_binary)],
+)
 def test_item_content_types(testapp, monkeypatch, tmpdir, data, loader):
     """Commit processor has to properly write items" content."""
 
     monkeypatch.chdir(tmpdir)
 
     stream = commit.process(
-        testapp,
-        [
-            core.Item(
-                {
-                    "content": data,
-                    "destination": "1.dat",
-                }),
-        ])
+        testapp, [core.Item({"content": data, "destination": "1.dat"})]
+    )
 
-    assert next(stream) == core.Item(
-        {
-            "content": data,
-            "destination": "1.dat",
-        })
+    assert next(stream) == core.Item({"content": data, "destination": "1.dat"})
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -72,12 +54,15 @@ def test_item_content_types(testapp, monkeypatch, tmpdir, data, loader):
     assert loader(tmpdir.join("_site", "1.dat")) == data
 
 
-@pytest.mark.parametrize("destination", [
-    os.path.join("1.txt"),
-    os.path.join("a", "2.txt"),
-    os.path.join("a", "b", "3.txt"),
-    os.path.join("a", "b", "c", "4.txt"),
-])
+@pytest.mark.parametrize(
+    "destination",
+    [
+        os.path.join("1.txt"),
+        os.path.join("a", "2.txt"),
+        os.path.join("a", "b", "3.txt"),
+        os.path.join("a", "b", "c", "4.txt"),
+    ],
+)
 def test_item_destination(testapp, monkeypatch, tmpdir, destination):
     """Commit processor has to properly use destination."""
 
@@ -85,19 +70,12 @@ def test_item_destination(testapp, monkeypatch, tmpdir, destination):
 
     stream = commit.process(
         testapp,
-        [
-            core.Item(
-                {
-                    "content": "Obi-Wan",
-                    "destination": destination,
-                }),
-        ])
+        [core.Item({"content": "Obi-Wan", "destination": destination})],
+    )
 
     assert next(stream) == core.Item(
-        {
-            "content": "Obi-Wan",
-            "destination": destination,
-        })
+        {"content": "Obi-Wan", "destination": destination}
+    )
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -114,20 +92,15 @@ def test_item_many(testapp, monkeypatch, tmpdir, amount):
     stream = commit.process(
         testapp,
         [
-            core.Item(
-                {
-                    "content": "Obi-Wan",
-                    "destination": str(i),
-                })
+            core.Item({"content": "Obi-Wan", "destination": str(i)})
             for i in range(amount)
-        ])
+        ],
+    )
 
     for i in range(amount):
         assert next(stream) == core.Item(
-            {
-                "content": "Obi-Wan",
-                "destination": str(i),
-            })
+            {"content": "Obi-Wan", "destination": str(i)}
+        )
         assert tmpdir.join("_site", str(i)).read_text("UTF-8") == "Obi-Wan"
 
     with pytest.raises(StopIteration):
@@ -142,20 +115,13 @@ def test_param_encoding(testapp, monkeypatch, tmpdir, encoding):
 
     stream = commit.process(
         testapp,
-        [
-            core.Item(
-                {
-                    "content": "Оби-Ван",
-                    "destination": "1.html",
-                }),
-        ],
-        encoding=encoding)
+        [core.Item({"content": "Оби-Ван", "destination": "1.html"})],
+        encoding=encoding,
+    )
 
     assert next(stream) == core.Item(
-        {
-            "content": "Оби-Ван",
-            "destination": "1.html",
-        })
+        {"content": "Оби-Ван", "destination": "1.html"}
+    )
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -171,20 +137,12 @@ def test_param_encoding_fallback(testapp, monkeypatch, tmpdir, encoding):
     testapp.metadata.update({"encoding": encoding})
 
     stream = commit.process(
-        testapp,
-        [
-            core.Item(
-                {
-                    "content": "Оби-Ван",
-                    "destination": "1.html",
-                }),
-        ])
+        testapp, [core.Item({"content": "Оби-Ван", "destination": "1.html"})]
+    )
 
     assert next(stream) == core.Item(
-        {
-            "content": "Оби-Ван",
-            "destination": "1.html",
-        })
+        {"content": "Оби-Ван", "destination": "1.html"}
+    )
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -200,20 +158,13 @@ def test_param_save_to(testapp, monkeypatch, tmpdir, save_to):
 
     stream = commit.process(
         testapp,
-        [
-            core.Item(
-                {
-                    "content": "Obi-Wan",
-                    "destination": "1.html",
-                }),
-        ],
-        save_to=save_to)
+        [core.Item({"content": "Obi-Wan", "destination": "1.html"})],
+        save_to=save_to,
+    )
 
     assert next(stream) == core.Item(
-        {
-            "content": "Obi-Wan",
-            "destination": "1.html",
-        })
+        {"content": "Obi-Wan", "destination": "1.html"}
+    )
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -221,10 +172,13 @@ def test_param_save_to(testapp, monkeypatch, tmpdir, save_to):
     assert tmpdir.join(save_to, "1.html").read_text("UTF-8") == "Obi-Wan"
 
 
-@pytest.mark.parametrize("params, error", [
-    ({"save_to": 42}, "save_to: 42 should be instance of 'str'"),
-    ({"encoding": "UTF-42"}, "encoding: unsupported encoding"),
-])
+@pytest.mark.parametrize(
+    "params, error",
+    [
+        ({"save_to": 42}, "save_to: 42 should be instance of 'str'"),
+        ({"encoding": "UTF-42"}, "encoding: unsupported encoding"),
+    ],
+)
 def test_param_bad_value(testapp, params, error):
     """Commit processor has to validate input parameters."""
 

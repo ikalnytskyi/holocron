@@ -17,8 +17,9 @@ class _pytest_timestamp:
         self._abs = abs_
 
     def __eq__(self, actual):
-        return actual.timestamp() == \
-               pytest.approx(self._timestamp, abs=self._abs)
+        return actual.timestamp() == pytest.approx(
+            self._timestamp, abs=self._abs
+        )
 
     def __repr__(self):
         return self._timestamp
@@ -29,12 +30,15 @@ def testapp():
     return core.Application({"url": "https://yoda.ua"})
 
 
-@pytest.mark.parametrize("path", [
-    ("about", "luke", "cv.pdf", ),
-    ("about", "cv.pdf", ),
-    ("cv.pdf", ),
-    (".post", ),
-])
+@pytest.mark.parametrize(
+    "path",
+    [
+        ("about", "luke", "cv.pdf"),
+        ("about", "cv.pdf"),
+        ("cv.pdf",),
+        (".post",),
+    ],
+)
 def test_item(testapp, monkeypatch, tmpdir, path):
     """Source processor has to work."""
 
@@ -50,16 +54,14 @@ def test_item(testapp, monkeypatch, tmpdir, path):
             "created": _pytest_timestamp(tmpdir.join(*path).stat().ctime),
             "updated": _pytest_timestamp(tmpdir.join(*path).stat().mtime),
             "baseurl": testapp.metadata["url"],
-        })
+        }
+    )
 
     with pytest.raises(StopIteration):
         next(stream)
 
 
-@pytest.mark.parametrize("data", [
-    u"text",
-    b"\xf1",
-])
+@pytest.mark.parametrize("data", [u"text", b"\xf1"])
 def test_item_content_types(testapp, monkeypatch, tmpdir, data):
     """Source processor has to properly read items" content."""
 
@@ -80,7 +82,8 @@ def test_item_content_types(testapp, monkeypatch, tmpdir, data):
             "created": _pytest_timestamp(tmpdir.join("cv.md").stat().ctime),
             "updated": _pytest_timestamp(tmpdir.join("cv.md").stat().mtime),
             "baseurl": testapp.metadata["url"],
-        })
+        }
+    )
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -101,7 +104,8 @@ def test_item_empty(testapp, monkeypatch, tmpdir):
             "created": _pytest_timestamp(tmpdir.join("cv.md").stat().ctime),
             "updated": _pytest_timestamp(tmpdir.join("cv.md").stat().mtime),
             "baseurl": testapp.metadata["url"],
-        })
+        }
+    )
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -119,38 +123,30 @@ def test_item_many(testapp, monkeypatch, tmpdir, discovered, passed):
 
     stream = source.process(
         testapp,
-        [
-            core.Item({"marker": "the key is %d" % i})
-            for i in range(passed)
-        ])
+        [core.Item({"marker": "the key is %d" % i}) for i in range(passed)],
+    )
 
     for i, item in zip(range(passed), stream):
         assert item == core.Item({"marker": "the key is %d" % i})
 
     # Since we don"t know in which order items are discovered, we sort them so
     # we can avoid possible flakes of the test.
-    assert sorted(stream, key=lambda item: item["source"]) == \
-        [
-            core.WebSiteItem(
-                {
-                    "source": str(i),
-                    "destination": str(i),
-                    "content": "key=%d" % i,
-                    "created": _pytest_timestamp(
-                        tmpdir.join(str(i)).stat().ctime),
-                    "updated": _pytest_timestamp(
-                        tmpdir.join(str(i)).stat().mtime),
-                    "baseurl": testapp.metadata["url"],
-                })
-            for i in range(discovered)
-        ]
+    assert sorted(stream, key=lambda item: item["source"]) == [
+        core.WebSiteItem(
+            {
+                "source": str(i),
+                "destination": str(i),
+                "content": "key=%d" % i,
+                "created": _pytest_timestamp(tmpdir.join(str(i)).stat().ctime),
+                "updated": _pytest_timestamp(tmpdir.join(str(i)).stat().mtime),
+                "baseurl": testapp.metadata["url"],
+            }
+        )
+        for i in range(discovered)
+    ]
 
 
-@pytest.mark.parametrize("path", [
-    ("a", ),
-    ("a", "b", ),
-    ("a", "b", "c", ),
-])
+@pytest.mark.parametrize("path", [("a",), ("a", "b"), ("a", "b", "c")])
 def test_param_path(testapp, monkeypatch, tmpdir, path):
     """Source processor has to respect path parameter."""
 
@@ -164,11 +160,14 @@ def test_param_path(testapp, monkeypatch, tmpdir, path):
             "destination": "test",
             "content": "Obi-Wan",
             "created": _pytest_timestamp(
-                tmpdir.join(*path).join("test").stat().ctime),
+                tmpdir.join(*path).join("test").stat().ctime
+            ),
             "updated": _pytest_timestamp(
-                tmpdir.join(*path).join("test").stat().mtime),
+                tmpdir.join(*path).join("test").stat().mtime
+            ),
             "baseurl": testapp.metadata["url"],
-        })
+        }
+    )
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -188,31 +187,32 @@ def test_param_pattern(testapp, monkeypatch, tmpdir):
 
     # Since we don"t know in which order items are discovered, we sort them so
     # we can avoid possible flakes of the test.
-    assert sorted(stream, key=lambda item: item["source"]) == \
-        [
-            core.WebSiteItem(
-                {
-                    "source": "1.md",
-                    "destination": "1.md",
-                    "content": "Skywalker",
-                    "created": _pytest_timestamp(
-                        tmpdir.join("1.md").stat().ctime),
-                    "updated": _pytest_timestamp(
-                        tmpdir.join("1.md").stat().mtime),
-                    "baseurl": testapp.metadata["url"],
-                }),
-            core.WebSiteItem(
-                {
-                    "source": "4.markdown",
-                    "destination": "4.markdown",
-                    "content": "Yoda",
-                    "created": _pytest_timestamp(
-                        tmpdir.join("4.markdown").stat().ctime),
-                    "updated": _pytest_timestamp(
-                        tmpdir.join("4.markdown").stat().mtime),
-                    "baseurl": testapp.metadata["url"],
-                }),
-        ]
+    assert sorted(stream, key=lambda item: item["source"]) == [
+        core.WebSiteItem(
+            {
+                "source": "1.md",
+                "destination": "1.md",
+                "content": "Skywalker",
+                "created": _pytest_timestamp(tmpdir.join("1.md").stat().ctime),
+                "updated": _pytest_timestamp(tmpdir.join("1.md").stat().mtime),
+                "baseurl": testapp.metadata["url"],
+            }
+        ),
+        core.WebSiteItem(
+            {
+                "source": "4.markdown",
+                "destination": "4.markdown",
+                "content": "Yoda",
+                "created": _pytest_timestamp(
+                    tmpdir.join("4.markdown").stat().ctime
+                ),
+                "updated": _pytest_timestamp(
+                    tmpdir.join("4.markdown").stat().mtime
+                ),
+                "baseurl": testapp.metadata["url"],
+            }
+        ),
+    ]
 
 
 @pytest.mark.parametrize("encoding", ["CP1251", "UTF-16"])
@@ -231,7 +231,8 @@ def test_param_encoding(testapp, monkeypatch, tmpdir, encoding):
             "created": unittest.mock.ANY,
             "updated": unittest.mock.ANY,
             "baseurl": testapp.metadata["url"],
-        })
+        }
+    )
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -254,16 +255,16 @@ def test_param_encoding_fallback(testapp, monkeypatch, tmpdir, encoding):
             "created": unittest.mock.ANY,
             "updated": unittest.mock.ANY,
             "baseurl": testapp.metadata["url"],
-        })
+        }
+    )
 
     with pytest.raises(StopIteration):
         next(stream)
 
 
-@pytest.mark.parametrize("timezone, tznames", [
-    ("UTC", ["UTC"]),
-    ("Europe/Kiev", ["EET", "EEST"]),
-])
+@pytest.mark.parametrize(
+    "timezone, tznames", [("UTC", ["UTC"]), ("Europe/Kiev", ["EET", "EEST"])]
+)
 def test_param_timezone(testapp, monkeypatch, tmpdir, timezone, tznames):
     """Source processor has to respect timezone parameter."""
 
@@ -284,10 +285,9 @@ def test_param_timezone(testapp, monkeypatch, tmpdir, timezone, tznames):
         next(stream)
 
 
-@pytest.mark.parametrize("tz, tznames", [
-    ("UTC", ["UTC"]),
-    ("Europe/Kiev", ["EET", "EEST"]),
-])
+@pytest.mark.parametrize(
+    "tz, tznames", [("UTC", ["UTC"]), ("Europe/Kiev", ["EET", "EEST"])]
+)
 def test_param_timezone_fallback(testapp, monkeypatch, tmpdir, tz, tznames):
     """Source processor has to respect timezone parameter (fallback)."""
 
@@ -320,8 +320,9 @@ def test_param_timezone_in_action(testapp, monkeypatch, tmpdir):
     created_utc = next(stream_utc)["created"]
     created_kie = next(stream_kie)["created"]
 
-    assert created_kie.tzinfo.utcoffset(created_kie) \
-        >= created_utc.tzinfo.utcoffset(created_utc)
+    assert created_kie.tzinfo.utcoffset(
+        created_kie
+    ) >= created_utc.tzinfo.utcoffset(created_utc)
     assert created_kie.isoformat() > created_utc.isoformat()
     assert created_kie.isoformat().split("+")[-1] in ("02:00", "03:00")
 
@@ -332,12 +333,15 @@ def test_param_timezone_in_action(testapp, monkeypatch, tmpdir):
         next(stream_kie)
 
 
-@pytest.mark.parametrize("params, error", [
-    ({"path": 42}, "path: 42 should be instance of 'str'"),
-    ({"pattern": 42}, "pattern: 42 should be instance of 'str'"),
-    ({"encoding": "UTF-42"}, "encoding: unsupported encoding"),
-    ({"timezone": "Europe/Kharkiv"}, "timezone: unsupported timezone"),
-])
+@pytest.mark.parametrize(
+    "params, error",
+    [
+        ({"path": 42}, "path: 42 should be instance of 'str'"),
+        ({"pattern": 42}, "pattern: 42 should be instance of 'str'"),
+        ({"encoding": "UTF-42"}, "encoding: unsupported encoding"),
+        ({"timezone": "Europe/Kharkiv"}, "timezone: unsupported timezone"),
+    ],
+)
 def test_param_bad_value(testapp, params, error):
     """Source processor has to validate input parameters."""
 

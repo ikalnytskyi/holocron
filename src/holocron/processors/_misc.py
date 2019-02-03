@@ -22,16 +22,17 @@ def resolve_json_references(value, context, keep_unknown=True):
         elif isinstance(node, collections.Mapping):
             for k, v in node.items():
                 node[k] = _do_resolve(v)
-        elif isinstance(node, collections.Sequence) \
-                and not isinstance(node, str):
+        elif isinstance(node, collections.Sequence) and not isinstance(
+            node, str
+        ):
             for i in range(len(node)):
                 node[i] = _do_resolve(node[i])
         return node
+
     return _do_resolve(value)
 
 
 class parameters:
-
     def __init__(self, *, fallback=None, schema=None):
         self._fallback = fallback or {}
         self._schema = schema
@@ -54,7 +55,8 @@ class parameters:
                     try:
                         value = resolve_json_references(
                             {"$ref": self._fallback[param]},
-                            {"metadata:": app.metadata})
+                            {"metadata:": app.metadata},
+                        )
                     except (jsonpointer.JsonPointerException, KeyError):
                         continue
 
@@ -66,4 +68,5 @@ class parameters:
 
                 kwargs[param] = value
             return fn(app, *args, **kwargs)
+
         return wrapper

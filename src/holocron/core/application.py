@@ -80,7 +80,8 @@ class Application:
             # want to take into account metadata and other changes produced
             # by previous processors in the pipe.
             processor = _misc.resolve_json_references(
-                processor, {"metadata:": self.metadata})
+                processor, {"metadata:": self.metadata}
+            )
 
             stream = processfn(self, stream, **processor)
 

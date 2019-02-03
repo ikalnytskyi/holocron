@@ -34,8 +34,9 @@ class Item(collections.abc.MutableMapping):
             pass
         else:
             if not key.startswith("_") and (
-                    inspect.isdatadescriptor(prop)
-                    or inspect.ismethoddescriptor(prop)):
+                inspect.isdatadescriptor(prop)
+                or inspect.ismethoddescriptor(prop)
+            ):
                 return getattr(self, key)
 
         raise KeyError("'%s'" % key)
@@ -57,11 +58,14 @@ class Item(collections.abc.MutableMapping):
             {
                 key: value.__get__(self)
                 for key, value in vars(self.__class__).items()
-                if not key.startswith("_") and (
+                if not key.startswith("_")
+                and (
                     inspect.isdatadescriptor(value)
-                    or inspect.ismethoddescriptor(value))
+                    or inspect.ismethoddescriptor(value)
+                )
             },
-            **self._mapping)
+            **self._mapping
+        )
 
     def __eq__(self, other):
         if not isinstance(other, Item):
@@ -79,7 +83,8 @@ class WebSiteItem(Item):
         if missing:
             raise TypeError(
                 "WebSiteItem is missing some required properties: %s"
-                % ", ".join(("'%s'" % prop for prop in sorted(missing))))
+                % ", ".join(("'%s'" % prop for prop in sorted(missing)))
+            )
 
     @property
     def url(self):

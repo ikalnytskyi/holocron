@@ -9,13 +9,11 @@ from ._misc import parameters
 
 
 @parameters(
-    fallback={
-        "encoding": "metadata://#/encoding",
-    },
+    fallback={"encoding": "metadata://#/encoding"},
     schema={
         "save_to": str,
         "encoding": schema.Schema(codecs.lookup, "unsupported encoding"),
-    }
+    },
 )
 def process(app, stream, *, save_to="_site", encoding="UTF-8"):
 

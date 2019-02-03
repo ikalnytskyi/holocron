@@ -10,10 +10,7 @@ from ._misc import parameters
 
 
 @parameters(
-    schema={
-        "imports": schema.Schema(list),
-        "from_": schema.Schema(str),
-    },
+    schema={"imports": schema.Schema(list), "from_": schema.Schema(str)}
 )
 def process(app, items, *, imports, from_=None):
     distribution = pkg_resources.get_distribution("holocron")
@@ -34,4 +31,5 @@ def process(app, items, *, imports, from_=None):
     # time.
     def passgen(app, items):
         yield from items
+
     return passgen(app, items)

@@ -13,6 +13,7 @@ def process(app, stream):
         # address accordingly.
         if destination not in ("index.html", "index.htm"):
             item["destination"] = os.path.join(
-                os.path.splitext(item["destination"])[0], "index.html")
+                os.path.splitext(item["destination"])[0], "index.html"
+            )
 
         yield item

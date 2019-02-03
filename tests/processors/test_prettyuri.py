@@ -17,37 +17,29 @@ def test_item(testapp):
     """Prettyuri processor has to work!"""
 
     stream = prettyuri.process(
-        testapp,
-        [
-            core.Item({"destination": os.path.join("about", "cv.html")}),
-        ])
+        testapp, [core.Item({"destination": os.path.join("about", "cv.html")})]
+    )
 
     assert next(stream) == core.Item(
-        {
-            "destination": os.path.join("about", "cv", "index.html"),
-        })
+        {"destination": os.path.join("about", "cv", "index.html")}
+    )
 
     with pytest.raises(StopIteration):
         next(stream)
 
 
-@pytest.mark.parametrize("index", [
-    "index.html",
-    "index.htm",
-])
+@pytest.mark.parametrize("index", ["index.html", "index.htm"])
 def test_item_index(testapp, index):
     """Prettyuri processor has to ignore index items."""
 
     stream = prettyuri.process(
         testapp,
-        [
-            core.Item({"destination": os.path.join("about", "cv", index)}),
-        ])
+        [core.Item({"destination": os.path.join("about", "cv", index)})],
+    )
 
     assert next(stream) == core.Item(
-        {
-            "destination": os.path.join("about", "cv", index),
-        })
+        {"destination": os.path.join("about", "cv", index)}
+    )
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -62,13 +54,13 @@ def test_item_many(testapp, amount):
         [
             core.Item({"destination": os.path.join("about", "%d.html" % i)})
             for i in range(amount)
-        ])
+        ],
+    )
 
     for i in range(amount):
         assert next(stream) == core.Item(
-            {
-                "destination": os.path.join("about", str(i), "index.html"),
-            })
+            {"destination": os.path.join("about", str(i), "index.html")}
+        )
 
     with pytest.raises(StopIteration):
         next(stream)

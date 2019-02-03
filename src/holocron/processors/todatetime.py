@@ -10,23 +10,17 @@ from ._misc import parameters
 
 
 @parameters(
-    fallback={
-        "timezone": "metadata://#/timezone",
-    },
+    fallback={"timezone": "metadata://#/timezone"},
     schema={
         "todatetime": schema.Or(str, [str], error="unsupported todatetime"),
         "parsearea": schema.Schema(re.compile, "unsupported regexp"),
         "timezone": schema.Schema(dateutil.tz.gettz, "unsupported timezone"),
         "fuzzy": schema.Schema(bool),
-    }
+    },
 )
-def process(app,
-            stream,
-            *,
-            todatetime,
-            parsearea=".*",
-            fuzzy=False,
-            timezone="UTC"):
+def process(
+    app, stream, *, todatetime, parsearea=".*", fuzzy=False, timezone="UTC"
+):
     tzinfo = dateutil.tz.gettz(timezone)
     re_parsearea = re.compile(parsearea)
 

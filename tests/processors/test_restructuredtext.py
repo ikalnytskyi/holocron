@@ -35,23 +35,29 @@ def test_item(testapp):
         [
             core.Item(
                 {
-                    "content": textwrap.dedent("""\
+                    "content": textwrap.dedent(
+                        """\
                         some title
                         ==========
 
                         text with **bold**
-                    """),
+                    """
+                    ),
                     "destination": "1.rst",
-                }),
-        ])
+                }
+            )
+        ],
+    )
 
     assert next(stream) == core.Item(
         {
             "content": _pytest_regex(
-                r"<p>text with <strong>bold</strong></p>\s*"),
+                r"<p>text with <strong>bold</strong></p>\s*"
+            ),
             "destination": "1.html",
             "title": "some title",
-        })
+        }
+    )
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -65,7 +71,8 @@ def test_item_with_subsection(testapp):
         [
             core.Item(
                 {
-                    "content": textwrap.dedent("""\
+                    "content": textwrap.dedent(
+                        """\
                         some title
                         ==========
 
@@ -75,20 +82,25 @@ def test_item_with_subsection(testapp):
                         ------------
 
                         text with **bold**
-                    """),
+                    """
+                    ),
                     "destination": "1.rst",
-                }),
-        ])
+                }
+            )
+        ],
+    )
 
     assert next(stream) == core.Item(
         {
             "content": _pytest_regex(
                 r"<p>abstract</p>\s*"
                 r"<h2>some section</h2>\s*"
-                r"<p>text with <strong>bold</strong></p>\s*"),
+                r"<p>text with <strong>bold</strong></p>\s*"
+            ),
             "destination": "1.html",
             "title": "some title",
-        })
+        }
+    )
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -102,19 +114,25 @@ def test_item_without_title(testapp):
         [
             core.Item(
                 {
-                    "content": textwrap.dedent("""\
+                    "content": textwrap.dedent(
+                        """\
                         text with **bold**
-                    """),
+                    """
+                    ),
                     "destination": "1.rst",
-                }),
-        ])
+                }
+            )
+        ],
+    )
 
     assert next(stream) == core.Item(
         {
             "content": _pytest_regex(
-                r"<p>text with <strong>bold</strong></p>\s*"),
+                r"<p>text with <strong>bold</strong></p>\s*"
+            ),
             "destination": "1.html",
-        })
+        }
+    )
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -128,7 +146,8 @@ def test_item_with_sections(testapp):
         [
             core.Item(
                 {
-                    "content": textwrap.dedent("""\
+                    "content": textwrap.dedent(
+                        """\
                         some title 1
                         ============
 
@@ -153,10 +172,13 @@ def test_item_with_sections(testapp):
                         --------------
 
                         yyy
-                    """),
+                    """
+                    ),
                     "destination": "1.rst",
-                }),
-        ])
+                }
+            )
+        ],
+    )
 
     assert next(stream) == core.Item(
         {
@@ -170,9 +192,11 @@ def test_item_with_sections(testapp):
                 r"<h2>some title 2</h2>\s*"
                 r"<p>xxx</p>\s*"
                 r"<h3>some section 3</h3>\s*"
-                r"<p>yyy</p>\s*"),
+                r"<p>yyy</p>\s*"
+            ),
             "destination": "1.html",
-        })
+        }
+    )
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -186,23 +210,29 @@ def test_item_with_code(testapp):
         [
             core.Item(
                 {
-                    "content": textwrap.dedent("""\
+                    "content": textwrap.dedent(
+                        """\
                         test codeblock
 
                         .. code:: python
 
                             lambda x: pass
-                    """),
+                    """
+                    ),
                     "destination": "1.rst",
-                }),
-        ])
+                }
+            )
+        ],
+    )
 
     assert next(stream) == core.Item(
         {
             "content": _pytest_regex(
-                r"<p>test codeblock</p>\s*<pre.*python[^>]*>[\s\S]+</pre>"),
+                r"<p>test codeblock</p>\s*<pre.*python[^>]*>[\s\S]+</pre>"
+            ),
             "destination": "1.html",
-        })
+        }
+    )
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -216,18 +246,23 @@ def test_item_with_inline_code(testapp):
         [
             core.Item(
                 {
-                    "content": textwrap.dedent("""\
+                    "content": textwrap.dedent(
+                        """\
                         test ``code``
-                    """),
+                    """
+                    ),
                     "destination": "1.rst",
-                }),
-        ])
+                }
+            )
+        ],
+    )
 
     assert next(stream) == core.Item(
         {
             "content": _pytest_regex(r"<p>test <code>code</code></p>"),
             "destination": "1.html",
-        })
+        }
+    )
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -241,7 +276,8 @@ def test_param_settings(testapp):
         [
             core.Item(
                 {
-                    "content": textwrap.dedent("""\
+                    "content": textwrap.dedent(
+                        """\
                         section 1
                         =========
 
@@ -251,13 +287,14 @@ def test_param_settings(testapp):
                         =========
 
                         bbb
-                    """),
+                    """
+                    ),
                     "destination": "1.rst",
-                }),
+                }
+            )
         ],
-        settings={
-            "initial_header_level": 3,
-        })
+        settings={"initial_header_level": 3},
+    )
 
     assert next(stream) == core.Item(
         {
@@ -267,9 +304,11 @@ def test_param_settings(testapp):
                 r"<h3>section 1</h3>\s*"
                 r"<p>aaa</p>\s*"
                 r"<h3>section 2</h3>\s*"
-                r"<p>bbb</p>\s*"),
+                r"<p>bbb</p>\s*"
+            ),
             "destination": "1.html",
-        })
+        }
+    )
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -283,27 +322,28 @@ def test_item_many(testapp, amount):
         testapp,
         [
             core.Item(
-                {
-                    "content": "the key is **%d**" % i,
-                    "destination": "1.rst",
-                })
+                {"content": "the key is **%d**" % i, "destination": "1.rst"}
+            )
             for i in range(amount)
-        ])
+        ],
+    )
 
     for i in range(amount):
         assert next(stream) == core.Item(
             {
                 "content": "<p>the key is <strong>%d</strong></p>" % i,
                 "destination": "1.html",
-            })
+            }
+        )
 
     with pytest.raises(StopIteration):
         next(stream)
 
 
-@pytest.mark.parametrize("params, error", [
-    ({"settings": 42}, "settings: 42 should be instance of 'dict'"),
-])
+@pytest.mark.parametrize(
+    "params, error",
+    [({"settings": 42}, "settings: 42 should be instance of 'dict'")],
+)
 def test_param_bad_value(testapp, params, error):
     """reStructuredText processor has to validate input parameters."""
 

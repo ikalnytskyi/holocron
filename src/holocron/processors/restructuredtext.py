@@ -10,11 +10,7 @@ from docutils import nodes
 from ._misc import parameters
 
 
-@parameters(
-    schema={
-        "settings": schema.Schema({str: object}),
-    }
-)
+@parameters(schema={"settings": schema.Schema({str: object})})
 def process(app, stream, *, settings={}):
     settings = dict(
         {
@@ -22,7 +18,6 @@ def process(app, stream, *, settings={}):
             # few top-level sections, because it simply means there's no
             # title.
             "initial_header_level": 2,
-
             # Docutils is designed to convert reStructuredText files to
             # other formats such as, for instance, HTML. That's why it
             # produces full-featured HTML with embed CSS. Since we are
@@ -30,7 +25,6 @@ def process(app, stream, *, settings={}):
             # getting the whole HTML output. So let's turn off producing
             # a stylesheet and save both memory and CPU cycles.
             "embed_stylesheet": False,
-
             # Docutils uses Pygments to highlight code blocks, and the
             # later can produce HTML marked with either short or long
             # CSS classes. There are a lot of colorschemes designed for
@@ -38,7 +32,8 @@ def process(app, stream, *, settings={}):
             # simplify customization flow.
             "syntax_highlight": "short",
         },
-        **settings)
+        **settings
+    )
 
     for item in stream:
         # Writer is mutable so we can't share the same instance between
@@ -52,13 +47,13 @@ def process(app, stream, *, settings={}):
         writer.translator_class = _HTMLTranslator
 
         parts = publish_parts(
-            item["content"],
-            writer=writer,
-            settings_overrides=settings)
+            item["content"], writer=writer, settings_overrides=settings
+        )
 
         item["content"] = parts["fragment"].strip()
-        item["destination"] = \
+        item["destination"] = (
             "%s.html" % os.path.splitext(item["destination"])[0]
+        )
 
         # Usually converters go after frontmatter processor and that
         # means any explicitly specified attribute is already set on

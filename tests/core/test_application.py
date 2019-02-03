@@ -209,9 +209,7 @@ def test_invoke_anonymous_pipe():
             {"name": "processor_b"},
             {"name": "processor_c"},
         ],
-        [
-            holocron.core.Item({"a": "b"})
-        ]
+        [holocron.core.Item({"a": "b"})],
     )
 
     assert next(stream) == holocron.core.Item({"a": "b", "x": 42})
@@ -312,23 +310,29 @@ def test_invoke_propagates_processor_options(processor_options):
         next(testapp.invoke("test"))
 
 
-@pytest.mark.parametrize("options, resolved", [
-    ({"a": {"$ref": "metadata://#/is_yoda_master"}}, {"a": True}),
-    ({"a": {"$ref": "metadata://#/extra/0/luke"}}, {"a": "skywalker"}),
-    ({"a": {"$ref": "metadata://#/is_yoda_master"},
-      "b": {"$ref": "metadata://#/extra/0/luke"}},
-     {"a": True, "b": "skywalker"}),
-    ({"a": {"$ref": "item://#/content"}},
-     {"a": {"$ref": "item://#/content"}}),
-])
+@pytest.mark.parametrize(
+    "options, resolved",
+    [
+        ({"a": {"$ref": "metadata://#/is_yoda_master"}}, {"a": True}),
+        ({"a": {"$ref": "metadata://#/extra/0/luke"}}, {"a": "skywalker"}),
+        (
+            {
+                "a": {"$ref": "metadata://#/is_yoda_master"},
+                "b": {"$ref": "metadata://#/extra/0/luke"},
+            },
+            {"a": True, "b": "skywalker"},
+        ),
+        (
+            {"a": {"$ref": "item://#/content"}},
+            {"a": {"$ref": "item://#/content"}},
+        ),
+    ],
+)
 def test_invoke_resolves_jsonref(options, resolved):
     """.invoke() resolves JSON references in processor's options."""
 
     testapp = holocron.core.Application(
-        {
-            "extra": [{"luke": "skywalker"}],
-            "is_yoda_master": True,
-        },
+        {"extra": [{"luke": "skywalker"}], "is_yoda_master": True}
     )
 
     def processor(app, items, **options):
