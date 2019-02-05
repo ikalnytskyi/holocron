@@ -37,6 +37,8 @@ stevedore = "^1.30"
 Markdown = "^3.0"
 docutils = "^0.14.0"
 feedgen = "^0.7.0"
+termcolor = "^1.1"
+colorama = "^0.4.1"
 
 [tool.poetry.dev-dependencies]
 mock = "^2.0"
