@@ -4,7 +4,7 @@ import os
 
 import pytest
 
-from holocron import app, core
+from holocron import core
 from holocron.processors import when
 
 
@@ -29,7 +29,7 @@ def testapp(request):
             else:
                 yield core.Item({"key": item_a["key"] + item_b["key"]})
 
-    instance = app.Holocron()
+    instance = core.Application()
     instance.add_processor("spam", spam)
     instance.add_processor("rice", rice)
     instance.add_processor("eggs", eggs)

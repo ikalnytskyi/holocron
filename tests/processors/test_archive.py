@@ -4,13 +4,13 @@ import os
 
 import pytest
 
-from holocron import app, core
+from holocron import core
 from holocron.processors import archive
 
 
 @pytest.fixture(scope="function")
 def testapp():
-    return app.Holocron(metadata={"url": "https://yoda.ua"})
+    return core.Application({"url": "https://yoda.ua"})
 
 
 def test_item(testapp):

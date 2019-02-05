@@ -5,7 +5,7 @@ import datetime
 import pytest
 import dateutil.tz
 
-from holocron import app, core
+from holocron import core
 from holocron.processors import todatetime
 
 
@@ -15,7 +15,7 @@ _TZ_EET = dateutil.tz.gettz("EET")
 
 @pytest.fixture(scope="function")
 def testapp():
-    return app.Holocron()
+    return core.Application()
 
 
 @pytest.mark.parametrize("timestamp, parsed", [

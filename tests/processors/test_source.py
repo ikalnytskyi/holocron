@@ -5,7 +5,7 @@ import unittest.mock
 
 import pytest
 
-from holocron import app, core
+from holocron import core
 from holocron.processors import source
 
 
@@ -26,7 +26,7 @@ class _pytest_timestamp:
 
 @pytest.fixture(scope="function")
 def testapp():
-    return app.Holocron(metadata={"url": "https://yoda.ua"})
+    return core.Application({"url": "https://yoda.ua"})
 
 
 @pytest.mark.parametrize("path", [

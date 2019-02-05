@@ -8,7 +8,7 @@ import unittest.mock
 import pytest
 import xmltodict
 
-from holocron import app, core
+from holocron import core
 from holocron.processors import sitemap
 
 
@@ -31,7 +31,7 @@ class _pytest_xmlasdict:
 
 @pytest.fixture(scope="function")
 def testapp():
-    return app.Holocron(metadata={"url": "https://yoda.ua"})
+    return core.Application({"url": "https://yoda.ua"})
 
 
 @pytest.mark.parametrize("filename, escaped", [

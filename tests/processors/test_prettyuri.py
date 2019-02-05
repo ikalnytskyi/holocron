@@ -4,13 +4,13 @@ import os
 
 import pytest
 
-from holocron import app, core
+from holocron import core
 from holocron.processors import prettyuri
 
 
 @pytest.fixture(scope="function")
 def testapp():
-    return app.Holocron()
+    return core.Application()
 
 
 def test_item(testapp):

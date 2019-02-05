@@ -2,7 +2,7 @@
 
 import pytest
 
-from holocron import app, core
+from holocron import core
 from holocron.processors import pipeline
 
 
@@ -22,7 +22,7 @@ def testapp():
         yield from items
         yield core.Item({"content": "rice"})
 
-    instance = app.Holocron()
+    instance = core.Application()
     instance.add_processor("spam", spam)
     instance.add_processor("eggs", eggs)
     instance.add_processor("rice", rice)

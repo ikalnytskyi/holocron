@@ -95,16 +95,6 @@ def parse_command_line(args):
     return arguments
 
 
-def run_pipeline(app, arguments):
-    if arguments.pipeline not in app.conf["pipelines"]:
-        raise ValueError("%s: no such pipeline" % arguments.pipeline)
-
-    pipeline = app.conf["pipelines"][arguments.pipeline]
-
-    for _ in app.invoke_processors([], pipeline):
-        pass
-
-
 def main(args=sys.argv[1:]):
     arguments = parse_command_line(args)
 
@@ -121,4 +111,5 @@ def main(args=sys.argv[1:]):
     if holocron is None:
         sys.exit(1)
 
-    run_pipeline(holocron, arguments)
+    for _ in holocron.invoke(arguments.pipeline):
+        pass

@@ -7,13 +7,13 @@ import unittest.mock
 import pytest
 import bs4
 
-from holocron import app, core
+from holocron import core
 from holocron.processors import jinja2
 
 
 @pytest.fixture(scope="function")
 def testapp():
-    return app.Holocron(metadata={"url": "https://yoda.ua"})
+    return core.Application({"url": "https://yoda.ua"})
 
 
 def test_item(testapp):

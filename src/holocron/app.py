@@ -10,12 +10,11 @@
 
 import os
 import logging
-import collections
 
 import yaml
 import stevedore
 
-from .processors import _misc
+from . import core
 
 
 logger = logging.getLogger(__name__)
@@ -59,103 +58,13 @@ def create_app(confpath=None):
         return None
 
     metadata = conf.pop("metadata", None) if conf else None
-    app = Holocron(conf, metadata)
+    app = core.Application(metadata)
 
     for ext in stevedore.ExtensionManager(namespace="holocron.processors"):
         app.add_processor(ext.name, ext.plugin)
 
+    if conf:
+        for name, pipeline in conf.get("pipelines", {}).items():
+            app.add_pipeline(name, pipeline)
+
     return app
-
-
-class Holocron(object):
-    """
-    The Holocron class implements a blog instance.
-
-    Once it"s created it will act as a central registry for the extensions,
-    converters, template configuration and much more.
-
-    Here the interaction workflow for end-users:
-
-    * create instance with default or custom settings
-    * register extensions: converters and/or generators
-    * call :meth:`run` method in order to build weblog
-
-    :param conf: (dict) a user configuration, that overrides a default one
-    """
-
-    #: Default settings.
-    default_conf = {
-        "paths": {
-            "content": ".",
-            "output": "_build",
-        },
-    }
-
-    def __init__(self, conf=None, metadata=None):
-        #: The configuration dictionary.
-        self.conf = collections.ChainMap(self.default_conf, conf or {})
-
-        #: metadata store
-        #:
-        #: The metadata dictionary is a kv store shared across processors of a
-        #: pipeline, and that is designed to contain application level (i.e.
-        #: site level) data. A chain map is used in order to is to separate
-        #: initial metadata from possible overwrites.
-        #:
-        #: .. versionadded:: 0.4.0
-        self.metadata = collections.ChainMap({}, metadata or {})
-
-        #: processor name -> processor function
-        #:
-        #: Processors are stateless functions that receive a list of documents
-        #: and return a list of documents. Each output of one processor goes
-        #: as input to next one. This property is intended to keep track of
-        #: known processors, the one that could be used by application
-        #: instance.
-        #:
-        #: .. versionadded:: 0.4.0
-        self._processors = {}
-
-    def add_processor(self, name, processor):
-        """Register a given processor in the application instance.
-
-        Application instance comes with no registered processors by default.
-        The usual place where they are registered is create_app function.
-
-        :param name: a name to be used to call the processor
-        :param processor: a process function to be registered
-        """
-        if name in self._processors:
-            logger.warning("%s processor skipped: already registered", name)
-            return
-
-        self._processors[name] = processor
-
-    def invoke_processors(self, documents, pipeline):
-        stream = documents
-
-        for processor in pipeline:
-            processor = processor.copy()
-            processfn = self._processors[processor.pop("name")]
-
-            # Resolve every JSON reference we encounter in a processor's
-            # parameters. Please note, we're doing this so late because we
-            # want to take into account metadata and other changes produced
-            # by previous processors in the pipeline.
-            processor = _misc.resolve_json_references(
-                processor, {"metadata:": self.metadata})
-
-            stream = processfn(self, stream, **processor)
-
-        yield from stream
-
-    def run(self):
-        """
-        (DEPRECATED) Starts build process.
-        """
-        processors = self.conf["pipelines"]["build"]
-
-        # Since processors are generators and thus are lazy evaluated, we need
-        # to force evaluate them. Otherwise, the pipeline will produce nothing.
-        for _ in self.invoke_processors([], processors):
-            pass
