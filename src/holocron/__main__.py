@@ -5,6 +5,9 @@ import logging
 import argparse
 import warnings
 
+import colorama
+import termcolor
+
 from holocron import __version__ as holocron_version
 from holocron.app import create_app
 
@@ -96,20 +99,28 @@ def parse_command_line(args):
 
 
 def main(args=sys.argv[1:]):
-    arguments = parse_command_line(args)
+    # colorama.init() does two great things Holocron depends on. First, it
+    # converts ANSI escape sequences printed to standard streams into proper
+    # Windows API calls. Second, it strips ANSI colors away from a stream if
+    # it's not connected to a tty (e.g. holocron is called from pipe).
+    with colorama.colorama_text():
+        arguments = parse_command_line(args)
 
-    # initial logger configuration - use custom format for records
-    # and print records with WARNING level and higher.
-    configure_logger(arguments.verbosity or logging.WARNING)
+        # initial logger configuration - use custom format for records
+        # and print records with WARNING level and higher.
+        configure_logger(arguments.verbosity or logging.WARNING)
 
-    # show deprecation warnings in order to be prepared for backward
-    # incompatible changes
-    warnings.filterwarnings("always", category=DeprecationWarning)
+        # show deprecation warnings in order to be prepared for backward
+        # incompatible changes
+        warnings.filterwarnings("always", category=DeprecationWarning)
 
-    # create app instance
-    holocron = create_app(arguments.conf)
-    if holocron is None:
-        sys.exit(1)
+        # create app instance
+        holocron = create_app(arguments.conf)
+        if holocron is None:
+            sys.exit(1)
 
-    for _ in holocron.invoke(arguments.pipeline):
-        pass
+        for item in holocron.invoke(arguments.pipeline):
+            print(
+                termcolor.colored("==>", "green", attrs=["bold"]),
+                termcolor.colored(item["destination"], attrs=["bold"]),
+            )

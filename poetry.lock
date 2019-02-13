@@ -26,9 +26,8 @@ version = "4.7.1"
 soupsieve = ">=1.2"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "Cross-platform colored terminal text."
-marker = "sys_platform == \"win32\""
 name = "colorama"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
@@ -323,6 +322,14 @@ pbr = ">=2.0.0,<2.1.0 || >2.1.0"
 six = ">=1.10.0"
 
 [[package]]
+category = "main"
+description = "ANSII Color formatting for output in terminal."
+name = "termcolor"
+optional = false
+python-versions = "*"
+version = "1.1.0"
+
+[[package]]
 category = "dev"
 description = "Convert XML documents into Python objects"
 name = "untangle"
@@ -339,7 +346,7 @@ python-versions = "*"
 version = "0.11.0"
 
 [metadata]
-content-hash = "6107d812c47d2d58f1ba52e13d827211b2d5dcd7ab0272cfd66e064687eb0ef2"
+content-hash = "147d01e5fd24242f59eae52d8d3e543f940da96d2f60824af1c33bfe873a8b27"
 python-versions = "^3.4"
 
 [metadata.hashes]
@@ -376,5 +383,6 @@ schema = ["d994b0dc4966000037b26898df638e3e2a694cc73636cb2050e652614a350687", "f
 six = ["3350809f0555b11f552448330d0b52d5f24c91a322ea4a15ef22629740f3761c", "d16a0141ec1a18405cd4ce8b4613101da75da0e9a7aec5bdd4fa804d0e0eba73"]
 soupsieve = ["10687fc53eeb3518e01a0ac84d3d711da623d3298a3039459d3f649927c4a270", "b23a0d7da0247200fe83c67c34de9d7599ad404106367313d8e65e04174d0b4b"]
 stevedore = ["b92bc7add1a53fb76c634a178978d113330aaf2006f9498d9e2414b31fbfc104", "c58b7c231a9c4890cd3c2b5d2b23bd63fa807ff934d68579e3f6c3a1735e8a7c"]
+termcolor = ["1d6d69ce66211143803fbc56652b41d73b4a400a2891d7bf7a1cdf4c02de613b"]
 untangle = ["e7cfa1ad57707e6b74cfea8b9fc50f7cbe9bbaf18401cc9d72192002bcd80bcb"]
 xmltodict = ["8f8d7d40aa28d83f4109a7e8aa86e67a4df202d9538be40c0cb1d70da527b0df", "add07d92089ff611badec526912747cf87afd4f9447af6661aca074eeaf32615"]
