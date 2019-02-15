@@ -35,8 +35,13 @@
     <h1>{{ document.title | default('Untitled') }}</h1>
 
     <div class="meta">
-    {% block article_meta %}
-    {% endblock %}
+    {% if "published" in document %}
+      written by {{ document.author or metadata.author }} on
+
+      <time datetime="{{ document.published.isoformat() }}">
+        {{ document.published.strftime('%B %d, %Y') }}
+      </time>
+    {% endif %}
     </div>
   </header>
 

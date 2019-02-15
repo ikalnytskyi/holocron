@@ -17,7 +17,7 @@ from ._misc import parameters
         "themes": schema.Or([str], None, error="unsupported value"),
     }
 )
-def process(app, stream, *, template="page.j2", context={}, themes=None):
+def process(app, stream, *, template="item.j2", context={}, themes=None):
     if themes is None:
         import holocron
         themes = [os.path.join(os.path.dirname(holocron.__file__), "theme")]

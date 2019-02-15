@@ -131,7 +131,7 @@ def test_item_many(testapp, tmpdir, amount):
 def test_param_themes(testapp, tmpdir):
     """Jinja2 processor has to respect themes parameter."""
 
-    tmpdir.ensure("theme_a", "templates", "page.j2").write_text(
+    tmpdir.ensure("theme_a", "templates", "item.j2").write_text(
         textwrap.dedent("""\
             template: my super template
             rendered: {{ document.title }}
