@@ -58,7 +58,7 @@ def test_invoke():
     testapp.add_processor("processor_a", processor_a)
     testapp.add_processor("processor_b", processor_b)
     testapp.add_processor("processor_c", processor_c)
-    testapp.add_pipeline(
+    testapp.add_pipe(
         "test",
         [
             {"name": "processor_a"},
@@ -75,8 +75,8 @@ def test_invoke():
         next(stream)
 
 
-def test_invoke_anonymous_pipeline():
-    """.invoke() works with anonymous pipelines."""
+def test_invoke_anonymous_pipe():
+    """.invoke() works with anonymous pipes."""
 
     def processor_a(app, items):
         items = list(items)
@@ -121,7 +121,7 @@ def test_invoke_anonymous_pipeline():
         next(stream)
 
 
-def test_invoke_pipeline_not_found():
+def test_invoke_pipe_not_found():
     """.invoke() raises proper exception."""
 
     testapp = holocron.core.Application()
@@ -129,24 +129,24 @@ def test_invoke_pipeline_not_found():
     with pytest.raises(ValueError) as excinfo:
         next(testapp.invoke("test"))
 
-    assert str(excinfo.value) == "no such pipeline: 'test'"
+    assert str(excinfo.value) == "no such pipe: 'test'"
 
 
-def test_invoke_empty_pipeline():
+def test_invoke_empty_pipe():
     """.invoke() returns nothing."""
 
     testapp = holocron.core.Application()
-    testapp.add_pipeline("test", [])
+    testapp.add_pipe("test", [])
 
     with pytest.raises(StopIteration):
         next(testapp.invoke("test"))
 
 
-def test_invoke_passthrough_items_empty_pipeline():
-    """.invoke() passes through items on empty pipeline."""
+def test_invoke_passthrough_items_empty_pipe():
+    """.invoke() passes through items on empty pipe."""
 
     testapp = holocron.core.Application()
-    testapp.add_pipeline("test", [])
+    testapp.add_pipe("test", [])
 
     stream = testapp.invoke(
         "test",
@@ -164,14 +164,14 @@ def test_invoke_passthrough_items_empty_pipeline():
 
 
 def test_invoke_passthrough_items():
-    """.invoke() passes through items on non empty pipeline."""
+    """.invoke() passes through items on non empty pipe."""
 
     def processor(app, items):
         yield from items
 
     testapp = holocron.core.Application()
     testapp.add_processor("processor", processor)
-    testapp.add_pipeline("test", [{"name": "processor"}])
+    testapp.add_pipe("test", [{"name": "processor"}])
 
     stream = testapp.invoke(
         "test",
@@ -206,7 +206,7 @@ def test_invoke_propagates_processor_options(processor_options):
 
     testapp = holocron.core.Application()
     testapp.add_processor("processor", processor)
-    testapp.add_pipeline("test", [dict(processor_options, name="processor")])
+    testapp.add_pipe("test", [dict(processor_options, name="processor")])
 
     with pytest.raises(StopIteration):
         next(testapp.invoke("test"))
@@ -236,7 +236,7 @@ def test_invoke_resolves_jsonref(options, resolved):
         yield from items
 
     testapp.add_processor("processor", processor)
-    testapp.add_pipeline("test", [dict(options, name="processor")])
+    testapp.add_pipe("test", [dict(options, name="processor")])
 
     with pytest.raises(StopIteration):
         next(testapp.invoke("test"))
@@ -251,7 +251,7 @@ def test_invoke_processor_errors():
 
     testapp = holocron.core.Application()
     testapp.add_processor("processor", processor)
-    testapp.add_pipeline("test", [{"name": "processor"}])
+    testapp.add_pipe("test", [{"name": "processor"}])
 
     stream = testapp.invoke("test")
 
@@ -266,7 +266,7 @@ def test_invoke_processor_not_found():
     """.invoke() raises proper exception."""
 
     testapp = holocron.core.Application()
-    testapp.add_pipeline("test", [{"name": "processor"}])
+    testapp.add_pipe("test", [{"name": "processor"}])
 
     with pytest.raises(ValueError) as excinfo:
         next(testapp.invoke("test"))

@@ -1,4 +1,4 @@
-"""Find stream and add them to pipeline."""
+"""Populate stream with new items found on filesystem."""
 
 import re
 import os
@@ -24,9 +24,9 @@ def _createitem(app, path, basepath, encoding, tzinfo):
     updated = datetime.datetime.fromtimestamp(os.path.getmtime(path), tzinfo)
 
     return holocron.core.WebSiteItem(
-        # Memorizing 'source' property is not required for the application
-        # core, however, it may be useful for pipeline troubleshooting as well
-        # specifying conditions.
+        # Memorizing 'source' property is not required for application core,
+        # however, it may be useful for troubleshooting pipes as well as
+        # writing 'when' conditions.
         source=os.path.relpath(path, basepath),
         destination=os.path.relpath(path, basepath),
         content=content,

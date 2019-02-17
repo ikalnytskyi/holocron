@@ -85,7 +85,7 @@ def parse_command_line(args):
         dest="command", help="command to execute")
 
     run_parser = command_parser.add_parser("run")
-    run_parser.add_argument("pipeline", help="a pipeline to run")
+    run_parser.add_argument("pipe", help="a pipe to run")
 
     # parse cli and form arguments object
     arguments = parser.parse_args(args)
@@ -119,7 +119,7 @@ def main(args=sys.argv[1:]):
         if holocron is None:
             sys.exit(1)
 
-        for item in holocron.invoke(arguments.pipeline):
+        for item in holocron.invoke(arguments.pipe):
             print(
                 termcolor.colored("==>", "green", attrs=["bold"]),
                 termcolor.colored(item["destination"], attrs=["bold"]),

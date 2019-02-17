@@ -43,8 +43,8 @@ def process(app,
 
         # Usually raising an error when contract is violated is a preferred
         # option. However, taking into account the use case of 'todatetime'
-        # processor, we better ignore such items in the pipeline to save
-        # users from wrapping with 'when' processor.
+        # processor, we better ignore such items in the stream to save users
+        # from wrapping this processor with 'when' processor.
         if parsein not in item:
             yield item
             continue

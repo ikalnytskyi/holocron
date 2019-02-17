@@ -40,7 +40,7 @@ def process(app, stream, *, template="item.j2", context={}, themes=None):
         yield item
 
     # Themes may optionally come with various statics (e.g. css, images) they
-    # depend on. That's why we need to inject these statics to a pipeline;
+    # depend on. That's why we need to inject these statics to the stream;
     # otherwise, rendered items may look improperly.
     for theme in themes:
         yield from source.process(app, [], path=theme, pattern=r"static/")

@@ -22,7 +22,7 @@ def example_site(create_site):
         "metadata": {
             "url": "https://yoda.ua",
         },
-        "pipelines": {
+        "pipes": {
             "test": [
                 {"name": "source"},
                 {"name": "commit"},

@@ -64,7 +64,7 @@ def create_app(confpath=None):
         app.add_processor(ext.name, ext.plugin)
 
     if conf:
-        for name, pipeline in conf.get("pipelines", {}).items():
-            app.add_pipeline(name, pipeline)
+        for name, pipe in conf.get("pipes", {}).items():
+            app.add_pipe(name, pipe)
 
     return app

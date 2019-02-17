@@ -119,7 +119,7 @@ class TestCreateApp(HolocronTestCase):
         self.assertEqual(set(app._processors), set([
             "source",
             "metadata",
-            "pipeline",
+            "pipe",
             "frontmatter",
             "markdown",
             "restructuredtext",
