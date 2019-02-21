@@ -31,6 +31,106 @@ def test_metadata_init():
     assert testapp.metadata["yoda"] == "master"
 
 
+def test_add_processor(caplog):
+    """.add_processor() registers a processor."""
+
+    testapp = holocron.core.Application()
+    marker = None
+
+    def processor(app, items):
+        nonlocal marker
+        marker = 42
+        yield from items
+
+    testapp.add_processor("processor", processor)
+
+    for _ in testapp.invoke([{"name": "processor"}]):
+        pass
+
+    assert marker == 42
+    assert len(caplog.records) == 0
+
+
+def test_add_processor_override(caplog):
+    """.add_processor() overrides registered one."""
+
+    testapp = holocron.core.Application()
+    marker = None
+
+    def processor_a(app, items):
+        nonlocal marker
+        marker = 42
+        yield from items
+
+    def processor_b(app, items):
+        nonlocal marker
+        marker = 13
+        yield from items
+
+    testapp.add_processor("processor", processor_a)
+    testapp.add_processor("processor", processor_b)
+
+    for _ in testapp.invoke([{"name": "processor"}]):
+        pass
+
+    assert marker == 13
+
+    assert len(caplog.records) == 1
+    assert caplog.records[0].message == "processor override: 'processor'"
+
+
+def test_add_pipe(caplog):
+    """.add_pipe() registers a pipe."""
+
+    testapp = holocron.core.Application()
+    marker = None
+
+    def processor(app, items):
+        nonlocal marker
+        marker = 42
+        yield from items
+
+    testapp.add_processor("processor", processor)
+    testapp.add_pipe("pipe", [{"name": "processor"}])
+
+    for _ in testapp.invoke("pipe"):
+        pass
+
+    assert marker == 42
+    assert len(caplog.records) == 0
+
+
+def test_add_pipe_override(caplog):
+    """.add_pipe() overrides registered one."""
+
+    testapp = holocron.core.Application()
+    marker = None
+
+    def processor_a(app, items):
+        nonlocal marker
+        marker = 42
+        yield from items
+
+    def processor_b(app, items):
+        nonlocal marker
+        marker = 13
+        yield from items
+
+    testapp.add_processor("processor_a", processor_a)
+    testapp.add_processor("processor_b", processor_b)
+
+    testapp.add_pipe("pipe", [{"name": "processor_a"}])
+    testapp.add_pipe("pipe", [{"name": "processor_b"}])
+
+    for _ in testapp.invoke("pipe"):
+        pass
+
+    assert marker == 13
+
+    assert len(caplog.records) == 1
+    assert caplog.records[0].message == "pipe override: 'pipe'"
+
+
 def test_invoke():
     """.invoke() just works!"""
 

@@ -7,9 +7,27 @@ import warnings
 
 import colorama
 import termcolor
+import yaml
 
+from . import core
 from holocron import __version__ as holocron_version
-from holocron.app import create_app
+
+
+def create_app_from_yml(path):
+    """Return an application instance created from YAML."""
+
+    try:
+        with open(path, "rt", encoding="UTF-8") as f:
+            try:
+                conf = yaml.safe_load(f)
+            except yaml.YAMLError as exc:
+                raise RuntimeError(
+                    "Cannot parse a configuration file. Context: " + str(exc))
+
+    except FileNotFoundError:
+        conf = {"metadata": None, "pipes": {}}
+
+    return core.create_app(conf["metadata"], pipes=conf["pipes"])
 
 
 def configure_logger(level):
@@ -114,13 +132,14 @@ def main(args=sys.argv[1:]):
         # incompatible changes
         warnings.filterwarnings("always", category=DeprecationWarning)
 
-        # create app instance
-        holocron = create_app(arguments.conf)
-        if holocron is None:
-            sys.exit(1)
+        try:
+            holocron = create_app_from_yml(arguments.conf)
 
-        for item in holocron.invoke(arguments.pipe):
-            print(
-                termcolor.colored("==>", "green", attrs=["bold"]),
-                termcolor.colored(item["destination"], attrs=["bold"]),
-            )
+            for item in holocron.invoke(arguments.pipe):
+                print(
+                    termcolor.colored("==>", "green", attrs=["bold"]),
+                    termcolor.colored(item["destination"], attrs=["bold"]),
+                )
+        except Exception as exc:
+            print(str(exc), file=sys.stderr)
+            sys.exit(1)

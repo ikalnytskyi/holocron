@@ -26,7 +26,6 @@ def testapp():
     instance.add_processor("spam", spam)
     instance.add_processor("eggs", eggs)
     instance.add_processor("rice", rice)
-
     return instance
 
 

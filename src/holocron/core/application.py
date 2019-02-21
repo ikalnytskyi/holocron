@@ -1,8 +1,12 @@
 """Holocron, The Application."""
 
 import collections
+import logging
 
 from ..processors import _misc
+
+
+_logger = logging.getLogger("holocron")
 
 
 class Application:
@@ -36,9 +40,13 @@ class Application:
         return self._metadata
 
     def add_processor(self, name, processor):
+        if name in self._processors:
+            _logger.warning("processor override: '%s'", name)
         self._processors[name] = processor
 
     def add_pipe(self, name, pipe):
+        if name in self._pipes:
+            _logger.warning("pipe override: '%s'", name)
         self._pipes[name] = pipe
 
     def invoke(self, pipe, stream=None):
