@@ -1,5 +1,7 @@
 """Yo! Holocron CLI is here!"""
 
+import io
+import os
 import sys
 import logging
 import argparse
@@ -19,7 +21,15 @@ def create_app_from_yml(path):
     try:
         with open(path, "rt", encoding="UTF-8") as f:
             try:
-                conf = yaml.safe_load(f)
+                # Substitute ALL occurrences of '%(here)s' with a path to a
+                # directory with '_config.yml'. Please note, we also want wrap
+                # the result into 'io.StringIO' in order to preserve original
+                # filename in 'yaml.safe_load()' errors.
+                interpolated = io.StringIO(f.read() % {
+                    "here": os.path.abspath(os.path.dirname(path))})
+                interpolated.name = f.name
+
+                conf = yaml.safe_load(interpolated)
             except yaml.YAMLError as exc:
                 raise RuntimeError(
                     "Cannot parse a configuration file. Context: " + str(exc))

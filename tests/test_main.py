@@ -127,3 +127,65 @@ def test_run_conf_yml_directory(monkeypatch, tmpdir, execute, example_site):
 
     assert str(excinfo.value.stderr.decode("UTF-8").strip()) \
         == "[Errno 21] Is a directory: '_config.yml'"
+
+
+def test_run_conf_yml_interpolate(monkeypatch, tmpdir, execute):
+    """Values such as '%(here)s' are interpolated."""
+
+    monkeypatch.chdir(tmpdir)
+    tmpdir.join("_config.yml").write_binary(
+        yaml.safe_dump(
+            {
+                "metadata": {
+                    "url": "https://yoda.ua",
+                },
+                "pipes": {
+                    "test": [
+                        {"name": "source"},
+                        {"name": "metadata",
+                         "metadata": {
+                            "content": "%(here)s/secret"}},
+                        {"name": "commit"},
+                    ],
+                },
+            },
+            encoding="UTF-8",
+            default_flow_style=False,
+        )
+    )
+    tmpdir.join("test.txt").write_binary(b"")
+
+    execute(["run", "test"])
+
+    assert tmpdir.join("_site", "test.txt").read_text(encoding="UTF-8") \
+        == tmpdir.join("secret").strpath
+
+
+def test_run_conf_yml_interpolate_in_path(
+        monkeypatch,
+        tmpdir,
+        execute,
+        example_site):
+    """Values such as '%(here)s' are interpolated."""
+
+    tmpdir.join("_config.yml").write_binary(
+        yaml.safe_dump(
+            {
+                "metadata": {
+                    "url": "https://yoda.ua",
+                },
+                "pipes": {
+                    "test": [
+                        {"name": "source", "path": "%(here)s"},
+                        {"name": "commit", "save_to": "%(here)s/_compiled"},
+                    ],
+                },
+            },
+            encoding="UTF-8",
+            default_flow_style=False,
+        )
+    )
+
+    execute(["-c", tmpdir.join("_config.yml").strpath, "run", "test"])
+
+    assert tmpdir.join("_compiled", "cv.md").read_binary() == b"yoda"
