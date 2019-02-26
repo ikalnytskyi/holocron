@@ -49,7 +49,7 @@ def process(app, stream, *, when, processor):
             yield untouched.popleft()
         yield item
 
-    # Untouched collection may contain some items if app.invoke_processors()
-    # drained an input stream without yielding a new item. Ensure they are
-    # propagated down the stream.
+    # Untouched collection may contain some items if app.invoke() drained
+    # an input stream without yielding a new item. Ensure they are propagated
+    # down the stream.
     yield from untouched
