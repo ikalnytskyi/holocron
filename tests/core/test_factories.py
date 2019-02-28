@@ -13,6 +13,7 @@ def test_create_app_processors_discover():
         "commit",
         "feed",
         "frontmatter",
+        "import-processors",
         "jinja2",
         "markdown",
         "metadata",

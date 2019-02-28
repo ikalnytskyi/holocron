@@ -66,6 +66,7 @@ sitemap = "holocron.processors.sitemap:process"
 source = "holocron.processors.source:process"
 todatetime = "holocron.processors.todatetime:process"
 when = "holocron.processors.when:process"
+import-processors = "holocron.processors.import_processors:process"
 
 [tool.poetry.scripts]
 holocron = "holocron.__main__:main"
