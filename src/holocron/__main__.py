@@ -1,5 +1,7 @@
 """Yo! Holocron CLI is here!"""
 
+import io
+import os
 import sys
 import logging
 import argparse
@@ -7,9 +9,35 @@ import warnings
 
 import colorama
 import termcolor
+import yaml
 
+from . import core
 from holocron import __version__ as holocron_version
-from holocron.app import create_app
+
+
+def create_app_from_yml(path):
+    """Return an application instance created from YAML."""
+
+    try:
+        with open(path, "rt", encoding="UTF-8") as f:
+            try:
+                # Substitute ALL occurrences of '%(here)s' with a path to a
+                # directory with '_config.yml'. Please note, we also want wrap
+                # the result into 'io.StringIO' in order to preserve original
+                # filename in 'yaml.safe_load()' errors.
+                interpolated = io.StringIO(f.read() % {
+                    "here": os.path.abspath(os.path.dirname(path))})
+                interpolated.name = f.name
+
+                conf = yaml.safe_load(interpolated)
+            except yaml.YAMLError as exc:
+                raise RuntimeError(
+                    "Cannot parse a configuration file. Context: " + str(exc))
+
+    except FileNotFoundError:
+        conf = {"metadata": None, "pipes": {}}
+
+    return core.create_app(conf["metadata"], pipes=conf["pipes"])
 
 
 def configure_logger(level):
@@ -85,7 +113,7 @@ def parse_command_line(args):
         dest="command", help="command to execute")
 
     run_parser = command_parser.add_parser("run")
-    run_parser.add_argument("pipeline", help="a pipeline to run")
+    run_parser.add_argument("pipe", help="a pipe to run")
 
     # parse cli and form arguments object
     arguments = parser.parse_args(args)
@@ -114,13 +142,14 @@ def main(args=sys.argv[1:]):
         # incompatible changes
         warnings.filterwarnings("always", category=DeprecationWarning)
 
-        # create app instance
-        holocron = create_app(arguments.conf)
-        if holocron is None:
-            sys.exit(1)
+        try:
+            holocron = create_app_from_yml(arguments.conf)
 
-        for item in holocron.invoke(arguments.pipeline):
-            print(
-                termcolor.colored("==>", "green", attrs=["bold"]),
-                termcolor.colored(item["destination"], attrs=["bold"]),
-            )
+            for item in holocron.invoke(arguments.pipe):
+                print(
+                    termcolor.colored("==>", "green", attrs=["bold"]),
+                    termcolor.colored(item["destination"], attrs=["bold"]),
+                )
+        except Exception as exc:
+            print(str(exc), file=sys.stderr)
+            sys.exit(1)

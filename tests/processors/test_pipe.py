@@ -1,9 +1,9 @@
-"""Pipeline processor test suite."""
+"""Pipe processor test suite."""
 
 import pytest
 
 from holocron import core
-from holocron.processors import pipeline
+from holocron.processors import pipe
 
 
 @pytest.fixture(scope="function")
@@ -26,14 +26,13 @@ def testapp():
     instance.add_processor("spam", spam)
     instance.add_processor("eggs", eggs)
     instance.add_processor("rice", rice)
-
     return instance
 
 
 def test_item(testapp):
-    """Pipeline processor has to work!"""
+    """Pipe processor has to work!"""
 
-    stream = pipeline.process(
+    stream = pipe.process(
         testapp,
         [
             core.Item(
@@ -42,7 +41,7 @@ def test_item(testapp):
                     "author": "skywalker",
                 }),
         ],
-        pipeline=[
+        pipe=[
             {"name": "spam"},
             {"name": "eggs"},
             {"name": "rice"},
@@ -65,9 +64,9 @@ def test_item(testapp):
 
 
 def test_item_processor_with_option(testapp):
-    """Pipeline processor has to pass down processors options."""
+    """Pipe processor has to pass down processors options."""
 
-    stream = pipeline.process(
+    stream = pipe.process(
         testapp,
         [
             core.Item(
@@ -76,7 +75,7 @@ def test_item_processor_with_option(testapp):
                     "author": "skywalker",
                 }),
         ],
-        pipeline=[
+        pipe=[
             {"name": "spam", "text": 1},
         ])
 
@@ -92,9 +91,9 @@ def test_item_processor_with_option(testapp):
 
 
 def test_param_pipeline_empty(testapp):
-    """Pipeline processor with empty pipeline has to pass by."""
+    """Pipe processor with empty pipeline has to pass by."""
 
-    stream = pipeline.process(
+    stream = pipe.process(
         testapp,
         [
             core.Item(
@@ -103,7 +102,7 @@ def test_param_pipeline_empty(testapp):
                     "author": "skywalker",
                 }),
         ],
-        pipeline=[])
+        pipe=[])
 
     assert next(stream) == core.Item(
         {
@@ -117,9 +116,9 @@ def test_param_pipeline_empty(testapp):
 
 @pytest.mark.parametrize("amount", [0, 1, 2, 5, 10])
 def test_item_many(testapp, amount):
-    """Pipeline processor has to work with stream."""
+    """Pipe processor has to work with stream."""
 
-    stream = pipeline.process(
+    stream = pipe.process(
         testapp,
         [
             core.Item(
@@ -129,7 +128,7 @@ def test_item_many(testapp, amount):
                 })
             for i in range(amount)
         ],
-        pipeline=[
+        pipe=[
             {"name": "spam"},
             {"name": "eggs"},
         ])
@@ -147,10 +146,10 @@ def test_item_many(testapp, amount):
 
 
 @pytest.mark.parametrize("params, error", [
-    ({"pipeline": 42}, "pipeline: 42 should be instance of 'list'"),
+    ({"pipe": 42}, "pipe: 42 should be instance of 'list'"),
 ])
 def test_param_bad_value(testapp, params, error):
-    """Pipeline processor has to validate input parameters."""
+    """Pipe processor has to validate input parameters."""
 
     with pytest.raises(ValueError, match=error):
-        next(pipeline.process(testapp, [], **params))
+        next(pipe.process(testapp, [], **params))

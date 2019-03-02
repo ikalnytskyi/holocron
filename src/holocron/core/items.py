@@ -1,4 +1,4 @@
-"""Wrappers for pipeline items."""
+"""Wrappers for stream items."""
 
 import collections.abc
 import itertools
@@ -8,7 +8,7 @@ import urllib.parse
 
 
 class Item(collections.abc.MutableMapping):
-    """General pipeline item wrapper."""
+    """General stream item wrapper."""
 
     def __init__(self, *mappings, **properties):
         self._mapping = {}
