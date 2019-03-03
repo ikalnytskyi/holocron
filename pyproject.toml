@@ -37,6 +37,7 @@ docutils = "^0.14.0"
 feedgen = "^0.7.0"
 termcolor = "^1.1"
 colorama = "^0.4.1"
+mistletoe = "^0.7.1"
 
 [tool.poetry.dev-dependencies]
 mock = "^2.0"

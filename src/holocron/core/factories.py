@@ -12,8 +12,10 @@ def create_app(metadata, processors=None, pipes=None):
     import_processors.process(instance, [], imports=[
         "archive = holocron.processors.archive:process",
         "commit = holocron.processors.commit:process",
+        "commonmark = holocron.processors.commonmark:process",
         "feed = holocron.processors.feed:process",
         "frontmatter = holocron.processors.frontmatter:process",
+        "import-processors = holocron.processors.import_processors:process",
         "jinja2 = holocron.processors.jinja2:process",
         "markdown = holocron.processors.markdown:process",
         "metadata = holocron.processors.metadata:process",
@@ -24,7 +26,6 @@ def create_app(metadata, processors=None, pipes=None):
         "source = holocron.processors.source:process",
         "todatetime = holocron.processors.todatetime:process",
         "when = holocron.processors.when:process",
-        "import-processors = holocron.processors.import_processors:process",
     ])
 
     for name, processor in (processors or {}).items():
