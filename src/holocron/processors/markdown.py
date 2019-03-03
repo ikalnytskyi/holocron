@@ -31,7 +31,7 @@ _top_heading_re = re.compile(
 
 @parameters(
     schema={
-        "extensions": schema.Schema([str]),
+        "extensions": schema.Schema(dict),
     }
 )
 def process(app, stream, *, extensions=None):
@@ -39,10 +39,18 @@ def process(app, stream, *, extensions=None):
         # No one use pure Markdown nowadays, so let's enhance it with some
         # popular and widely used extensions such as tables, footnotes and
         # syntax highlighting.
-        extensions=extensions if extensions is not None else [
+        extensions=list(extensions.keys()) if extensions is not None else [
             "markdown.extensions.codehilite",
             "markdown.extensions.extra",
-        ])
+        ],
+        extension_configs=extensions if extensions is not None else {
+            "markdown.extensions.codehilite": {
+                # codehilite extension sets its own css class for pygmentized
+                # code blocks; in order to be compatible with other markup
+                # processors, let's use default class name by default
+                "css_class": "highlight",
+            },
+        })
 
     for item in stream:
         match = _top_heading_re.match(item["content"])
