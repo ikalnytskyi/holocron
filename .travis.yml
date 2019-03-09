@@ -1,36 +1,70 @@
-language: python
 dist: xenial
-
-matrix:
-  include:
-    - python: 3.5
-      env: TOXENV=py35
-    - python: 3.6
-      env: TOXENV=py36
-    - python: 3.7
-      env: TOXENV=py37
-    - env: TOXENV=docs
+language: python
+python: "3.7"
+cache: pip
 
 install:
-  - pip install tox coveralls
+  - python -m pip install tox codecov
 
 script:
   - tox
+  - codecov --env TOXENV
 
-after_success:
-  - coveralls
+stages:
+  - name: test
+  - name: docs
+  - name: pypi
+    if: tag IS present
 
-deploy:
-  - provider: pypi
-    user: ikalnitsky
-    password:
-      secure:
-        "XqusR3oOQFAKx/aGVwuIABxcS6vU1xcF/U9taCXRDwhQU3UeJVMabDhWpiHh+\
-         wmE785CZBCPVdq9bqJs1p75IOihV2L3gF8LNxY9LFeMKH6AU2bZHNfpF6CuYE\
-         j7a3KqmmGk0jMykAdOLqDlQHecBLEOfU7+YVdH1i1glpDLKhE="
-    on:
-      tags: true
-      distributions: sdist
+jobs:
+  include:
+    - stage: test
+      env: TOXENV=py35
+      python: "3.5"
 
-notifications:
-  email: false
+    - stage: test
+      env: TOXENV=py36
+      python: "3.6"
+
+    - stage: test
+      env: TOXENV=py37
+      python: "3.7"
+
+    - stage: test
+      env: TOXENV=pypy3
+      python: "pypy3"
+      dist: trusty
+
+    - stage: test
+      os: windows
+      language: sh
+      env: TOXENV=py37
+      before_install:
+        - choco install python3
+        - export PATH="/c/Python37:/c/Python37/Scripts:$PATH"
+
+    - stage: test
+      os: osx
+      language: sh
+      env: TOXENV=py37
+      before_install:
+        - brew update && brew upgrade python3
+
+    - stage: docs
+      env: TOXENV=docs
+      script: skip
+      install: skip
+
+    - stage: pypi
+      before_deploy:
+        - pip install poetry
+        - poetry config http-basic.pypi $PYPI_USERNAME $PYPI_PASSWORD
+        - poetry build
+      deploy:
+        provider: script
+        script: poetry publish
+      install: skip
+      script: skip
+
+  allow_failures:
+    - os: windows
