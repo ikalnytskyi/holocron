@@ -279,7 +279,7 @@ def test_item_with_code(testapp):
     assert next(stream) == core.Item(
         {
             "content": _pytest_regex(
-                r"<p>test codeblock</p>\s*.*codehilite.*<pre>[\s\S]+</pre>.*"),
+                r"<p>test codeblock</p>\s*.*highlight.*<pre>[\s\S]+</pre>.*"),
             "destination": "1.html",
         })
 
@@ -309,7 +309,7 @@ def test_item_with_fenced_code(testapp):
     assert next(stream) == core.Item(
         {
             "content": _pytest_regex(
-                r"<p>test codeblock</p>\s*.*codehilite.*<pre>[\s\S]+</pre>.*"),
+                r"<p>test codeblock</p>\s*.*highlight.*<pre>[\s\S]+</pre>.*"),
             "destination": "1.html",
         })
 
@@ -402,7 +402,14 @@ def test_item_many(testapp, amount):
         next(stream)
 
 
-def test_param_extensions(testapp):
+@pytest.mark.parametrize("extensions, rendered", [
+    ({},
+     r"<p>test codeblock</p>\s*"
+     r"<pre><code>:::\s*lambda x: pass\s*</code></pre>"),
+    ({"markdown.extensions.codehilite": {"css_class": "vader"}},
+     r"<p>test codeblock</p>\s*.*vader.*<pre>[\s\S]+</pre>.*"),
+])
+def test_param_extensions(testapp, extensions, rendered):
     """Markdown processor has to respect extensions parameter."""
 
     stream = markdown.process(
@@ -411,20 +418,19 @@ def test_param_extensions(testapp):
             core.Item(
                 {
                     "content": textwrap.dedent("""\
-                        ```
-                        lambda x: pass
-                        ```
+                        test codeblock
+
+                            :::
+                            lambda x: pass
                     """),
                     "destination": "1.md",
                 }),
         ],
-        extensions=[])
+        extensions=extensions)
 
     assert next(stream) == core.Item(
         {
-            "content": _pytest_regex(
-                # no syntax highlighting when no extensions are passed
-                r"<p><code>lambda x: pass</code></p>"),
+            "content": _pytest_regex(rendered),
             "destination": "1.html",
         })
 
@@ -433,7 +439,7 @@ def test_param_extensions(testapp):
 
 
 @pytest.mark.parametrize("params, error", [
-    ({"extensions": 42}, "extensions: 42 should be instance of 'list'"),
+    ({"extensions": 42}, "extensions: 42 should be instance of 'dict'"),
 ])
 def test_param_bad_value(testapp, params, error):
     """Markdown processor has to validate input parameters."""

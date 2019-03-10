@@ -11,6 +11,7 @@ def test_create_app_processors_discover():
     assert set(testapp._processors) == {
         "archive",
         "commit",
+        "commonmark",
         "feed",
         "frontmatter",
         "import-processors",

@@ -212,7 +212,7 @@ footer.footer p {
 }
 
 #content pre.code,
-#content .codehilite pre {
+#content .highlight pre {
   margin: 0.5em auto;
   border-top: 1px solid #e0e0e0;
   border-bottom: 1px solid #e0e0e0;
