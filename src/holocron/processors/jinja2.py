@@ -34,7 +34,7 @@ def process(app, stream, *, template="item.j2", context={}, themes=None):
     for item in stream:
         item["content"] = \
             env.get_template(item.get("template", template)).render(
-                document=item,
+                item=item,
                 metadata=app.metadata,
                 **context)
         yield item

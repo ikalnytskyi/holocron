@@ -59,7 +59,7 @@ def test_item_template(testapp, tmpdir):
     tmpdir.ensure("theme_a", "templates", "holiday.j2").write_text(
         textwrap.dedent("""\
             template: my super template
-            rendered: {{ document.title }}
+            rendered: {{ item.title }}
         """),
         encoding="UTF-8")
 
@@ -134,7 +134,7 @@ def test_param_themes(testapp, tmpdir):
     tmpdir.ensure("theme_a", "templates", "item.j2").write_text(
         textwrap.dedent("""\
             template: my super template
-            rendered: {{ document.title }}
+            rendered: {{ item.title }}
         """),
         encoding="UTF-8")
 
@@ -181,21 +181,21 @@ def test_param_themes_two_themes(testapp, tmpdir):
     tmpdir.ensure("theme_a", "templates", "page.j2").write_text(
         textwrap.dedent("""\
             template: my super template from theme_a
-            rendered: {{ document.title }}
+            rendered: {{ item.title }}
         """),
         encoding="UTF-8")
 
     tmpdir.ensure("theme_b", "templates", "page.j2").write_text(
         textwrap.dedent("""\
             template: my super template from theme_b
-            rendered: {{ document.title }}
+            rendered: {{ item.title }}
         """),
         encoding="UTF-8")
 
     tmpdir.ensure("theme_b", "templates", "holiday.j2").write_text(
         textwrap.dedent("""\
             template: my holiday template from theme_b
-            rendered: {{ document.title }}
+            rendered: {{ item.title }}
         """),
         encoding="UTF-8")
 

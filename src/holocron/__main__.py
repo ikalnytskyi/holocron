@@ -8,11 +8,11 @@ import argparse
 import warnings
 
 import colorama
+import pkg_resources
 import termcolor
 import yaml
 
 from . import core
-from holocron import __version__ as holocron_version
 
 
 def create_app_from_yml(path):
@@ -106,7 +106,8 @@ def parse_command_line(args):
         const=logging.DEBUG, help="show all messages")
 
     parser.add_argument(
-        "--version", action="version", version=holocron_version,
+        "--version", action="version",
+        version=pkg_resources.get_distribution("holocron").version,
         help="show the holocron version and exit")
 
     command_parser = parser.add_subparsers(

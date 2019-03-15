@@ -9,6 +9,11 @@ def create_app(metadata, processors=None, pipes=None):
 
     instance = Application(metadata)
 
+    # In order to avoid code duplication, we use existing built-in import
+    # processor to import and register built-in processors on the application
+    # instance. This is, to be honest, the main purpose of this factory
+    # function, because otherwise one must create an Application instance
+    # directly.
     import_processors.process(instance, [], imports=[
         "archive = holocron.processors.archive:process",
         "commit = holocron.processors.commit:process",

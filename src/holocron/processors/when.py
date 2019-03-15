@@ -11,15 +11,14 @@ def _re_match(value, pattern, flags=0):
 
 
 class _WhenEvaluator:
-    """Evaluate a python-like expression using Jinja2 syntax.
-
-    When processor requires some means to evaluate string conditions. Turns
-    out there're not so many simple and safe solutions, so we decided to go
-    same approach Ansible went and use Jinja2 to evaluate expressions. It's
-    safe, fast, extensible, and we already have dependency on Jinja2.
-    """
+    """Evaluate a python-like expressions in boolean context."""
 
     def __init__(self):
+        # When processor requires some means to evaluate string conditions.
+        # Turns out there're not so many simple and safe solutions, so we
+        # decided to go same approach Ansible went and use Jinja2 to evaluate
+        # expressions. It's safe, fast, extensible, and we already have
+        # dependency on Jinja2.
         self._env = jinja2.Environment()
         self._env.filters.update({"match": _re_match})
 

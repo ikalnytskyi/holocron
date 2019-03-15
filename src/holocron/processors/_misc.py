@@ -1,6 +1,6 @@
 """Various miscellaneous functions to make code easier to read & write."""
 
-import collections
+import collections.abc
 import inspect
 import functools
 import urllib.parse
@@ -11,7 +11,7 @@ import schema
 
 def resolve_json_references(value, context, keep_unknown=True):
     def _do_resolve(node):
-        if isinstance(node, collections.Mapping) and "$ref" in node:
+        if isinstance(node, collections.abc.Mapping) and "$ref" in node:
             uri, fragment = urllib.parse.urldefrag(node["$ref"])
             try:
                 return jsonpointer.resolve_pointer(context[uri], fragment)
@@ -19,10 +19,10 @@ def resolve_json_references(value, context, keep_unknown=True):
                 if keep_unknown:
                     return node
                 raise
-        elif isinstance(node, collections.Mapping):
+        elif isinstance(node, collections.abc.Mapping):
             for k, v in node.items():
                 node[k] = _do_resolve(v)
-        elif isinstance(node, collections.Sequence) \
+        elif isinstance(node, collections.abc.Sequence) \
                 and not isinstance(node, str):
             for i in range(len(node)):
                 node[i] = _do_resolve(node[i])

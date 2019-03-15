@@ -24,7 +24,8 @@ def process(app, stream, *, template="archive.j2", save_as="index.html"):
             "template": template,
             "items": list(stream),
             "baseurl": app.metadata["url"],
-        })
+        }
+    )
 
     yield from passthrough
     yield index

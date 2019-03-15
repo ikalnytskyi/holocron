@@ -14,8 +14,8 @@ class Item(collections.abc.MutableMapping):
         self._mapping = {}
 
         # The only reason behind this constraint is to mimic built-in dict
-        # behaviour. Anyway, passing more than one mapping to '__init__' makes
-        # no sense and adds confusion.
+        # behaviour. Anyway, passing more than one mapping to '__init__' is
+        # senseless and confusing.
         if len(mappings) > 1:
             raise TypeError("expected at most 1 argument, got 2")
 
@@ -26,19 +26,18 @@ class Item(collections.abc.MutableMapping):
         try:
             return self._mapping[key]
         except KeyError:
-            pass
-
-        try:
             prop = vars(self.__class__)[key]
-        except KeyError:
-            pass
-        else:
+
+            # Expose non-private descriptors via mapping interface. It turns
+            # out all objects have private (dunder) descriptors and since it's
+            # not something the can be defined by a user, we don't really want
+            # to expose them.
             if not key.startswith("_") and (
-                    inspect.isdatadescriptor(prop)
+                inspect.isdatadescriptor(prop)
                     or inspect.ismethoddescriptor(prop)):
                 return getattr(self, key)
 
-        raise KeyError("'%s'" % key)
+            raise
 
     def __setitem__(self, key, value):
         self._mapping[key] = value
@@ -52,6 +51,14 @@ class Item(collections.abc.MutableMapping):
     def __len__(self):
         return len(self.as_mapping())
 
+    def __eq__(self, other):
+        if not isinstance(other, Item):
+            return NotImplemented
+        return self.as_mapping() == other.as_mapping()
+
+    def __repr__(self):
+        return repr(self.as_mapping())
+
     def as_mapping(self):
         return dict(
             {
@@ -62,11 +69,6 @@ class Item(collections.abc.MutableMapping):
                     or inspect.ismethoddescriptor(value))
             },
             **self._mapping)
-
-    def __eq__(self, other):
-        if not isinstance(other, Item):
-            return NotImplemented
-        return self.as_mapping() == other.as_mapping()
 
 
 class WebSiteItem(Item):

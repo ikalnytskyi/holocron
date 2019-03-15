@@ -8,16 +8,13 @@ import re
 import os
 import sys
 
-
-# add parent dir to PYTHONPATH for allowing import em"s version
-sys.path.append(os.path.join(os.path.abspath(os.pardir), "src"))
-from holocron import __version__ as holocron_version
+import pkg_resources
 
 
 # project settings
 project = "Holocron"
 copyright = "2015, the Holocron Team"
-release = holocron_version
+release = pkg_resources.get_distribution("holocron").version
 version = re.sub("[^0-9.]", "", release)
 
 # sphinx settings
