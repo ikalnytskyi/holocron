@@ -6,8 +6,8 @@ import jinja2
 import jsonpointer
 import schema
 
-from . import source
-from ._misc import parameters
+from .. import source
+from .._misc import parameters
 
 
 @parameters(
@@ -19,8 +19,7 @@ from ._misc import parameters
 )
 def process(app, stream, *, template="item.j2", context={}, themes=None):
     if themes is None:
-        import holocron
-        themes = [os.path.join(os.path.dirname(holocron.__file__), "theme")]
+        themes = [os.path.join(os.path.dirname(__file__), "theme")]
 
     env = jinja2.Environment(loader=jinja2.ChoiceLoader([
         # Jinja2 processor may receive a list of themes, and we want to look
