@@ -22,9 +22,9 @@ def create_app_from_yml(path):
         with open(path, "rt", encoding="UTF-8") as f:
             try:
                 # Substitute ALL occurrences of '%(here)s' with a path to a
-                # directory with '_config.yml'. Please note, we also want wrap
-                # the result into 'io.StringIO' in order to preserve original
-                # filename in 'yaml.safe_load()' errors.
+                # directory with '.holocron.yml'. Please note, we also want
+                # wrap the result into 'io.StringIO' in order to preserve
+                # original filename in 'yaml.safe_load()' errors.
                 interpolated = io.StringIO(f.read() % {
                     "here": os.path.abspath(os.path.dirname(path))})
                 interpolated.name = f.name
@@ -86,11 +86,11 @@ def parse_command_line(args):
             "Holocron is an easy and lightweight static blog generator, "
             "based on markup text and Jinja2 templates."),
         epilog=(
-            "With no CONF, read _config.yml in the current working dir. "
+            "With no CONF, read .holocron.yml in the current working dir. "
             "If no CONF found, the default settings will be used."))
 
     parser.add_argument(
-        "-c", "--conf", dest="conf", default="_config.yml",
+        "-c", "--conf", dest="conf", default=".holocron.yml",
         help="set path to the settings file")
 
     parser.add_argument(

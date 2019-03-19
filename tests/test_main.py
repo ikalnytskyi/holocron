@@ -20,7 +20,7 @@ def create_site(tmpdir):
 
 @pytest.fixture(scope="function")
 def example_site(create_site):
-    config_yml = yaml.safe_dump({
+    holocron_yml = yaml.safe_dump({
         "metadata": {
             "url": "https://yoda.ua",
         },
@@ -36,7 +36,7 @@ def example_site(create_site):
         (os.path.join("cv.md"), b"yoda"),
         (os.path.join("about", "photo.png"), b""),
         (os.path.join("2019", "02", "12", "skywalker", "index.html"), b"luke"),
-        (os.path.join("_config.yml"), config_yml),
+        (os.path.join(".holocron.yml"), holocron_yml),
     ])
 
 
@@ -59,7 +59,7 @@ def test_run_progress_info(monkeypatch, tmpdir, execute, example_site):
     monkeypatch.chdir(tmpdir)
 
     assert set(execute(["run", "test"]).splitlines()) == {
-        b"==> _config.yml",
+        b"==> .holocron.yml",
         b"==> cv.md",
         b"==> 2019/02/12/skywalker/index.html",
         b"==> about/photo.png",
@@ -76,7 +76,7 @@ def test_run_progress_info_colored(monkeypatch, tmpdir, execute, example_site):
     monkeypatch.chdir(tmpdir)
 
     assert set(execute(["run", "test"], as_subprocess=False).splitlines()) == {
-        "\x1b[1m\x1b[32m==>\x1b[0m \x1b[1m_config.yml\x1b[0m",
+        "\x1b[1m\x1b[32m==>\x1b[0m \x1b[1m.holocron.yml\x1b[0m",
         "\x1b[1m\x1b[32m==>\x1b[0m \x1b[1mcv.md\x1b[0m",
         "\x1b[1m\x1b[32m==>\x1b[0m "
         "\x1b[1m2019/02/12/skywalker/index.html\x1b[0m",
@@ -88,7 +88,7 @@ def test_run_conf_yml_not_found(monkeypatch, tmpdir, execute, example_site):
     """Proceed with default settings."""
 
     monkeypatch.chdir(tmpdir)
-    tmpdir.join("_config.yml").remove()
+    tmpdir.join(".holocron.yml").remove()
 
     # Because Holocron has no built-in pipes, there's nothing we can run and
     # thus exception is expected.
@@ -100,7 +100,7 @@ def test_run_conf_yml_malformed(monkeypatch, tmpdir, execute, example_site):
     """Error message is printed."""
 
     monkeypatch.chdir(tmpdir)
-    tmpdir.join("_config.yml").write_text(textwrap.dedent("""\
+    tmpdir.join(".holocron.yml").write_text(textwrap.dedent("""\
         metadata:
           crap
           key: value
@@ -112,28 +112,28 @@ def test_run_conf_yml_malformed(monkeypatch, tmpdir, execute, example_site):
     assert str(excinfo.value.stderr.decode("UTF-8").strip()) == (
         "Cannot parse a configuration file. Context: mapping values are not "
         "allowed here\n"
-        "  in \"_config.yml\", line 3, column 6")
+        "  in \".holocron.yml\", line 3, column 6")
 
 
 def test_run_conf_yml_directory(monkeypatch, tmpdir, execute, example_site):
     """Error message is printed."""
 
     monkeypatch.chdir(tmpdir)
-    tmpdir.join("_config.yml").remove()
-    tmpdir.mkdir("_config.yml")
+    tmpdir.join(".holocron.yml").remove()
+    tmpdir.mkdir(".holocron.yml")
 
     with pytest.raises(subprocess.CalledProcessError) as excinfo:
         execute(["run", "test"])
 
     assert str(excinfo.value.stderr.decode("UTF-8").strip()) \
-        == "[Errno 21] Is a directory: '_config.yml'"
+        == "[Errno 21] Is a directory: '.holocron.yml'"
 
 
 def test_run_conf_yml_interpolate(monkeypatch, tmpdir, execute):
     """Values such as '%(here)s' are interpolated."""
 
     monkeypatch.chdir(tmpdir)
-    tmpdir.join("_config.yml").write_binary(
+    tmpdir.join(".holocron.yml").write_binary(
         yaml.safe_dump(
             {
                 "metadata": {
@@ -168,7 +168,7 @@ def test_run_conf_yml_interpolate_in_path(
         example_site):
     """Values such as '%(here)s' are interpolated."""
 
-    tmpdir.join("_config.yml").write_binary(
+    tmpdir.join(".holocron.yml").write_binary(
         yaml.safe_dump(
             {
                 "metadata": {
@@ -186,6 +186,6 @@ def test_run_conf_yml_interpolate_in_path(
         )
     )
 
-    execute(["-c", tmpdir.join("_config.yml").strpath, "run", "test"])
+    execute(["-c", tmpdir.join(".holocron.yml").strpath, "run", "test"])
 
     assert tmpdir.join("_compiled", "cv.md").read_binary() == b"yoda"
