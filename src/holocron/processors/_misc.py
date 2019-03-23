@@ -5,8 +5,8 @@ import inspect
 import functools
 import urllib.parse
 
+import jsonschema
 import jsonpointer
-import schema
 
 
 def resolve_json_references(value, context, keep_unknown=True):
@@ -32,9 +32,9 @@ def resolve_json_references(value, context, keep_unknown=True):
 
 class parameters:
 
-    def __init__(self, *, fallback=None, schema=None):
+    def __init__(self, *, fallback=None, jsonschema=None):
         self._fallback = fallback or {}
-        self._schema = schema
+        self._jsonschema = jsonschema
 
     def __call__(self, fn):
         @functools.wraps(fn)
@@ -42,15 +42,17 @@ class parameters:
             signature = inspect.signature(fn)
             arguments = signature.bind_partial(app, *args, **kwargs).arguments
 
-            # First two parameters are an application instance and a collection
-            # of documents, and they are guaranteed to be passed as positional
-            # arguments. Therefore, there's no need to check their schema or
-            # resolve their fallback values. That's why we just ignore them and
-            # start iterating from third parameter.
-            for param in list(signature.parameters)[2:]:
-                try:
-                    value = arguments[param]
-                except KeyError:
+            # First two arguments always are an application instance and a
+            # stream of items to process. Since they are passed by Holocron
+            # core as positional arguments, there's no real need to check their
+            # schema, so we strip them away.
+            arguments = dict(list(arguments.items())[2:])
+            parameters = dict(list(signature.parameters.items())[2:])
+
+            # If some parameter has not been passed, a value from a fallback
+            # must be used instead (if any).
+            for param in parameters:
+                if param not in arguments:
                     try:
                         value = resolve_json_references(
                             {"$ref": self._fallback[param]},
@@ -58,12 +60,38 @@ class parameters:
                     except (jsonpointer.JsonPointerException, KeyError):
                         continue
 
-                if param in self._schema:
-                    try:
-                        schema.Schema(self._schema[param]).validate(value)
-                    except schema.SchemaError as exc:
-                        raise ValueError("%s: %s" % (param, str(exc)))
+                    # We need to save resolved value in both arguments and
+                    # kwargs mappings, because the former is used to *validate*
+                    # passed arguments, and the latter to supply a value from a
+                    # fallback.
+                    arguments[param] = kwargs[param] = value
 
-                kwargs[param] = value
+            if self._jsonschema:
+                try:
+                    format_checker = jsonschema.FormatChecker()
+
+                    @format_checker.checks("encoding", (LookupError,))
+                    def is_encoding(value):
+                        import codecs
+                        return codecs.lookup(value)
+
+                    @format_checker.checks("timezone", ())
+                    def is_timezone(value):
+                        import dateutil.tz
+                        return dateutil.tz.gettz(value)
+
+                    jsonschema.validate(
+                        arguments,
+                        self._jsonschema,
+                        format_checker=format_checker)
+                except jsonschema.exceptions.ValidationError as exc:
+                    message = exc.message
+
+                    if exc.absolute_path:
+                        message = "%s: %s" % (
+                            ".".join(exc.absolute_path), exc.message)
+
+                    raise ValueError(message)
+
             return fn(app, *args, **kwargs)
         return wrapper

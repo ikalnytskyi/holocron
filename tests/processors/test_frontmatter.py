@@ -274,11 +274,12 @@ def test_param_overwrite(testapp, overwrite):
 
 
 @pytest.mark.parametrize("params, error", [
-    ({"delimiter": 42}, "delimiter: 42 should be instance of 'str'"),
-    ({"overwrite": "true"}, "overwrite: 'true' should be instance of 'bool'"),
+    ({"delimiter": 42}, "delimiter: 42 is not of type 'string'"),
+    ({"overwrite": "true"}, "overwrite: 'true' is not of type 'boolean'"),
 ])
 def test_param_bad_value(testapp, params, error):
     """Frontmatter processor has to validate input parameters."""
 
-    with pytest.raises(ValueError, match=error):
+    with pytest.raises(ValueError) as excinfo:
         next(frontmatter.process(testapp, [], **params))
+    assert str(excinfo.value) == error

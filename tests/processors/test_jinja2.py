@@ -243,12 +243,13 @@ def test_param_themes_two_themes(testapp, tmpdir):
 
 
 @pytest.mark.parametrize("params, error", [
-    ({"template": 42}, "template: 42 should be instance of 'str'"),
-    ({"context": 42}, "context: must be a dict"),
-    ({"themes": {"foo": 1}}, "themes: unsupported value"),
+    ({"template": 42}, "template: 42 is not of type 'string'"),
+    ({"context": 42}, "context: 42 is not of type 'object'"),
+    ({"themes": {"foo": 1}}, "themes: {'foo': 1} is not of type 'array'"),
 ])
 def test_param_bad_value(testapp, params, error):
     """Commit processor has to validate input parameters."""
 
-    with pytest.raises(ValueError, match=error):
+    with pytest.raises(ValueError) as excinfo:
         next(jinja2.process(testapp, [], **params))
+    assert str(excinfo.value) == error

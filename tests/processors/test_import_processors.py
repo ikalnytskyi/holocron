@@ -174,3 +174,15 @@ def test_imports_precedence(testapp, runprocessor, tmpdir, monkeypatch):
 
     for _ in testapp.invoke([{"name": "yoda"}], []):
         pass
+
+
+@pytest.mark.parametrize("params, error", [
+    ({"imports": 42}, "imports: 42 is not of type 'array'"),
+    ({"from_": 42}, "from_: 42 is not of type 'string'"),
+])
+def test_param_bad_value(testapp, params, error):
+    """Bad arguments must be rejected at once."""
+
+    with pytest.raises(ValueError) as excinfo:
+        next(import_processors.process(testapp, [], **params))
+    assert str(excinfo.value) == error

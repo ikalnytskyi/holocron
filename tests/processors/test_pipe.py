@@ -146,10 +146,11 @@ def test_item_many(testapp, amount):
 
 
 @pytest.mark.parametrize("params, error", [
-    ({"pipe": 42}, "pipe: 42 should be instance of 'list'"),
+    ({"pipe": 42}, "pipe: 42 is not of type 'array'"),
 ])
 def test_param_bad_value(testapp, params, error):
     """Pipe processor has to validate input parameters."""
 
-    with pytest.raises(ValueError, match=error):
+    with pytest.raises(ValueError) as excinfo:
         next(pipe.process(testapp, [], **params))
+    assert str(excinfo.value) == error

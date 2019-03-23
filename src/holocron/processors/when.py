@@ -5,6 +5,8 @@ import collections
 
 import jinja2
 
+from ._misc import parameters
+
 
 def _re_match(value, pattern, flags=0):
     return re.match(pattern, value, flags)
@@ -28,6 +30,22 @@ class _WhenEvaluator:
         return template.render(**context) == "true"
 
 
+@parameters(
+    jsonschema={
+        "type": "object",
+        "properties": {
+            "when": {"type": "array", "items": {"type": "string"}},
+            "processor": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string"},
+                },
+                "required": ["name"],
+                "additionalProperties": True,
+            },
+        },
+    },
+)
 def process(app, stream, *, when, processor):
     untouched = collections.deque()
     evaluator = _WhenEvaluator()

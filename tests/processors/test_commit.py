@@ -222,11 +222,12 @@ def test_param_save_to(testapp, monkeypatch, tmpdir, save_to):
 
 
 @pytest.mark.parametrize("params, error", [
-    ({"save_to": 42}, "save_to: 42 should be instance of 'str'"),
-    ({"encoding": "UTF-42"}, "encoding: unsupported encoding"),
+    ({"save_to": 42}, "save_to: 42 is not of type 'string'"),
+    ({"encoding": "UTF-42"}, "encoding: 'UTF-42' is not a 'encoding'"),
 ])
 def test_param_bad_value(testapp, params, error):
     """Commit processor has to validate input parameters."""
 
-    with pytest.raises(ValueError, match=error):
+    with pytest.raises(ValueError) as excinfo:
         next(commit.process(testapp, [], **params))
+    assert str(excinfo.value) == error

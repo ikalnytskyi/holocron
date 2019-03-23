@@ -2,17 +2,18 @@
 
 import itertools
 
-import schema
-
 from ..core import WebSiteItem
 from ._misc import parameters
 
 
 @parameters(
-    schema={
-        "template": schema.Schema(str),
-        "save_as": schema.Schema(str),
-    }
+    jsonschema={
+        "type": "object",
+        "properties": {
+            "template": {"type": "string"},
+            "save_as": {"type": "string"},
+        },
+    },
 )
 def process(app, stream, *, template="archive.j2", save_as="index.html"):
     passthrough, stream = itertools.tee(stream)

@@ -5,18 +5,19 @@ import itertools
 import gzip as _gzip
 import xml.dom.minidom as minidom
 
-import schema
-
 from ..core import WebSiteItem
 from ._misc import parameters
 
 
 @parameters(
-    schema={
-        "gzip": schema.Schema(bool),
-        "save_as": schema.Schema(str),
-        "pretty": schema.Schema(bool),
-    }
+    jsonschema={
+        "type": "object",
+        "properties": {
+            "gzip": {"type": "boolean"},
+            "save_as": {"type": "string"},
+            "pretty": {"type": "boolean"},
+        },
+    },
 )
 def process(app, stream, *, gzip=False, save_as="sitemap.xml", pretty=True):
     passthrough, stream = itertools.tee(stream)

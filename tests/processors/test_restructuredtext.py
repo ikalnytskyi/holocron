@@ -302,10 +302,11 @@ def test_item_many(testapp, amount):
 
 
 @pytest.mark.parametrize("params, error", [
-    ({"settings": 42}, "settings: 42 should be instance of 'dict'"),
+    ({"settings": 42}, "settings: 42 is not of type 'object'"),
 ])
 def test_param_bad_value(testapp, params, error):
     """reStructuredText processor has to validate input parameters."""
 
-    with pytest.raises(ValueError, match=error):
+    with pytest.raises(ValueError) as excinfo:
         next(restructuredtext.process(testapp, [], **params))
+    assert str(excinfo.value) == error

@@ -4,18 +4,20 @@ import os
 
 import jinja2
 import jsonpointer
-import schema
 
 from .. import source
 from .._misc import parameters
 
 
 @parameters(
-    schema={
-        "template": schema.Schema(str),
-        "context": schema.Or({str: object}, error="must be a dict"),
-        "themes": schema.Or([str], None, error="unsupported value"),
-    }
+    jsonschema={
+        "type": "object",
+        "properties": {
+            "template": {"type": "string"},
+            "context": {"type": "object"},
+            "themes": {"type": "array", "items": {"type": "string"}},
+        },
+    },
 )
 def process(app, stream, *, template="item.j2", context={}, themes=None):
     if themes is None:

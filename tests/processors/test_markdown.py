@@ -439,10 +439,13 @@ def test_param_extensions(testapp, extensions, rendered):
 
 
 @pytest.mark.parametrize("params, error", [
-    ({"extensions": 42}, "extensions: 42 should be instance of 'dict'"),
+    ({"extensions": 42}, "extensions: 42 is not of type 'object'"),
+    ({"extensions": {"a": 42}},
+     r"extensions: 'a' does not match '^markdown\\.extensions\\..*'"),
 ])
 def test_param_bad_value(testapp, params, error):
     """Markdown processor has to validate input parameters."""
 
-    with pytest.raises(ValueError, match=error):
+    with pytest.raises(ValueError) as excinfo:
         next(markdown.process(testapp, [], **params))
+    assert str(excinfo.value) == error

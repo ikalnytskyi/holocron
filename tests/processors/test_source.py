@@ -333,13 +333,15 @@ def test_param_timezone_in_action(testapp, monkeypatch, tmpdir):
 
 
 @pytest.mark.parametrize("params, error", [
-    ({"path": 42}, "path: 42 should be instance of 'str'"),
-    ({"pattern": 42}, "pattern: 42 should be instance of 'str'"),
-    ({"encoding": "UTF-42"}, "encoding: unsupported encoding"),
-    ({"timezone": "Europe/Kharkiv"}, "timezone: unsupported timezone"),
+    ({"path": 42}, "path: 42 is not of type 'string'"),
+    ({"pattern": 42}, "pattern: 42 is not of type 'string'"),
+    ({"encoding": "UTF-42"}, "encoding: 'UTF-42' is not a 'encoding'"),
+    ({"timezone": "Europe/Kharkiv"},
+     "timezone: 'Europe/Kharkiv' is not a 'timezone'"),
 ])
 def test_param_bad_value(testapp, params, error):
     """Source processor has to validate input parameters."""
 
-    with pytest.raises(ValueError, match=error):
+    with pytest.raises(ValueError) as excinfo:
         next(source.process(testapp, [], **params))
+    assert str(excinfo.value) == error

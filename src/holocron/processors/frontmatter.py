@@ -3,16 +3,18 @@
 import re
 
 import yaml
-import schema
 
 from ._misc import parameters
 
 
 @parameters(
-    schema={
-        "delimiter": schema.Schema(str),
-        "overwrite": schema.Schema(bool),
-    }
+    jsonschema={
+        "type": "object",
+        "properties": {
+            "delimiter": {"type": "string"},
+            "overwrite": {"type": "boolean"},
+        },
+    },
 )
 def process(app, stream, *, delimiter="---", overwrite=True):
     delimiter = re.escape(delimiter)

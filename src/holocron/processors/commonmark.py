@@ -9,7 +9,6 @@ import pygments
 import pygments.formatters.html
 import pygments.lexers
 import pygments.util
-import schema
 
 from ._misc import parameters
 
@@ -60,9 +59,12 @@ class _HTMLRenderer(mistletoe.HTMLRenderer):
 
 
 @parameters(
-    schema={
-        "pygmentize": schema.Schema(bool),
-    }
+    jsonschema={
+        "type": "object",
+        "properties": {
+            "pygmentize": {"type": "boolean"},
+        },
+    },
 )
 def process(app, stream, *, pygmentize=False):
     pygmentize = pygmentize and _pygmentize

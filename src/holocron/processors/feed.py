@@ -1,11 +1,9 @@
 """Generate RSS/Atom feed (with extensions if needed)."""
 
-import codecs
 import itertools
 
 import feedgen.feed
 import pkg_resources
-import schema
 
 from ..core import WebSiteItem
 from ._misc import parameters, resolve_json_references
@@ -15,14 +13,21 @@ from ._misc import parameters, resolve_json_references
     fallback={
         "encoding": "metadata://#/encoding",
     },
-    schema={
-        "save_as": schema.Schema(str),
-        "limit": schema.Or(None, schema.And(int, lambda x: x > 0),
-                           error="must be null or positive integer"),
-        "encoding": schema.Schema(codecs.lookup, "unsupported encoding"),
-        "pretty": schema.Schema(bool),
-        "syndication_format": schema.Or("atom", "rss"),
-    }
+    jsonschema={
+        "type": "object",
+        "properties": {
+            "save_as": {"type": "string"},
+            "limit": {
+                "anyOf": [
+                    {"type": "integer", "exclusiveMinimum": 0},
+                    {"type": "null"},
+                ],
+            },
+            "encoding": {"type": "string", "format": "encoding"},
+            "pretty": {"type": "boolean"},
+            "syndication_format": {"type": "string", "enum": ["atom", "rss"]},
+        },
+    },
 )
 def process(app,
             stream,

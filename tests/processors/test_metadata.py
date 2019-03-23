@@ -127,11 +127,12 @@ def test_param_overwrite(testapp, overwrite, author):
 
 
 @pytest.mark.parametrize("params, error", [
-    ({"metadata": 42}, "metadata: 42 should be instance of 'dict'"),
-    ({"overwrite": "true"}, "overwrite: 'true' should be instance of 'bool'"),
+    ({"metadata": 42}, "metadata: 42 is not of type 'object'"),
+    ({"overwrite": "true"}, "overwrite: 'true' is not of type 'boolean'"),
 ])
 def test_param_bad_value(testapp, params, error):
     """Metadata processor has to validate input parameters."""
 
-    with pytest.raises(ValueError, match=error):
+    with pytest.raises(ValueError) as excinfo:
         next(metadata.process(testapp, [], **params))
+    assert str(excinfo.value) == error

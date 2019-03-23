@@ -335,12 +335,13 @@ def test_param_pygmentize_unknown_language(testapp, language):
 @pytest.mark.parametrize(["params", "error"], [
     pytest.param(
         {"pygmentize": 42},
-        "pygmentize: 42 should be instance of 'bool'",
+        "pygmentize: 42 is not of type 'boolean'",
         id="pygmentize",
     ),
 ])
 def test_param_bad_value(testapp, params, error):
     """Commonmark processor has to validate input parameters."""
 
-    with pytest.raises(ValueError, match=error):
+    with pytest.raises(ValueError) as excinfo:
         next(commonmark.process(testapp, [], **params))
+    assert str(excinfo.value) == error
