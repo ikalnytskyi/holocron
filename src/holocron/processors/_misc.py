@@ -72,13 +72,21 @@ class parameters:
 
                     @format_checker.checks("encoding", (LookupError,))
                     def is_encoding(value):
-                        import codecs
-                        return codecs.lookup(value)
+                        if isinstance(value, str):
+                            import codecs
+                            return codecs.lookup(value)
 
                     @format_checker.checks("timezone", ())
                     def is_timezone(value):
-                        import dateutil.tz
-                        return dateutil.tz.gettz(value)
+                        if isinstance(value, str):
+                            import dateutil.tz
+                            return dateutil.tz.gettz(value)
+
+                    @format_checker.checks("path", (TypeError,))
+                    def is_path(value):
+                        if isinstance(value, str):
+                            import pathlib
+                            return pathlib.Path(value)
 
                     jsonschema.validate(
                         arguments,

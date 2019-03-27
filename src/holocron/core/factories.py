@@ -16,7 +16,6 @@ def create_app(metadata, processors=None, pipes=None):
     # directly.
     import_processors.process(instance, [], imports=[
         "archive = holocron.processors.archive:process",
-        "commit = holocron.processors.commit:process",
         "commonmark = holocron.processors.commonmark:process",
         "feed = holocron.processors.feed:process",
         "frontmatter = holocron.processors.frontmatter:process",
@@ -27,6 +26,7 @@ def create_app(metadata, processors=None, pipes=None):
         "pipe = holocron.processors.pipe:process",
         "prettyuri = holocron.processors.prettyuri:process",
         "restructuredtext = holocron.processors.restructuredtext:process",
+        "save = holocron.processors.save:process",
         "sitemap = holocron.processors.sitemap:process",
         "source = holocron.processors.source:process",
         "todatetime = holocron.processors.todatetime:process",

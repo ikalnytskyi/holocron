@@ -27,7 +27,7 @@ def example_site(create_site):
         "pipes": {
             "test": [
                 {"name": "source"},
-                {"name": "commit"},
+                {"name": "save"},
             ],
         },
     }, encoding="UTF-8", default_flow_style=False)
@@ -145,7 +145,7 @@ def test_run_conf_yml_interpolate(monkeypatch, tmpdir, execute):
                         {"name": "metadata",
                          "metadata": {
                             "content": "%(here)s/secret"}},
-                        {"name": "commit"},
+                        {"name": "save"},
                     ],
                 },
             },
@@ -177,7 +177,7 @@ def test_run_conf_yml_interpolate_in_path(
                 "pipes": {
                     "test": [
                         {"name": "source", "path": "%(here)s"},
-                        {"name": "commit", "save_to": "%(here)s/_compiled"},
+                        {"name": "save", "to": "%(here)s/_compiled"},
                     ],
                 },
             },
