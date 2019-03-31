@@ -531,6 +531,14 @@ def test_websiteitem_contains():
         os.path.join("path to item"),
         "/path%20to%20item",
         id="quoted"),
+    pytest.param(
+        "index.html",
+        "/",
+        id="pretty-root-url"),
+    pytest.param(
+        os.path.join("jedi", "index.html"),
+        "/jedi/",
+        id="pretty-url"),
 ])
 def test_websiteitem_url(destination, url):
     """'url' property is based on 'destination'."""
@@ -594,6 +602,20 @@ def test_websiteitem_url(destination, url):
         },
         "https://skywalker.org/blog/path/to/item",
         id="subdir-trailing-/"),
+    pytest.param(
+        {
+            "destination": "index.html",
+            "baseurl": "https://skywalker.org",
+        },
+        "https://skywalker.org/",
+        id="pretty-root-url"),
+    pytest.param(
+        {
+            "destination": os.path.join("jedi", "index.html"),
+            "baseurl": "https://skywalker.org",
+        },
+        "https://skywalker.org/jedi/",
+        id="pretty-url"),
 ])
 def test_websiteitem_absurl(properties, absurl):
     """'absurl' property is based on 'destination' and 'baseurl'."""

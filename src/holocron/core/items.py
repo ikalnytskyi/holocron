@@ -91,7 +91,13 @@ class WebSiteItem(Item):
         # that points to a directory is requested. Since we want to produce
         # beautiful URLs, we strip 'index.html' away from a URL.
         if os.path.basename(destination) in ("index.html", "index.htm"):
-            destination = os.path.dirname(destination) + "/"
+            destination = os.path.dirname(destination)
+
+            # A trailing slash should be added only if an item is not in the
+            # root. Otherwise, the item will have two trailing slashes. E.g.
+            # '//' or 'https://yoda.ua//'.
+            if destination:
+                destination += "/"
 
         return urllib.parse.quote("/" + destination)
 
