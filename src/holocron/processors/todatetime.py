@@ -2,7 +2,6 @@
 
 import re
 
-import schema
 import dateutil.parser
 import dateutil.tz
 
@@ -13,12 +12,20 @@ from ._misc import parameters
     fallback={
         "timezone": "metadata://#/timezone",
     },
-    schema={
-        "todatetime": schema.Or(str, [str], error="unsupported todatetime"),
-        "parsearea": schema.Schema(re.compile, "unsupported regexp"),
-        "timezone": schema.Schema(dateutil.tz.gettz, "unsupported timezone"),
-        "fuzzy": schema.Schema(bool),
-    }
+    jsonschema={
+        "type": "object",
+        "properties": {
+            "todatetime": {
+                "anyOf": [
+                    {"type": "string"},
+                    {"type": "array", "items": {"type": "string"}},
+                ],
+            },
+            "parsearea": {"type": "string"},
+            "timezone": {"type": "string", "format": "timezone"},
+            "fuzzy": {"type": "boolean"},
+        },
+    },
 )
 def process(app,
             stream,

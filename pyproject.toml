@@ -25,19 +25,19 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.4"
+python = "^3.5"
 Jinja2 = "^2.10"
-PyYAML = "^3.13"
+PyYAML = "^5.1"
 Pygments = "^2.3"
 python-dateutil = "^2.7"
 jsonpointer = "^2.0"
-schema = "^0.6.8"
 Markdown = "^3.0"
 docutils = "^0.14.0"
 feedgen = "^0.7.0"
 termcolor = "^1.1"
 colorama = "^0.4.1"
 mistletoe = "^0.7.1"
+jsonschema = { version = "^3.0", extras = ["format"] }
 
 [tool.poetry.dev-dependencies]
 mock = "^2.0"

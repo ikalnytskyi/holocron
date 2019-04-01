@@ -1,14 +1,14 @@
 <!doctype html>
 <head>
 {% block head -%}
-  <meta charset="{{ encoding | default('UTF-8') }}">
+  <meta charset="{{ encoding | default("UTF-8") }}">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <link rel="stylesheet" type="text/css" href="/static/style.css">
   <link rel="stylesheet" type="text/css" href="/static/pygments.css">
 
   {% if metadata.feedurl -%}
-  <link rel="alternate" type="application/atom+xml" href="{{ metadata.feedurl }}" title="{{ metadata.title }}">
+    <link rel="alternate" type="application/atom+xml" href="{{ metadata.feedurl }}" title="{{ metadata.title }}">
   {%- endif %}
 
   <title>{% block title %}{{ metadata.title }}{% endblock %}</title>
@@ -22,8 +22,8 @@
     <a href="/" class="title">{{ metadata.title }}</a>
 
     <nav>
-      {% for name, url in metadata | jsonpointer('/theme/navigation', []) -%}
-      <a href="{{ url }}">{{ name }}</a>
+      {% for name, url in metadata | jsonpointer("/theme/navigation", []) -%}
+        <a href="{{ url }}">{{ name }}</a>
       {%- endfor %}
     </nav>
   </header>
@@ -38,12 +38,14 @@
 
   <div class="footer-wrapper">
   <footer class="footer">
-    <p>{{ metadata | jsonpointer('/theme/copyright', '') }}</p>
+    <p>{{ metadata | jsonpointer("/theme/copyright", "") }}</p>
   </footer>
   </div> <!-- /.footer-wrapper -->
 
-  {% if metadata | jsonpointer('/theme/ribbon', None) %}
-  <a href="{{ metadata.theme.ribbon.link }}" class="ribbon">{{ metadata.theme.ribbon.text }}</a>
+  {% if metadata | jsonpointer("/theme/ribbon", None) %}
+    <a href="{{ metadata.theme.ribbon.link }}" class="ribbon">
+      {{ metadata.theme.ribbon.text }}
+    </a>
   {% endif %}
 
-{% include '_counters.j2' %}
+{% include "_counters.j2" %}

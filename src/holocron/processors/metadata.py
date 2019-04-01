@@ -1,15 +1,16 @@
 """Set given metadata on document instances."""
 
-import schema
-
 from ._misc import parameters
 
 
 @parameters(
-    schema={
-        "metadata": schema.Schema({str: object}),
-        "overwrite": schema.Schema(bool),
-    }
+    jsonschema={
+        "type": "object",
+        "properties": {
+            "metadata": {"type": "object"},
+            "overwrite": {"type": "boolean"},
+        },
+    },
 )
 def process(app, stream, *, metadata={}, overwrite=True):
     for item in stream:

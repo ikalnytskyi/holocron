@@ -3,10 +3,8 @@
 import re
 import os
 import datetime
-import codecs
 
 import dateutil.tz
-import schema
 
 import holocron.core
 from ._misc import parameters
@@ -59,12 +57,15 @@ def _finditems(app, path, pattern, encoding, tzinfo):
         "encoding": "metadata://#/encoding",
         "timezone": "metadata://#/timezone",
     },
-    schema={
-        "path": str,
-        "pattern": str,
-        "encoding": schema.Schema(codecs.lookup, "unsupported encoding"),
-        "timezone": schema.Schema(dateutil.tz.gettz, "unsupported timezone"),
-    }
+    jsonschema={
+        "type": "object",
+        "properties": {
+            "path": {"type": "string"},
+            "pattern": {"type": "string"},
+            "encoding": {"type": "string", "format": "encoding"},
+            "timezone": {"type": "string", "format": "timezone"},
+        },
+    },
 )
 def process(app,
             stream,

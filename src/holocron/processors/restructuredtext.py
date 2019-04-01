@@ -2,7 +2,6 @@
 
 import os
 
-import schema
 from docutils.core import publish_parts
 from docutils.writers import html5_polyglot
 from docutils import nodes
@@ -11,9 +10,12 @@ from ._misc import parameters
 
 
 @parameters(
-    schema={
-        "settings": schema.Schema({str: object}),
-    }
+    jsonschema={
+        "type": "object",
+        "properties": {
+            "settings": {"type": "object"},
+        },
+    },
 )
 def process(app, stream, *, settings={}):
     settings = dict(

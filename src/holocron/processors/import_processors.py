@@ -4,15 +4,17 @@ import contextlib
 import sys
 
 import pkg_resources
-import schema
 
 from ._misc import parameters
 
 
 @parameters(
-    schema={
-        "imports": schema.Schema(list),
-        "from_": schema.Schema(str),
+    jsonschema={
+        "type": "object",
+        "properties": {
+            "imports": {"type": "array", "items": {"type": "string"}},
+            "from_": {"type": "string"},
+        },
     },
 )
 def process(app, items, *, imports, from_=None):

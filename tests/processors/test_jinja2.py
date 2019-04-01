@@ -59,7 +59,7 @@ def test_item_template(testapp, tmpdir):
     tmpdir.ensure("theme_a", "templates", "holiday.j2").write_text(
         textwrap.dedent("""\
             template: my super template
-            rendered: {{ document.title }}
+            rendered: {{ item.title }}
         """),
         encoding="UTF-8")
 
@@ -134,7 +134,7 @@ def test_param_themes(testapp, tmpdir):
     tmpdir.ensure("theme_a", "templates", "item.j2").write_text(
         textwrap.dedent("""\
             template: my super template
-            rendered: {{ document.title }}
+            rendered: {{ item.title }}
         """),
         encoding="UTF-8")
 
@@ -181,21 +181,21 @@ def test_param_themes_two_themes(testapp, tmpdir):
     tmpdir.ensure("theme_a", "templates", "page.j2").write_text(
         textwrap.dedent("""\
             template: my super template from theme_a
-            rendered: {{ document.title }}
+            rendered: {{ item.title }}
         """),
         encoding="UTF-8")
 
     tmpdir.ensure("theme_b", "templates", "page.j2").write_text(
         textwrap.dedent("""\
             template: my super template from theme_b
-            rendered: {{ document.title }}
+            rendered: {{ item.title }}
         """),
         encoding="UTF-8")
 
     tmpdir.ensure("theme_b", "templates", "holiday.j2").write_text(
         textwrap.dedent("""\
             template: my holiday template from theme_b
-            rendered: {{ document.title }}
+            rendered: {{ item.title }}
         """),
         encoding="UTF-8")
 
@@ -243,12 +243,13 @@ def test_param_themes_two_themes(testapp, tmpdir):
 
 
 @pytest.mark.parametrize("params, error", [
-    ({"template": 42}, "template: 42 should be instance of 'str'"),
-    ({"context": 42}, "context: must be a dict"),
-    ({"themes": {"foo": 1}}, "themes: unsupported value"),
+    ({"template": 42}, "template: 42 is not of type 'string'"),
+    ({"context": 42}, "context: 42 is not of type 'object'"),
+    ({"themes": {"foo": 1}}, "themes: {'foo': 1} is not of type 'array'"),
 ])
 def test_param_bad_value(testapp, params, error):
     """Commit processor has to validate input parameters."""
 
-    with pytest.raises(ValueError, match=error):
+    with pytest.raises(ValueError) as excinfo:
         next(jinja2.process(testapp, [], **params))
+    assert str(excinfo.value) == error

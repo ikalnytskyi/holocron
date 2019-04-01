@@ -4,23 +4,24 @@ import os
 
 import jinja2
 import jsonpointer
-import schema
 
-from . import source
-from ._misc import parameters
+from .. import source
+from .._misc import parameters
 
 
 @parameters(
-    schema={
-        "template": schema.Schema(str),
-        "context": schema.Or({str: object}, error="must be a dict"),
-        "themes": schema.Or([str], None, error="unsupported value"),
-    }
+    jsonschema={
+        "type": "object",
+        "properties": {
+            "template": {"type": "string"},
+            "context": {"type": "object"},
+            "themes": {"type": "array", "items": {"type": "string"}},
+        },
+    },
 )
 def process(app, stream, *, template="item.j2", context={}, themes=None):
     if themes is None:
-        import holocron
-        themes = [os.path.join(os.path.dirname(holocron.__file__), "theme")]
+        themes = [os.path.join(os.path.dirname(__file__), "theme")]
 
     env = jinja2.Environment(loader=jinja2.ChoiceLoader([
         # Jinja2 processor may receive a list of themes, and we want to look
@@ -34,7 +35,7 @@ def process(app, stream, *, template="item.j2", context={}, themes=None):
     for item in stream:
         item["content"] = \
             env.get_template(item.get("template", template)).render(
-                document=item,
+                item=item,
                 metadata=app.metadata,
                 **context)
         yield item

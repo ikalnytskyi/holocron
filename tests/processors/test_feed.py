@@ -780,13 +780,14 @@ def test_param_pretty(testapp, syndication_format, pretty, check_fn):
 
 
 @pytest.mark.parametrize("params, error", [
-    ({"encoding": "UTF-42"}, "encoding: unsupported encoding"),
-    ({"limit": "42"}, "limit: must be null or positive integer"),
-    ({"save_as": 42}, "save_as: 42 should be instance of 'str'"),
-    ({"pretty": 42}, "pretty: 42 should be instance of 'bool'"),
+    ({"encoding": "UTF-42"}, "encoding: 'UTF-42' is not a 'encoding'"),
+    ({"limit": "42"}, "limit: '42' is not of type 'integer'"),
+    ({"save_as": 42}, "save_as: 42 is not of type 'string'"),
+    ({"pretty": 42}, "pretty: 42 is not of type 'boolean'"),
 ])
 def test_param_bad_value(testapp, params, error):
     """Feed processor has to validate input parameters."""
 
-    with pytest.raises(ValueError, match=error):
+    with pytest.raises(ValueError) as excinfo:
         next(feed.process(testapp, [], **params))
+    assert str(excinfo.value) == error

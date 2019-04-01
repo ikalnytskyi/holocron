@@ -4,7 +4,6 @@ import os
 import re
 
 import markdown
-import schema
 
 from ._misc import parameters
 
@@ -30,9 +29,17 @@ _top_heading_re = re.compile(
 
 
 @parameters(
-    schema={
-        "extensions": schema.Schema(dict),
-    }
+    jsonschema={
+        "type": "object",
+        "properties": {
+            "extensions": {
+                "type": "object",
+                "propertyNames": {
+                    "pattern": r"^markdown\.extensions\..*",
+                },
+            },
+        },
+    },
 )
 def process(app, stream, *, extensions=None):
     markdown_ = markdown.Markdown(

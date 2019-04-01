@@ -292,11 +292,13 @@ def test_param_pretty(testapp, pretty, lines):
 
 
 @pytest.mark.parametrize("params, error", [
-    ({"gzip": "true"}, "gzip: 'true' should be instance of 'bool'"),
-    ({"save_as": 42}, "save_as: 42 should be instance of 'str'"),
+    ({"gzip": "true"}, "gzip: 'true' is not of type 'boolean'"),
+    ({"save_as": 42}, "save_as: 42 is not of type 'string'"),
+    ({"pretty": "true"}, "pretty: 'true' is not of type 'boolean'"),
 ])
 def test_param_bad_value(testapp, params, error):
     """Sitemap processor has to validate input parameters."""
 
-    with pytest.raises(ValueError, match=error):
+    with pytest.raises(ValueError) as excinfo:
         next(sitemap.process(testapp, [], **params))
+    assert str(excinfo.value) == error

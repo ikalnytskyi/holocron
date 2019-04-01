@@ -167,11 +167,16 @@ def test_param_save_as(testapp, save_as):
 
 
 @pytest.mark.parametrize("params, error", [
-    ({"save_as": 42}, "save_as: 42 should be instance of 'str'"),
-    ({"template": 42}, "template: 42 should be instance of 'str'"),
+    ({"save_as": 42}, "save_as: 42 is not of type 'string'"),
+    ({"template": 42}, "template: 42 is not of type 'string'"),
+    ({"save_as": [42]}, "save_as: [42] is not of type 'string'"),
+    ({"template": [42]}, "template: [42] is not of type 'string'"),
+    ({"save_as": {"x": 1}}, "save_as: {'x': 1} is not of type 'string'"),
+    ({"template": {"y": 2}}, "template: {'y': 2} is not of type 'string'"),
 ])
 def test_param_bad_value(testapp, params, error):
     """archive processor has to validate input parameters."""
 
-    with pytest.raises(ValueError, match=error):
+    with pytest.raises(ValueError) as excinfo:
         next(archive.process(testapp, [], **params))
+    assert str(excinfo.value) == error

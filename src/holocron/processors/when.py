@@ -5,21 +5,22 @@ import collections
 
 import jinja2
 
+from ._misc import parameters
+
 
 def _re_match(value, pattern, flags=0):
     return re.match(pattern, value, flags)
 
 
 class _WhenEvaluator:
-    """Evaluate a python-like expression using Jinja2 syntax.
-
-    When processor requires some means to evaluate string conditions. Turns
-    out there're not so many simple and safe solutions, so we decided to go
-    same approach Ansible went and use Jinja2 to evaluate expressions. It's
-    safe, fast, extensible, and we already have dependency on Jinja2.
-    """
+    """Evaluate a python-like expressions in boolean context."""
 
     def __init__(self):
+        # When processor requires some means to evaluate string conditions.
+        # Turns out there're not so many simple and safe solutions, so we
+        # decided to go same approach Ansible went and use Jinja2 to evaluate
+        # expressions. It's safe, fast, extensible, and we already have
+        # dependency on Jinja2.
         self._env = jinja2.Environment()
         self._env.filters.update({"match": _re_match})
 
@@ -29,6 +30,22 @@ class _WhenEvaluator:
         return template.render(**context) == "true"
 
 
+@parameters(
+    jsonschema={
+        "type": "object",
+        "properties": {
+            "when": {"type": "array", "items": {"type": "string"}},
+            "processor": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string"},
+                },
+                "required": ["name"],
+                "additionalProperties": True,
+            },
+        },
+    },
+)
 def process(app, stream, *, when, processor):
     untouched = collections.deque()
     evaluator = _WhenEvaluator()

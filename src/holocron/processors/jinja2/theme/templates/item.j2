@@ -1,0 +1,54 @@
+{% extends "_base.j2" %}
+
+{% if item.summary %}
+  {% set summary = item.summary.replace("\n", " ").strip() %}
+{% endif %}
+
+{% block head -%}
+  {{ super() }}
+
+  {% if item.author -%}
+    <meta name="author" content="{{ item.author }}">
+  {% endif %}
+
+  {%- if item.summary -%}
+    <meta name="description" content="{{ summary }}">
+  {%- endif %}
+
+  {% if metadata | jsonpointer("/theme/twitter_cards/username", None) and item.summary -%}
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:site" content="@{{ metadata.theme.twitter_cards.username }}">
+    <meta name="twitter:title" content="{{ item.title }}">
+    <meta name="twitter:description" content="{{ summary }}">
+  {% endif %}
+{%- endblock %}
+
+{% block title -%}
+  {{ item.title | default("#@(?$0") }}
+{%- endblock %}
+
+
+{% block content %}
+<article>
+  <header>
+    <h1>{{ item.title | default("#@(?$0") }}</h1>
+
+    <div class="meta">
+    {% if "published" in item %}
+      written by {{ item.author or metadata.author }} on
+
+      <time datetime="{{ item.published.isoformat() }}">
+        {{ item.published.strftime("%B %d, %Y") }}
+      </time>
+    {% endif %}
+    </div>
+  </header>
+
+  {{ item.content }}
+
+  <footer>
+    {% block article_footer %}
+    {% endblock %}
+  </footer>
+</article>
+{% endblock %}

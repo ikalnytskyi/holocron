@@ -358,13 +358,15 @@ def test_param_timezone_fallback(testapp, tz):
 
 
 @pytest.mark.parametrize("params, error", [
-    ({"todatetime": 42}, "todatetime: unsupported todatetime"),
-    ({"parsearea": 42}, "parsearea: unsupported regexp"),
-    ({"timezone": "Europe/Kharkiv"}, "timezone: unsupported timezone"),
-    ({"fuzzy": 42}, "fuzzy: 42 should be instance of 'bool'"),
+    ({"todatetime": 42}, "todatetime: 42 is not of type 'string'"),
+    ({"parsearea": 42}, "parsearea: 42 is not of type 'string'"),
+    ({"timezone": "Europe/Kharkiv"},
+     "timezone: 'Europe/Kharkiv' is not a 'timezone'"),
+    ({"fuzzy": 42}, "fuzzy: 42 is not of type 'boolean'"),
 ])
 def test_param_bad_value(testapp, params, error):
     """Todatetime processor has to validate input parameters."""
 
-    with pytest.raises(ValueError, match=error):
+    with pytest.raises(ValueError) as excinfo:
         next(todatetime.process(testapp, [], **params))
+    assert str(excinfo.value) == error
