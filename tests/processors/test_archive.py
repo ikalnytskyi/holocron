@@ -1,5 +1,7 @@
 """Archive processor test suite."""
 
+import collections.abc
+import itertools
 import os
 
 import pytest
@@ -17,71 +19,70 @@ def test_item(testapp):
     """Archive processor has to work!"""
 
     stream = archive.process(
-        testapp,
-        [
-            core.Item(
-                {
-                    "title": "the way of the Force",
-                    "content": "Obi-Wan",
-                }),
-        ])
+        testapp, [core.Item({"title": "The Force", "content": "Obi-Wan"})]
+    )
 
-    assert next(stream) == core.Item(
-        {
-            "title": "the way of the Force",
-            "content": "Obi-Wan",
-        })
-
-    assert next(stream) == core.WebSiteItem(
-        {
-            "source": "archive://index.html",
-            "destination": "index.html",
-            "template": "archive.j2",
-            "items": [
-                core.Item(
-                    {
-                        "title": "the way of the Force",
-                        "content": "Obi-Wan"
-                    }),
-            ],
-            "baseurl": testapp.metadata["url"],
-        })
-
-    with pytest.raises(StopIteration):
-        next(stream)
+    assert isinstance(stream, collections.abc.Iterable)
+    assert list(stream) == [
+        core.Item({"title": "The Force", "content": "Obi-Wan"}),
+        core.WebSiteItem(
+            {
+                "source": "archive://index.html",
+                "destination": "index.html",
+                "template": "archive.j2",
+                "items": [
+                    core.Item({"title": "The Force", "content": "Obi-Wan"})
+                ],
+                "baseurl": testapp.metadata["url"],
+            }
+        ),
+    ]
 
 
-@pytest.mark.parametrize("amount", [0, 1, 2, 5, 10])
+@pytest.mark.parametrize(
+    ["amount"],
+    [
+        pytest.param(0),
+        pytest.param(1),
+        pytest.param(2),
+        pytest.param(5),
+        pytest.param(10),
+    ],
+)
 def test_item_many(testapp, amount):
     """archive processor has to work with stream."""
 
     stream = archive.process(
         testapp,
         [
-            core.Item({"title": "the way of the Force #%d" % i})
+            core.Item({"title": "The Force (part #%d)" % i})
             for i in range(amount)
-        ])
+        ],
+    )
 
-    for i in range(amount):
-        assert next(stream) == core.Item(
-            {
-                "title": "the way of the Force #%d" % i,
-            })
-
-    assert next(stream) == core.WebSiteItem(
-        {
-            "source": "archive://index.html",
-            "destination": "index.html",
-            "template": "archive.j2",
-            "items": [
-                core.Item({"title": "the way of the Force #%d" % i})
+    assert isinstance(stream, collections.abc.Iterable)
+    assert list(stream) == list(
+        itertools.chain(
+            [
+                core.Item({"title": "The Force (part #%d)" % i})
                 for i in range(amount)
             ],
-            "baseurl": testapp.metadata["url"],
-        })
-
-    with pytest.raises(StopIteration):
-        next(stream)
+            [
+                core.WebSiteItem(
+                    {
+                        "source": "archive://index.html",
+                        "destination": "index.html",
+                        "template": "archive.j2",
+                        "items": [
+                            core.Item({"title": "The Force (part #%d)" % i})
+                            for i in range(amount)
+                        ],
+                        "baseurl": testapp.metadata["url"],
+                    }
+                )
+            ],
+        )
+    )
 
 
 def test_param_template(testapp):
@@ -89,91 +90,95 @@ def test_param_template(testapp):
 
     stream = archive.process(
         testapp,
-        [
-            core.Item(
-                {
-                    "title": "the way of the Force",
-                    "content": "Obi-Wan",
-                }),
-        ],
-        template="foobar.txt")
+        [core.Item({"title": "The Force", "content": "Obi-Wan"})],
+        template="foobar.txt",
+    )
 
-    assert next(stream) == core.Item(
-        {
-            "title": "the way of the Force",
-            "content": "Obi-Wan",
-        })
-
-    assert next(stream) == core.WebSiteItem(
-        {
-            "source": "archive://index.html",
-            "destination": "index.html",
-            "template": "foobar.txt",
-            "items": [
-                core.Item(
-                    {
-                        "title": "the way of the Force",
-                        "content": "Obi-Wan",
-                    }),
-            ],
-            "baseurl": testapp.metadata["url"],
-        })
-
-    with pytest.raises(StopIteration):
-        next(stream)
+    assert isinstance(stream, collections.abc.Iterable)
+    assert list(stream) == [
+        core.Item({"title": "The Force", "content": "Obi-Wan"}),
+        core.WebSiteItem(
+            {
+                "source": "archive://index.html",
+                "destination": "index.html",
+                "template": "foobar.txt",
+                "items": [
+                    core.Item({"title": "The Force", "content": "Obi-Wan"})
+                ],
+                "baseurl": testapp.metadata["url"],
+            }
+        ),
+    ]
 
 
-@pytest.mark.parametrize("save_as", [
-    os.path.join("posts", "skywalker.luke"),
-    os.path.join("yoda.jedi"),
-])
+@pytest.mark.parametrize(
+    ["save_as"],
+    [
+        pytest.param(os.path.join("posts", "skywalker.luke"), id="deep"),
+        pytest.param(os.path.join("yoda.jedi"), id="flat"),
+    ],
+)
 def test_param_save_as(testapp, save_as):
     """archive processor has to respect save_as parameter."""
 
     stream = archive.process(
         testapp,
-        [
-            core.Item(
-                {
-                    "title": "the way of the Force",
-                    "content": "Obi-Wan",
-                }),
-        ],
-        save_as=save_as)
+        [core.Item({"title": "The Force", "content": "Obi-Wan"})],
+        save_as=save_as,
+    )
 
-    assert next(stream) == core.Item(
-        {
-            "title": "the way of the Force",
-            "content": "Obi-Wan",
-        })
-
-    assert next(stream) == core.WebSiteItem(
-        {
-            "source": "archive://%s" % save_as,
-            "destination": save_as,
-            "template": "archive.j2",
-            "items": [
-                core.Item(
-                    {
-                        "title": "the way of the Force",
-                        "content": "Obi-Wan",
-                    }),
-            ],
-            "baseurl": testapp.metadata["url"],
-        })
-
-    with pytest.raises(StopIteration):
-        next(stream)
+    assert isinstance(stream, collections.abc.Iterable)
+    assert list(stream) == [
+        core.Item({"title": "The Force", "content": "Obi-Wan"}),
+        core.WebSiteItem(
+            {
+                "source": "archive://%s" % save_as,
+                "destination": save_as,
+                "template": "archive.j2",
+                "items": [
+                    core.Item({"title": "The Force", "content": "Obi-Wan"})
+                ],
+                "baseurl": testapp.metadata["url"],
+            }
+        ),
+    ]
 
 
-@pytest.mark.parametrize("params, error", [
-    ({"save_as": 42}, "save_as: 42 is not of type 'string'"),
-    ({"template": 42}, "template: 42 is not of type 'string'"),
-    ({"save_as": [42]}, "save_as: [42] is not of type 'string'"),
-    ({"template": [42]}, "template: [42] is not of type 'string'"),
-    ({"save_as": {"x": 1}}, "save_as: {'x': 1} is not of type 'string'"),
-    ({"template": {"y": 2}}, "template: {'y': 2} is not of type 'string'"),
-])
+@pytest.mark.parametrize(
+    ["params", "error"],
+    [
+        pytest.param(
+            {"save_as": 42},
+            "save_as: 42 is not of type 'string'",
+            id="save_as-int",
+        ),
+        pytest.param(
+            {"template": 42},
+            "template: 42 is not of type 'string'",
+            id="template-int",
+        ),
+        pytest.param(
+            {"save_as": [42]},
+            "save_as: [42] is not of type 'string'",
+            id="save_as-list",
+        ),
+        pytest.param(
+            {"template": [42]},
+            "template: [42] is not of type 'string'",
+            id="template-list",
+        ),
+        pytest.param(
+            {"save_as": {"x": 1}},
+            "save_as: {'x': 1} is not of type 'string'",
+            id="save_as-dict",
+        ),
+        pytest.param(
+            {"template": {"y": 2}},
+            "template: {'y': 2} is not of type 'string'",
+            id="template-dict",
+        ),
+    ],
+)
 def test_param_bad_value(testapp, params, error):
     """archive processor has to validate input parameters."""
 

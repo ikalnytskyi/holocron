@@ -30,7 +30,8 @@ def _createitem(app, path, basepath, encoding, tzinfo):
         content=content,
         created=created,
         updated=updated,
-        baseurl=app.metadata["url"])
+        baseurl=app.metadata["url"],
+    )
 
 
 def _finditems(app, path, pattern, encoding, tzinfo):
@@ -49,7 +50,8 @@ def _finditems(app, path, pattern, encoding, tzinfo):
                 os.path.join(root, filename),
                 basepath=path,
                 encoding=encoding,
-                tzinfo=tzinfo)
+                tzinfo=tzinfo,
+            )
 
 
 @parameters(
@@ -67,13 +69,9 @@ def _finditems(app, path, pattern, encoding, tzinfo):
         },
     },
 )
-def process(app,
-            stream,
-            *,
-            path=".",
-            pattern=None,
-            encoding="UTF-8",
-            timezone="UTC"):
+def process(
+    app, stream, *, path=".", pattern=None, encoding="UTF-8", timezone="UTC"
+):
     tzinfo = dateutil.tz.gettz(timezone)
 
     yield from stream

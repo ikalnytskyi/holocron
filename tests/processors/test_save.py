@@ -1,7 +1,7 @@
 """Save processor test suite."""
 
+import collections.abc
 import os
-import inspect
 
 import py
 import pytest
@@ -21,48 +21,48 @@ def test_item(testapp, monkeypatch, tmpdir):
     monkeypatch.chdir(tmpdir)
 
     stream = save.process(
-        testapp,
-        [
-            core.Item({"content": "Obi-Wan", "destination": "1.html"}),
-        ],
+        testapp, [core.Item({"content": "Obi-Wan", "destination": "1.html"})]
     )
 
-    assert inspect.isgenerator(stream)
+    assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item({"content": "Obi-Wan", "destination": "1.html"}),
+        core.Item({"content": "Obi-Wan", "destination": "1.html"})
     ]
     assert tmpdir.join("_site", "1.html").read_text("UTF-8") == "Obi-Wan"
 
 
-@pytest.mark.parametrize("data, loader", [
-    (u"text", py.path.local.read),
-    (b"\xf1", py.path.local.read_binary),
-])
+@pytest.mark.parametrize(
+    ["data", "loader"],
+    [
+        pytest.param("text", py.path.local.read, id="text"),
+        pytest.param(b"\xf1", py.path.local.read_binary, id="binary"),
+    ],
+)
 def test_item_content_types(testapp, monkeypatch, tmpdir, data, loader):
     """Save processor has to save content of bytes and string types."""
 
     monkeypatch.chdir(tmpdir)
 
     stream = save.process(
-        testapp,
-        [
-            core.Item({"content": data, "destination": "1.dat"}),
-        ],
+        testapp, [core.Item({"content": data, "destination": "1.dat"})]
     )
 
-    assert inspect.isgenerator(stream)
+    assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item({"content": data, "destination": "1.dat"}),
+        core.Item({"content": data, "destination": "1.dat"})
     ]
     assert loader(tmpdir.join("_site", "1.dat")) == data
 
 
-@pytest.mark.parametrize("destination", [
-    os.path.join("1.txt"),
-    os.path.join("a", "2.txt"),
-    os.path.join("a", "b", "3.txt"),
-    os.path.join("a", "b", "c", "4.txt"),
-])
+@pytest.mark.parametrize(
+    ["destination"],
+    [
+        pytest.param(os.path.join("1.txt"), id="deep-0"),
+        pytest.param(os.path.join("a", "2.txt"), id="deep-1"),
+        pytest.param(os.path.join("a", "b", "3.txt"), id="deep-2"),
+        pytest.param(os.path.join("a", "b", "c", "4.txt"), id="deep-3"),
+    ],
+)
 def test_item_destination(testapp, monkeypatch, tmpdir, destination):
     """Save processor has to respect any destination value."""
 
@@ -70,19 +70,26 @@ def test_item_destination(testapp, monkeypatch, tmpdir, destination):
 
     stream = save.process(
         testapp,
-        [
-            core.Item({"content": "Obi-Wan", "destination": destination}),
-        ],
+        [core.Item({"content": "Obi-Wan", "destination": destination})],
     )
 
-    assert inspect.isgenerator(stream)
+    assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item({"content": "Obi-Wan", "destination": destination}),
+        core.Item({"content": "Obi-Wan", "destination": destination})
     ]
     assert tmpdir.join("_site", destination).read_text("UTF-8") == "Obi-Wan"
 
 
-@pytest.mark.parametrize("amount", [0, 1, 2, 5, 10])
+@pytest.mark.parametrize(
+    ["amount"],
+    [
+        pytest.param(0),
+        pytest.param(1),
+        pytest.param(2),
+        pytest.param(5),
+        pytest.param(10),
+    ],
+)
 def test_item_many(testapp, monkeypatch, tmpdir, amount):
     """Save processor has to work with a stream of items."""
 
@@ -96,7 +103,7 @@ def test_item_many(testapp, monkeypatch, tmpdir, amount):
         ],
     )
 
-    assert inspect.isgenerator(stream)
+    assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
         core.Item({"content": "Obi-Wan", "destination": str(i)})
         for i in range(amount)
@@ -106,7 +113,9 @@ def test_item_many(testapp, monkeypatch, tmpdir, amount):
         assert tmpdir.join("_site", str(i)).read_text("UTF-8") == "Obi-Wan"
 
 
-@pytest.mark.parametrize("encoding", ["CP1251", "UTF-16"])
+@pytest.mark.parametrize(
+    ["encoding"], [pytest.param("CP1251"), pytest.param("UTF-16")]
+)
 def test_param_encoding(testapp, monkeypatch, tmpdir, encoding):
     """Save processor has to respect 'encoding' parameter."""
 
@@ -114,20 +123,20 @@ def test_param_encoding(testapp, monkeypatch, tmpdir, encoding):
 
     stream = save.process(
         testapp,
-        [
-            core.Item({"content": "Обі-Ван", "destination": "1.html"}),
-        ],
+        [core.Item({"content": "Обі-Ван", "destination": "1.html"})],
         encoding=encoding,
     )
 
-    assert inspect.isgenerator(stream)
+    assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item({"content": "Обі-Ван", "destination": "1.html"}),
+        core.Item({"content": "Обі-Ван", "destination": "1.html"})
     ]
     assert tmpdir.join("_site", "1.html").read_text(encoding) == "Обі-Ван"
 
 
-@pytest.mark.parametrize("encoding", ["CP1251", "UTF-16"])
+@pytest.mark.parametrize(
+    ["encoding"], [pytest.param("CP1251"), pytest.param("UTF-16")]
+)
 def test_param_encoding_fallback(testapp, monkeypatch, tmpdir, encoding):
     """Save processor has to respect 'encoding' parameter (fallback)."""
 
@@ -135,20 +144,19 @@ def test_param_encoding_fallback(testapp, monkeypatch, tmpdir, encoding):
     testapp.metadata.update({"encoding": encoding})
 
     stream = save.process(
-        testapp,
-        [
-            core.Item({"content": "Обі-Ван", "destination": "1.html"}),
-        ],
+        testapp, [core.Item({"content": "Обі-Ван", "destination": "1.html"})]
     )
 
-    assert inspect.isgenerator(stream)
+    assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item({"content": "Обі-Ван", "destination": "1.html"}),
+        core.Item({"content": "Обі-Ван", "destination": "1.html"})
     ]
     assert tmpdir.join("_site", "1.html").read_text(encoding) == "Обі-Ван"
 
 
-@pytest.mark.parametrize("to", ["_build", "_public"])
+@pytest.mark.parametrize(
+    ["to"], [pytest.param("_build"), pytest.param("_public")]
+)
 def test_param_to(testapp, monkeypatch, tmpdir, to):
     """Save processor has to respect 'to' parameter."""
 
@@ -156,27 +164,48 @@ def test_param_to(testapp, monkeypatch, tmpdir, to):
 
     stream = save.process(
         testapp,
-        [
-            core.Item({"content": "Obi-Wan", "destination": "1.html"}),
-        ],
+        [core.Item({"content": "Obi-Wan", "destination": "1.html"})],
         to=to,
     )
 
-    assert inspect.isgenerator(stream)
+    assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item({"content": "Obi-Wan", "destination": "1.html"}),
+        core.Item({"content": "Obi-Wan", "destination": "1.html"})
     ]
     assert tmpdir.join(to, "1.html").read_text("UTF-8") == "Obi-Wan"
 
 
-@pytest.mark.parametrize("params, error", [
-    ({"to": 42}, "to: 42 is not of type 'string'"),
-    ({"to": [42]}, "to: [42] is not of type 'string'"),
-    ({"to": {"x": 1}}, "to: {'x': 1} is not of type 'string'"),
-    ({"encoding": "UTF-42"}, "encoding: 'UTF-42' is not a 'encoding'"),
-    ({"encoding": [42]}, "encoding: [42] is not of type 'string'"),
-    ({"encoding": {"y": 2}}, "encoding: {'y': 2} is not of type 'string'"),
-])
+@pytest.mark.parametrize(
+    ["params", "error"],
+    [
+        pytest.param(
+            {"to": 42}, "to: 42 is not of type 'string'", id="to-int"
+        ),
+        pytest.param(
+            {"to": [42]}, "to: [42] is not of type 'string'", id="to-list"
+        ),
+        pytest.param(
+            {"to": {"x": 1}},
+            "to: {'x': 1} is not of type 'string'",
+            id="to-dict",
+        ),
+        pytest.param(
+            {"encoding": "UTF-42"},
+            "encoding: 'UTF-42' is not a 'encoding'",
+            id="encoding-wrong",
+        ),
+        pytest.param(
+            {"encoding": [42]},
+            "encoding: [42] is not of type 'string'",
+            id="encoding-list",
+        ),
+        pytest.param(
+            {"encoding": {"y": 2}},
+            "encoding: {'y': 2} is not of type 'string'",
+            id="encoding-dict",
+        ),
+    ],
+)
 def test_param_bad_value(testapp, params, error):
     """Save processor has to validate input parameters."""
 

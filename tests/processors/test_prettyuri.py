@@ -1,6 +1,7 @@
 """Prettyuri processor test suite."""
 
 import os
+import collections.abc
 
 import pytest
 
@@ -17,43 +18,42 @@ def test_item(testapp):
     """Prettyuri processor has to work!"""
 
     stream = prettyuri.process(
-        testapp,
-        [
-            core.Item({"destination": os.path.join("about", "cv.html")}),
-        ])
+        testapp, [core.Item({"destination": os.path.join("about", "cv.html")})]
+    )
 
-    assert next(stream) == core.Item(
-        {
-            "destination": os.path.join("about", "cv", "index.html"),
-        })
-
-    with pytest.raises(StopIteration):
-        next(stream)
+    assert isinstance(stream, collections.abc.Iterable)
+    assert list(stream) == [
+        core.Item({"destination": os.path.join("about", "cv", "index.html")})
+    ]
 
 
-@pytest.mark.parametrize("index", [
-    "index.html",
-    "index.htm",
-])
+@pytest.mark.parametrize(
+    ["index"], [pytest.param("index.html"), pytest.param("index.htm")]
+)
 def test_item_index(testapp, index):
     """Prettyuri processor has to ignore index items."""
 
     stream = prettyuri.process(
         testapp,
-        [
-            core.Item({"destination": os.path.join("about", "cv", index)}),
-        ])
+        [core.Item({"destination": os.path.join("about", "cv", index)})],
+    )
 
-    assert next(stream) == core.Item(
-        {
-            "destination": os.path.join("about", "cv", index),
-        })
-
-    with pytest.raises(StopIteration):
-        next(stream)
+    assert isinstance(stream, collections.abc.Iterable)
+    assert list(stream) == [
+        core.Item({"destination": os.path.join("about", "cv", index)})
+    ]
 
 
-@pytest.mark.parametrize("amount", [0, 1, 2, 5, 10])
+@pytest.mark.parametrize(
+    ["amount"],
+    [
+        pytest.param(0),
+        pytest.param(1),
+        pytest.param(2),
+        pytest.param(5),
+        pytest.param(10),
+    ],
+)
 def test_item_many(testapp, amount):
     """Prettyuri processor has to work with stream."""
 
@@ -62,13 +62,11 @@ def test_item_many(testapp, amount):
         [
             core.Item({"destination": os.path.join("about", "%d.html" % i)})
             for i in range(amount)
-        ])
+        ],
+    )
 
-    for i in range(amount):
-        assert next(stream) == core.Item(
-            {
-                "destination": os.path.join("about", str(i), "index.html"),
-            })
-
-    with pytest.raises(StopIteration):
-        next(stream)
+    assert isinstance(stream, collections.abc.Iterable)
+    assert list(stream) == [
+        core.Item({"destination": os.path.join("about", str(i), "index.html")})
+        for i in range(amount)
+    ]

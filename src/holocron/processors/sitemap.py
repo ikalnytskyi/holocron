@@ -17,7 +17,7 @@ from ._misc import parameters
             "save_as": {"type": "string"},
             "pretty": {"type": "boolean"},
         },
-    },
+    }
 )
 def process(app, stream, *, gzip=False, save_as="sitemap.xml", pretty=True):
     passthrough, stream = itertools.tee(stream)
@@ -27,7 +27,8 @@ def process(app, stream, *, gzip=False, save_as="sitemap.xml", pretty=True):
             "source": "sitemap://%s" % save_as,
             "destination": save_as,
             "baseurl": app.metadata["url"],
-        })
+        }
+    )
     sitemap["content"] = _create_sitemap_xml(stream, sitemap, pretty)
 
     # According to the Sitemap protocol, the sitemap.xml can be compressed
@@ -59,7 +60,8 @@ def _create_sitemap_xml(stream, sitemap, pretty):
                 "The location of a Sitemap file determines the set of URLs "
                 "that can be included in that Sitemap. A Sitemap file located "
                 "at %s can include any URLs starting with %s but can not "
-                "include %s." % (sitemap["absurl"], owned_url, item["absurl"]))
+                "include %s." % (sitemap["absurl"], owned_url, item["absurl"])
+            )
 
         url = dom.createElement("url")
         loc = dom.createElement("loc")

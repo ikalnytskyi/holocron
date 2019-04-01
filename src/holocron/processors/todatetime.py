@@ -9,9 +9,7 @@ from ._misc import parameters
 
 
 @parameters(
-    fallback={
-        "timezone": "metadata://#/timezone",
-    },
+    fallback={"timezone": "metadata://#/timezone"},
     jsonschema={
         "type": "object",
         "properties": {
@@ -19,7 +17,7 @@ from ._misc import parameters
                 "anyOf": [
                     {"type": "string"},
                     {"type": "array", "items": {"type": "string"}},
-                ],
+                ]
             },
             "parsearea": {"type": "string"},
             "timezone": {"type": "string", "format": "timezone"},
@@ -27,13 +25,9 @@ from ._misc import parameters
         },
     },
 )
-def process(app,
-            stream,
-            *,
-            todatetime,
-            parsearea=".*",
-            fuzzy=False,
-            timezone="UTC"):
+def process(
+    app, stream, *, todatetime, parsearea=".*", fuzzy=False, timezone="UTC"
+):
     tzinfo = dateutil.tz.gettz(timezone)
     re_parsearea = re.compile(parsearea)
 

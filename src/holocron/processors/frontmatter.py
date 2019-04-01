@@ -14,7 +14,7 @@ from ._misc import parameters
             "delimiter": {"type": "string"},
             "overwrite": {"type": "boolean"},
         },
-    },
+    }
 )
 def process(app, stream, *, delimiter="---", overwrite=True):
     delimiter = re.escape(delimiter)
@@ -23,8 +23,10 @@ def process(app, stream, *, delimiter="---", overwrite=True):
         match = re.match(
             # Match block between delimiters and block outsides of them, if
             # the block between delimiters is on the beginning of content.
-            r"{0}\s*\n(.*)\n{0}\s*\n(.*)".format(delimiter),
-            item["content"], re.M | re.S)
+            r"\s*{0}\s*\n(.*)\n{0}\s*\n(.*)".format(delimiter),
+            item["content"],
+            re.M | re.S,
+        )
 
         if match:
             headers, item["content"] = match.groups()

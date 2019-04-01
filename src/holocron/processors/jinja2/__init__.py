@@ -1,4 +1,4 @@
-"""Render stream using Jinja2 template engine."""
+"""Render items using Jinja2 template engine."""
 
 import os
 
@@ -17,27 +17,25 @@ from .._misc import parameters
             "context": {"type": "object"},
             "themes": {"type": "array", "items": {"type": "string"}},
         },
-    },
+    }
 )
 def process(app, stream, *, template="item.j2", context={}, themes=None):
     if themes is None:
         themes = [os.path.join(os.path.dirname(__file__), "theme")]
 
-    env = jinja2.Environment(loader=jinja2.ChoiceLoader([
-        # Jinja2 processor may receive a list of themes, and we want to look
-        # for templates in passed order. The rationale here is to provide
-        # a way to override templates or populate a list of supported ones.
-        jinja2.FileSystemLoader(os.path.join(theme, "templates"))
-        for theme in themes
-    ]))
+    env = jinja2.Environment(
+        loader=jinja2.ChoiceLoader(
+            [
+                jinja2.FileSystemLoader(os.path.join(theme, "templates"))
+                for theme in themes
+            ]
+        )
+    )
     env.filters["jsonpointer"] = jsonpointer.resolve_pointer
 
     for item in stream:
-        item["content"] = \
-            env.get_template(item.get("template", template)).render(
-                item=item,
-                metadata=app.metadata,
-                **context)
+        render = env.get_template(item.get("template", template)).render
+        item["content"] = render(item=item, metadata=app.metadata, **context)
         yield item
 
     # Themes may optionally come with various statics (e.g. css, images) they

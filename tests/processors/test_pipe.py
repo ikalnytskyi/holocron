@@ -1,5 +1,7 @@
 """Pipe processor test suite."""
 
+import collections.abc
+
 import pytest
 
 from holocron import core
@@ -34,33 +36,21 @@ def test_item(testapp):
 
     stream = pipe.process(
         testapp,
-        [
-            core.Item(
-                {
-                    "content": "the Force",
-                    "author": "skywalker",
-                }),
-        ],
-        pipe=[
-            {"name": "spam"},
-            {"name": "eggs"},
-            {"name": "rice"},
-        ])
+        [core.Item({"content": "the Force", "author": "skywalker"})],
+        pipe=[{"name": "spam"}, {"name": "eggs"}, {"name": "rice"}],
+    )
 
-    assert next(stream) == core.Item(
-        {
-            "content": "the Force #friedeggs",
-            "author": "skywalker",
-            "spam": 42,
-        })
-
-    assert next(stream) == core.Item(
-        {
-            "content": "rice",
-        })
-
-    with pytest.raises(StopIteration):
-        next(stream)
+    assert isinstance(stream, collections.abc.Iterable)
+    assert list(stream) == [
+        core.Item(
+            {
+                "content": "the Force #friedeggs",
+                "author": "skywalker",
+                "spam": 42,
+            }
+        ),
+        core.Item({"content": "rice"}),
+    ]
 
 
 def test_item_processor_with_option(testapp):
@@ -68,26 +58,14 @@ def test_item_processor_with_option(testapp):
 
     stream = pipe.process(
         testapp,
-        [
-            core.Item(
-                {
-                    "content": "the Force",
-                    "author": "skywalker",
-                }),
-        ],
-        pipe=[
-            {"name": "spam", "text": 1},
-        ])
+        [core.Item({"content": "the Force", "author": "skywalker"})],
+        pipe=[{"name": "spam", "text": 1}],
+    )
 
-    assert next(stream) == core.Item(
-        {
-            "content": "the Force",
-            "author": "skywalker",
-            "spam": 1,
-        })
-
-    with pytest.raises(StopIteration):
-        next(stream)
+    assert isinstance(stream, collections.abc.Iterable)
+    assert list(stream) == [
+        core.Item({"content": "the Force", "author": "skywalker", "spam": 1})
+    ]
 
 
 def test_param_pipeline_empty(testapp):
@@ -95,59 +73,59 @@ def test_param_pipeline_empty(testapp):
 
     stream = pipe.process(
         testapp,
-        [
-            core.Item(
-                {
-                    "content": "the Force",
-                    "author": "skywalker",
-                }),
-        ],
-        pipe=[])
+        [core.Item({"content": "the Force", "author": "skywalker"})],
+        pipe=[],
+    )
 
-    assert next(stream) == core.Item(
-        {
-            "content": "the Force",
-            "author": "skywalker",
-        })
-
-    with pytest.raises(StopIteration):
-        next(stream)
+    assert isinstance(stream, collections.abc.Iterable)
+    assert list(stream) == [
+        core.Item({"content": "the Force", "author": "skywalker"})
+    ]
 
 
-@pytest.mark.parametrize("amount", [0, 1, 2, 5, 10])
+@pytest.mark.parametrize(
+    ["amount"],
+    [
+        pytest.param(0),
+        pytest.param(1),
+        pytest.param(2),
+        pytest.param(5),
+        pytest.param(10),
+    ],
+)
 def test_item_many(testapp, amount):
     """Pipe processor has to work with stream."""
 
     stream = pipe.process(
         testapp,
         [
-            core.Item(
-                {
-                    "content": "the Force (%d)" % i,
-                    "author": "skywalker",
-                })
+            core.Item({"content": "the Force (%d)" % i, "author": "skywalker"})
             for i in range(amount)
         ],
-        pipe=[
-            {"name": "spam"},
-            {"name": "eggs"},
-        ])
+        pipe=[{"name": "spam"}, {"name": "eggs"}],
+    )
 
-    for i in range(amount):
-        assert next(stream) == core.Item(
+    assert isinstance(stream, collections.abc.Iterable)
+    assert list(stream) == [
+        core.Item(
             {
                 "content": "the Force (%d) #friedeggs" % i,
                 "author": "skywalker",
                 "spam": 42,
-            })
+            }
+        )
+        for i in range(amount)
+    ]
 
-    with pytest.raises(StopIteration):
-        next(stream)
 
-
-@pytest.mark.parametrize("params, error", [
-    ({"pipe": 42}, "pipe: 42 is not of type 'array'"),
-])
+@pytest.mark.parametrize(
+    ["params", "error"],
+    [
+        pytest.param(
+            {"pipe": 42}, "pipe: 42 is not of type 'array'", id="pipe-int"
+        )
+    ],
+)
 def test_param_bad_value(testapp, params, error):
     """Pipe processor has to validate input parameters."""
 

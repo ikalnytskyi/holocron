@@ -15,7 +15,7 @@ from ._misc import parameters
             "imports": {"type": "array", "items": {"type": "string"}},
             "from_": {"type": "string"},
         },
-    },
+    }
 )
 def process(app, items, *, imports, from_=None):
     distribution = pkg_resources.get_distribution("holocron")
@@ -36,4 +36,5 @@ def process(app, items, *, imports, from_=None):
     # time.
     def passgen(app, items):
         yield from items
+
     return passgen(app, items)

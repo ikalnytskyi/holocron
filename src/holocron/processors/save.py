@@ -6,9 +6,7 @@ from ._misc import parameters
 
 
 @parameters(
-    fallback={
-        "encoding": "metadata://#/encoding",
-    },
+    fallback={"encoding": "metadata://#/encoding"},
     jsonschema={
         "type": "object",
         "properties": {

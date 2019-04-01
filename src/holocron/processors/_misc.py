@@ -22,16 +22,17 @@ def resolve_json_references(value, context, keep_unknown=True):
         elif isinstance(node, collections.abc.Mapping):
             for k, v in node.items():
                 node[k] = _do_resolve(v)
-        elif isinstance(node, collections.abc.Sequence) \
-                and not isinstance(node, str):
+        elif isinstance(node, collections.abc.Sequence) and not isinstance(
+            node, str
+        ):
             for i in range(len(node)):
                 node[i] = _do_resolve(node[i])
         return node
+
     return _do_resolve(value)
 
 
 class parameters:
-
     def __init__(self, *, fallback=None, jsonschema=None):
         self._fallback = fallback or {}
         self._jsonschema = jsonschema
@@ -56,7 +57,8 @@ class parameters:
                     try:
                         value = resolve_json_references(
                             {"$ref": self._fallback[param]},
-                            {"metadata:": app.metadata})
+                            {"metadata:": app.metadata},
+                        )
                     except (jsonpointer.JsonPointerException, KeyError):
                         continue
 
@@ -74,32 +76,39 @@ class parameters:
                     def is_encoding(value):
                         if isinstance(value, str):
                             import codecs
+
                             return codecs.lookup(value)
 
                     @format_checker.checks("timezone", ())
                     def is_timezone(value):
                         if isinstance(value, str):
                             import dateutil.tz
+
                             return dateutil.tz.gettz(value)
 
                     @format_checker.checks("path", (TypeError,))
                     def is_path(value):
                         if isinstance(value, str):
                             import pathlib
+
                             return pathlib.Path(value)
 
                     jsonschema.validate(
                         arguments,
                         self._jsonschema,
-                        format_checker=format_checker)
+                        format_checker=format_checker,
+                    )
                 except jsonschema.exceptions.ValidationError as exc:
                     message = exc.message
 
                     if exc.absolute_path:
                         message = "%s: %s" % (
-                            ".".join(exc.absolute_path), exc.message)
+                            ".".join(exc.absolute_path),
+                            exc.message,
+                        )
 
                     raise ValueError(message)
 
             return fn(app, *args, **kwargs)
+
         return wrapper

@@ -13,7 +13,7 @@ from ._misc import parameters
             "template": {"type": "string"},
             "save_as": {"type": "string"},
         },
-    },
+    }
 )
 def process(app, stream, *, template="archive.j2", save_as="index.html"):
     passthrough, stream = itertools.tee(stream)

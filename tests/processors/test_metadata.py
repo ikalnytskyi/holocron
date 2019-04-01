@@ -1,5 +1,7 @@
 """Metadata processor test suite."""
 
+import collections.abc
+
 import pytest
 
 from holocron import core
@@ -16,120 +18,106 @@ def test_item(testapp):
 
     stream = metadata.process(
         testapp,
-        [
-            core.Item(
-                {
-                    "content": "the Force",
-                    "author": "skywalker",
-                }),
-        ],
-        metadata={
-            "author": "yoda",
-            "type": "memoire",
-        })
+        [core.Item({"content": "the Force", "author": "skywalker"})],
+        metadata={"author": "yoda", "type": "memoire"},
+    )
 
-    assert next(stream) == core.Item(
-        {
-            "content": "the Force",
-            "author": "yoda",
-            "type": "memoire",
-        })
-
-    with pytest.raises(StopIteration):
-        next(stream)
+    assert isinstance(stream, collections.abc.Iterable)
+    assert list(stream) == [
+        core.Item(
+            {"content": "the Force", "author": "yoda", "type": "memoire"}
+        )
+    ]
 
 
 def test_item_untouched(testapp):
     """Metadata processor has to ignore items if no metadata are passed."""
 
     stream = metadata.process(
-        testapp,
-        [
-            core.Item(
-                {
-                    "content": "the Force",
-                    "author": "skywalker",
-                }),
-        ])
+        testapp, [core.Item({"content": "the Force", "author": "skywalker"})]
+    )
 
-    assert next(stream) == core.Item(
-        {
-            "content": "the Force",
-            "author": "skywalker",
-        })
-
-    with pytest.raises(StopIteration):
-        next(stream)
+    assert isinstance(stream, collections.abc.Iterable)
+    assert list(stream) == [
+        core.Item({"content": "the Force", "author": "skywalker"})
+    ]
 
 
-@pytest.mark.parametrize("amount", [0, 1, 2, 5, 10])
+@pytest.mark.parametrize(
+    ["amount"],
+    [
+        pytest.param(0),
+        pytest.param(1),
+        pytest.param(2),
+        pytest.param(5),
+        pytest.param(10),
+    ],
+)
 def test_item_many(testapp, amount):
     """Metadata processor has to work with stream."""
 
     stream = metadata.process(
         testapp,
         [
-            core.Item(
-                {
-                    "content": "the key is #%d" % i,
-                    "author": "luke",
-                })
+            core.Item({"content": "the key is #%d" % i, "author": "luke"})
             for i in range(amount)
         ],
-        metadata={
-            "author": "yoda",
-            "type": "memoire",
-        })
+        metadata={"author": "yoda", "type": "memoire"},
+    )
 
-    for i in range(amount):
-        assert next(stream) == core.Item(
+    assert isinstance(stream, collections.abc.Iterable)
+    assert list(stream) == [
+        core.Item(
             {
                 "content": "the key is #%d" % i,
                 "author": "yoda",
                 "type": "memoire",
-            })
+            }
+        )
+        for i in range(amount)
+    ]
 
-    with pytest.raises(StopIteration):
-        next(stream)
 
-
-@pytest.mark.parametrize("overwrite, author", [
-    (True, "yoda"),
-    (False, "skywalker"),
-])
+@pytest.mark.parametrize(
+    ["overwrite", "author"],
+    [
+        pytest.param(True, "yoda", id="overwrite"),
+        pytest.param(False, "skywalker", id="not-overwrite"),
+    ],
+)
 def test_param_overwrite(testapp, overwrite, author):
     """Metadata processor has to respect overwrite option."""
 
     stream = metadata.process(
         testapp,
-        [
-            core.Item(
-                {
-                    "content": "the Force",
-                    "author": "skywalker",
-                }),
-        ],
-        metadata={
-            "author": "yoda",
-            "type": "memoire",
-        },
-        overwrite=overwrite)
+        [core.Item({"content": "the Force", "author": "skywalker"})],
+        metadata={"author": "yoda", "type": "memoire"},
+        overwrite=overwrite,
+    )
 
-    assert next(stream) == core.Item(
-        {
-            "content": "the Force",
-            "author": author,
-            "type": "memoire",
-        })
-
-    with pytest.raises(StopIteration):
-        next(stream)
+    assert isinstance(stream, collections.abc.Iterable)
+    assert list(stream) == [
+        core.Item(
+            {"content": "the Force", "author": author, "type": "memoire"}
+        )
+    ]
 
 
-@pytest.mark.parametrize("params, error", [
-    ({"metadata": 42}, "metadata: 42 is not of type 'object'"),
-    ({"overwrite": "true"}, "overwrite: 'true' is not of type 'boolean'"),
-])
+@pytest.mark.parametrize(
+    ["params", "error"],
+    [
+        pytest.param(
+            {"metadata": 42},
+            "metadata: 42 is not of type 'object'",
+            id="metadata",
+        ),
+        pytest.param(
+            {"overwrite": "true"},
+            "overwrite: 'true' is not of type 'boolean'",
+            id="overwrite",
+        ),
+    ],
+)
 def test_param_bad_value(testapp, params, error):
     """Metadata processor has to validate input parameters."""
 

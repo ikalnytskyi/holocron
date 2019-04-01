@@ -26,7 +26,8 @@ class _WhenEvaluator:
 
     def eval(self, when, **context):
         template = self._env.from_string(
-            "{%% if %s %%}true{%% endif %%}" % when)
+            "{%% if %s %%}true{%% endif %%}" % when
+        )
         return template.render(**context) == "true"
 
 
@@ -37,14 +38,12 @@ class _WhenEvaluator:
             "when": {"type": "array", "items": {"type": "string"}},
             "processor": {
                 "type": "object",
-                "properties": {
-                    "name": {"type": "string"},
-                },
+                "properties": {"name": {"type": "string"}},
                 "required": ["name"],
                 "additionalProperties": True,
             },
         },
-    },
+    }
 )
 def process(app, stream, *, when, processor):
     untouched = collections.deque()

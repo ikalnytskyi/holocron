@@ -1,7 +1,9 @@
 """Feed processor test suite."""
 
-import os
+import collections.abc
 import datetime
+import itertools
+import os
 import unittest.mock
 
 import pkg_resources
@@ -30,7 +32,8 @@ def test_item_atom(testapp):
                 {
                     "content": "the way of the Force",
                     "published": datetime.date(2017, 9, 25),
-                }),
+                }
+            )
         ],
         feed={
             "id": "kenobi-way",
@@ -42,24 +45,29 @@ def test_item_atom(testapp):
             "id": "day-one",
             "title": "Day 1",
             "content": "Once upon a time",
-        })
+        },
+    )
+    assert isinstance(stream, collections.abc.Iterable)
 
-    assert next(stream) == core.Item(
-        {
-            "content": "the way of the Force",
-            "published": datetime.date(2017, 9, 25),
-        })
+    items = list(stream)
+    assert items == [
+        core.Item(
+            {
+                "content": "the way of the Force",
+                "published": datetime.date(2017, 9, 25),
+            }
+        ),
+        core.WebSiteItem(
+            {
+                "source": "feed://feed.xml",
+                "destination": "feed.xml",
+                "content": unittest.mock.ANY,
+                "baseurl": testapp.metadata["url"],
+            }
+        ),
+    ]
 
-    item = next(stream)
-    assert item == core.WebSiteItem(
-        {
-            "source": "feed://feed.xml",
-            "destination": "feed.xml",
-            "content": unittest.mock.ANY,
-            "baseurl": testapp.metadata["url"]
-        })
-
-    parsed = untangle.parse(item["content"].decode("UTF-8"))
+    parsed = untangle.parse(items[-1]["content"].decode("UTF-8"))
     assert set(dir(parsed.feed)) == {
         "id",
         "title",
@@ -78,19 +86,11 @@ def test_item_atom(testapp):
     assert parsed.feed.generator["version"] == _HOLOCRON_VERSION
     assert parsed.feed.generator == "Holocron/v%s" % _HOLOCRON_VERSION
 
-    assert set(dir(parsed.feed.entry)) == {
-        "id",
-        "title",
-        "content",
-        "updated",
-    }
+    assert set(dir(parsed.feed.entry)) == {"id", "title", "content", "updated"}
     assert parsed.feed.entry.id == "day-one"
     assert parsed.feed.entry.title == "Day 1"
     assert parsed.feed.entry.content == "Once upon a time"
     assert parsed.feed.entry.content["type"] == "html"
-
-    with pytest.raises(StopIteration):
-        next(stream)
 
 
 def test_item_atom_feed_metadata(testapp):
@@ -101,10 +101,8 @@ def test_item_atom_feed_metadata(testapp):
         testapp,
         [
             core.Item(
-                {
-                    "content": "the way of the Force",
-                    "published": published,
-                }),
+                {"content": "the way of the Force", "published": published}
+            )
         ],
         feed={
             "id": "kenobi-way",
@@ -128,24 +126,24 @@ def test_item_atom_feed_metadata(testapp):
             "contributor": {"name": "Dooku", "email": "dooku@sith.com"},
             "published": {"$ref": "item://#/published"},
             "rights": "(c) Obi-Wan and the Jedi Order",
-        })
+        },
+    )
+    assert isinstance(stream, collections.abc.Iterable)
 
-    assert next(stream) == core.Item(
-        {
-            "content": "the way of the Force",
-            "published": published,
-        })
+    items = list(stream)
+    assert items == [
+        core.Item({"content": "the way of the Force", "published": published}),
+        core.WebSiteItem(
+            {
+                "source": "feed://feed.xml",
+                "destination": "feed.xml",
+                "content": unittest.mock.ANY,
+                "baseurl": testapp.metadata["url"],
+            }
+        ),
+    ]
 
-    item = next(stream)
-    assert item == core.WebSiteItem(
-        {
-            "source": "feed://feed.xml",
-            "destination": "feed.xml",
-            "content": unittest.mock.ANY,
-            "baseurl": testapp.metadata["url"]
-        })
-
-    parsed = untangle.parse(item["content"].decode("UTF-8"))
+    parsed = untangle.parse(items[-1]["content"].decode("UTF-8"))
     assert set(dir(parsed.feed)) == {
         "id",
         "title",
@@ -203,9 +201,6 @@ def test_item_atom_feed_metadata(testapp):
     assert parsed.feed.entry.published == published.isoformat()
     assert parsed.feed.entry.rights == "(c) Obi-Wan and the Jedi Order"
 
-    with pytest.raises(StopIteration):
-        next(stream)
-
 
 def test_item_rss(testapp):
     """Feed (rss) processor has to work with minimum amount of metadata!"""
@@ -217,7 +212,8 @@ def test_item_rss(testapp):
                 {
                     "content": "the way of the Force",
                     "published": datetime.date(2017, 9, 25),
-                }),
+                }
+            )
         ],
         syndication_format="rss",
         feed={
@@ -225,27 +221,29 @@ def test_item_rss(testapp):
             "description": "Labours of Obi-Wan",
             "link": {"href": testapp.metadata["url"]},
         },
-        item={
-            "title": "Day 1",
-            "content": "Once upon a time",
-        })
+        item={"title": "Day 1", "content": "Once upon a time"},
+    )
+    assert isinstance(stream, collections.abc.Iterable)
 
-    assert next(stream) == core.Item(
-        {
-            "content": "the way of the Force",
-            "published": datetime.date(2017, 9, 25),
-        })
+    items = list(stream)
+    assert items == [
+        core.Item(
+            {
+                "content": "the way of the Force",
+                "published": datetime.date(2017, 9, 25),
+            }
+        ),
+        core.WebSiteItem(
+            {
+                "source": "feed://feed.xml",
+                "destination": "feed.xml",
+                "content": unittest.mock.ANY,
+                "baseurl": testapp.metadata["url"],
+            }
+        ),
+    ]
 
-    item = next(stream)
-    assert item == core.WebSiteItem(
-        {
-            "source": "feed://feed.xml",
-            "destination": "feed.xml",
-            "content": unittest.mock.ANY,
-            "baseurl": testapp.metadata["url"]
-        })
-
-    parsed = untangle.parse(item["content"].decode("UTF-8"))
+    parsed = untangle.parse(items[-1]["content"].decode("UTF-8"))
     assert set(dir(parsed.rss.channel)) == {
         "title",
         "description",
@@ -257,23 +255,17 @@ def test_item_rss(testapp):
     }
     assert parsed.rss["xmlns:atom"] == "http://www.w3.org/2005/Atom"
     assert parsed.rss["xmlns:content"] == (
-        "http://purl.org/rss/1.0/modules/content/")
+        "http://purl.org/rss/1.0/modules/content/"
+    )
     assert parsed.rss["version"] == "2.0"
     assert parsed.rss.channel.title == "Kenobi's Way"
     assert parsed.rss.channel.description == "Labours of Obi-Wan"
     assert parsed.rss.channel.link == testapp.metadata["url"]
-    assert parsed.rss.channel.generator \
-        == "Holocron/v%s" % _HOLOCRON_VERSION
+    assert parsed.rss.channel.generator == "Holocron/v%s" % _HOLOCRON_VERSION
 
-    assert set(dir(parsed.rss.channel.item)) == {
-        "title",
-        "description",
-    }
+    assert set(dir(parsed.rss.channel.item)) == {"title", "description"}
     assert parsed.rss.channel.item.title == "Day 1"
     assert parsed.rss.channel.item.description == "Once upon a time"
-
-    with pytest.raises(StopIteration):
-        next(stream)
 
 
 def test_item_rss_feed_metadata(testapp):
@@ -284,10 +276,8 @@ def test_item_rss_feed_metadata(testapp):
         testapp,
         [
             core.Item(
-                {
-                    "content": "the way of the Force",
-                    "published": published,
-                }),
+                {"content": "the way of the Force", "published": published}
+            )
         ],
         syndication_format="rss",
         feed={
@@ -334,24 +324,24 @@ def test_item_rss_feed_metadata(testapp):
             "itunes_order": 42,
             "itunes_subtitle": "cherry",
             "itunes_summary": "berry",
-        })
+        },
+    )
+    assert isinstance(stream, collections.abc.Iterable)
 
-    assert next(stream) == core.Item(
-        {
-            "content": "the way of the Force",
-            "published": published,
-        })
+    items = list(stream)
+    assert items == [
+        core.Item({"content": "the way of the Force", "published": published}),
+        core.WebSiteItem(
+            {
+                "source": "feed://feed.xml",
+                "destination": "feed.xml",
+                "content": unittest.mock.ANY,
+                "baseurl": testapp.metadata["url"],
+            }
+        ),
+    ]
 
-    item = next(stream)
-    assert item == core.WebSiteItem(
-        {
-            "source": "feed://feed.xml",
-            "destination": "feed.xml",
-            "content": unittest.mock.ANY,
-            "baseurl": testapp.metadata["url"]
-        })
-
-    parsed = untangle.parse(item["content"].decode("UTF-8"))
+    parsed = untangle.parse(items[-1]["content"].decode("UTF-8"))
     assert set(dir(parsed.rss.channel)) == {
         "title",
         "description",
@@ -383,15 +373,16 @@ def test_item_rss_feed_metadata(testapp):
     }
     assert parsed.rss["xmlns:atom"] == "http://www.w3.org/2005/Atom"
     assert parsed.rss["xmlns:itunes"] == (
-        "http://www.itunes.com/dtds/podcast-1.0.dtd")
+        "http://www.itunes.com/dtds/podcast-1.0.dtd"
+    )
     assert parsed.rss["xmlns:content"] == (
-        "http://purl.org/rss/1.0/modules/content/")
+        "http://purl.org/rss/1.0/modules/content/"
+    )
     assert parsed.rss["version"] == "2.0"
     assert parsed.rss.channel.title == "Kenobi's Way"
     assert parsed.rss.channel.description == "Labours of Obi-Wan"
     assert parsed.rss.channel.link == testapp.metadata["url"]
-    assert parsed.rss.channel.generator \
-        == "Holocron/v%s" % _HOLOCRON_VERSION
+    assert parsed.rss.channel.generator == "Holocron/v%s" % _HOLOCRON_VERSION
     assert parsed.rss.channel.category == "Jedi"
     assert parsed.rss.channel.image.url == "path/to/image"
     assert parsed.rss.channel.image.title == "Kenobi's Way"
@@ -401,16 +392,20 @@ def test_item_rss_feed_metadata(testapp):
     assert parsed.rss.channel.language == "uk"
     assert parsed.rss.channel.managingEditor == "yoda@jedi.com"
     assert parsed.rss.channel.rating == "some PICS rating"
-    assert {x.cdata for x in parsed.rss.channel.skipHours.children} \
-        == {"7", "8", "9"}
+    assert {x.cdata for x in parsed.rss.channel.skipHours.children} == {
+        "7",
+        "8",
+        "9",
+    }
     assert parsed.rss.channel.skipDays.day == "Friday"
     assert parsed.rss.channel.ttl == "42"
     assert parsed.rss.channel.webMaster == "luke@skywalker.com"
     assert parsed.rss.channel.itunes_author == "dooku@sith.com"
     assert parsed.rss.channel.itunes_block == "no"
     assert parsed.rss.channel.itunes_category["text"] == "Arts"
-    assert parsed.rss.channel.itunes_category.itunes_category["text"] \
-        == "Design"
+    assert (
+        parsed.rss.channel.itunes_category.itunes_category["text"] == "Design"
+    )
     assert parsed.rss.channel.itunes_image["href"] == "path/to/image.png"
     assert parsed.rss.channel.itunes_explicit == "clean"
     assert parsed.rss.channel.itunes_complete == "no"
@@ -450,8 +445,10 @@ def test_item_rss_feed_metadata(testapp):
 
     assert parsed.rss.channel.item.itunes_author == "vader@sith.com"
     assert parsed.rss.channel.item.itunes_block == "no"
-    assert parsed.rss.channel.item.itunes_image["href"] \
+    assert (
+        parsed.rss.channel.item.itunes_image["href"]
         == "path/to/episode/image.png"
+    )
     assert parsed.rss.channel.item.itunes_duration == "00:32:13"
     assert parsed.rss.channel.item.itunes_explicit == "yes"
     assert parsed.rss.channel.item.itunes_isClosedCaptioned == "yes"
@@ -459,12 +456,20 @@ def test_item_rss_feed_metadata(testapp):
     assert parsed.rss.channel.item.itunes_subtitle == "cherry"
     assert parsed.rss.channel.item.itunes_summary == "berry"
 
-    with pytest.raises(StopIteration):
-        next(stream)
 
-
-@pytest.mark.parametrize("syndication_format", ["atom", "rss"])
-@pytest.mark.parametrize("amount", [0, 1, 2, 5, 10])
+@pytest.mark.parametrize(
+    ["syndication_format"], [pytest.param("atom"), pytest.param("rss")]
+)
+@pytest.mark.parametrize(
+    ["amount"],
+    [
+        pytest.param(0),
+        pytest.param(1),
+        pytest.param(2),
+        pytest.param(5),
+        pytest.param(10),
+    ],
+)
 def test_item_many(testapp, syndication_format, amount):
     """Feed processor has to work with stream."""
 
@@ -475,7 +480,8 @@ def test_item_many(testapp, syndication_format, amount):
                 {
                     "content": "the key is %d" % i,
                     "published": datetime.date(2017, 9, 25),
-                })
+                }
+            )
             for i in range(amount)
         ],
         syndication_format=syndication_format,
@@ -489,29 +495,42 @@ def test_item_many(testapp, syndication_format, amount):
             "id": "day-one",
             "title": "Day 1",
             "content": "Once upon a time",
-        })
+        },
+    )
+    assert isinstance(stream, collections.abc.Iterable)
 
-    for i in range(amount):
-        assert next(stream) == core.Item(
-            {
-                "content": "the key is %d" % i,
-                "published": datetime.date(2017, 9, 25),
-            })
+    items = list(stream)
+    assert items == list(
+        itertools.chain(
+            [
+                core.Item(
+                    {
+                        "content": "the key is %d" % i,
+                        "published": datetime.date(2017, 9, 25),
+                    }
+                )
+                for i in range(amount)
+            ],
+            [
+                core.WebSiteItem(
+                    {
+                        "source": "feed://feed.xml",
+                        "destination": "feed.xml",
+                        "content": unittest.mock.ANY,
+                        "baseurl": testapp.metadata["url"],
+                    }
+                )
+            ],
+        )
+    )
 
-    assert next(stream) == core.WebSiteItem(
-        {
-            "source": "feed://feed.xml",
-            "destination": "feed.xml",
-            "content": unittest.mock.ANY,
-            "baseurl": testapp.metadata["url"]
-        })
 
-    with pytest.raises(StopIteration):
-        next(stream)
-
-
-@pytest.mark.parametrize("syndication_format", ["atom", "rss"])
-@pytest.mark.parametrize("encoding", ["CP1251", "UTF-16"])
+@pytest.mark.parametrize(
+    ["syndication_format"], [pytest.param("atom"), pytest.param("rss")]
+)
+@pytest.mark.parametrize(
+    ["encoding"], [pytest.param("CP1251"), pytest.param("UTF-16")]
+)
 def test_param_encoding(testapp, syndication_format, encoding):
     """Feed processor has to respect encoding parameter."""
 
@@ -520,10 +539,8 @@ def test_param_encoding(testapp, syndication_format, encoding):
         testapp,
         [
             core.Item(
-                {
-                    "content": "the way of the Force",
-                    "published": published,
-                }),
+                {"content": "the way of the Force", "published": published}
+            )
         ],
         syndication_format=syndication_format,
         encoding=encoding,
@@ -537,31 +554,31 @@ def test_param_encoding(testapp, syndication_format, encoding):
             "id": "day-one",
             "title": "Day 1",
             "content": "Once upon a time",
-        })
+        },
+    )
+    assert isinstance(stream, collections.abc.Iterable)
 
-    assert next(stream) == core.Item(
-        {
-            "content": "the way of the Force",
-            "published": published,
-        })
-
-    item = next(stream)
-    assert item == core.WebSiteItem(
-        {
-            "source": "feed://feed.xml",
-            "destination": "feed.xml",
-            "content": unittest.mock.ANY,
-            "baseurl": testapp.metadata["url"]
-        })
-
-    assert untangle.parse(item["content"].decode(encoding))
-
-    with pytest.raises(StopIteration):
-        next(stream)
+    items = list(stream)
+    assert items == [
+        core.Item({"content": "the way of the Force", "published": published}),
+        core.WebSiteItem(
+            {
+                "source": "feed://feed.xml",
+                "destination": "feed.xml",
+                "content": unittest.mock.ANY,
+                "baseurl": testapp.metadata["url"],
+            }
+        ),
+    ]
+    assert untangle.parse(items[-1]["content"].decode(encoding))
 
 
-@pytest.mark.parametrize("syndication_format", ["atom", "rss"])
-@pytest.mark.parametrize("encoding", ["CP1251", "UTF-16"])
+@pytest.mark.parametrize(
+    ["syndication_format"], [pytest.param("atom"), pytest.param("rss")]
+)
+@pytest.mark.parametrize(
+    ["encoding"], [pytest.param("CP1251"), pytest.param("UTF-16")]
+)
 def test_param_encoding_fallback(testapp, syndication_format, encoding):
     """Feed processor has to respect encoding parameter (fallback)."""
 
@@ -572,10 +589,8 @@ def test_param_encoding_fallback(testapp, syndication_format, encoding):
         testapp,
         [
             core.Item(
-                {
-                    "content": "the way of the Force",
-                    "published": published,
-                }),
+                {"content": "the way of the Force", "published": published}
+            )
         ],
         syndication_format=syndication_format,
         feed={
@@ -588,34 +603,32 @@ def test_param_encoding_fallback(testapp, syndication_format, encoding):
             "id": "day-one",
             "title": "Day 1",
             "content": "Once upon a time",
-        })
+        },
+    )
+    assert isinstance(stream, collections.abc.Iterable)
 
-    assert next(stream) == core.Item(
-        {
-            "content": "the way of the Force",
-            "published": published,
-        })
-
-    item = next(stream)
-    assert item == core.WebSiteItem(
-        {
-            "source": "feed://feed.xml",
-            "destination": "feed.xml",
-            "content": unittest.mock.ANY,
-            "baseurl": testapp.metadata["url"]
-        })
-
-    assert untangle.parse(item["content"].decode(encoding))
-
-    with pytest.raises(StopIteration):
-        next(stream)
+    items = list(stream)
+    assert items == [
+        core.Item({"content": "the way of the Force", "published": published}),
+        core.WebSiteItem(
+            {
+                "source": "feed://feed.xml",
+                "destination": "feed.xml",
+                "content": unittest.mock.ANY,
+                "baseurl": testapp.metadata["url"],
+            }
+        ),
+    ]
+    assert untangle.parse(items[-1]["content"].decode(encoding))
 
 
-@pytest.mark.parametrize("syndication_format", ["atom", "rss"])
-@pytest.mark.parametrize("save_as", [
-    "foo.xml",
-    os.path.join("foo", "bar.xml"),
-])
+@pytest.mark.parametrize(
+    ["syndication_format"], [pytest.param("atom"), pytest.param("rss")]
+)
+@pytest.mark.parametrize(
+    ["save_as"],
+    [pytest.param("foo.xml"), pytest.param(os.path.join("foo", "bar.xml"))],
+)
 def test_param_save_as(testapp, syndication_format, save_as):
     """Feed processor has to respect save_as parameter."""
 
@@ -626,7 +639,8 @@ def test_param_save_as(testapp, syndication_format, save_as):
                 {
                     "content": "the way of the Force",
                     "published": datetime.date(2017, 9, 25),
-                }),
+                }
+            )
         ],
         syndication_format=syndication_format,
         save_as=save_as,
@@ -640,29 +654,32 @@ def test_param_save_as(testapp, syndication_format, save_as):
             "id": "day-one",
             "title": "Day 1",
             "content": "Once upon a time",
-        })
+        },
+    )
 
-    assert next(stream) == core.Item(
-        {
-            "content": "the way of the Force",
-            "published": datetime.date(2017, 9, 25),
-        })
+    assert isinstance(stream, collections.abc.Iterable)
+    assert list(stream) == [
+        core.Item(
+            {
+                "content": "the way of the Force",
+                "published": datetime.date(2017, 9, 25),
+            }
+        ),
+        core.WebSiteItem(
+            {
+                "source": "feed://%s" % save_as,
+                "destination": save_as,
+                "content": unittest.mock.ANY,
+                "baseurl": testapp.metadata["url"],
+            }
+        ),
+    ]
 
-    item = next(stream)
-    assert item == core.WebSiteItem(
-        {
-            "source": "feed://%s" % save_as,
-            "destination": save_as,
-            "content": unittest.mock.ANY,
-            "baseurl": testapp.metadata["url"]
-        })
 
-    with pytest.raises(StopIteration):
-        next(stream)
-
-
-@pytest.mark.parametrize("syndication_format", ["atom", "rss"])
-@pytest.mark.parametrize("limit", (2, 5))
+@pytest.mark.parametrize(
+    ["syndication_format"], [pytest.param("atom"), pytest.param("rss")]
+)
+@pytest.mark.parametrize(["limit"], [pytest.param(2), pytest.param(5)])
 def test_param_limit(testapp, syndication_format, limit):
     """Feed processor has to respect limit parameter."""
 
@@ -673,7 +690,8 @@ def test_param_limit(testapp, syndication_format, limit):
                 {
                     "content": "the way of the Force, part %d" % i,
                     "published": datetime.date(2017, 9, i + 1),
-                })
+                }
+            )
             for i in range(10)
         ],
         syndication_format=syndication_format,
@@ -688,25 +706,36 @@ def test_param_limit(testapp, syndication_format, limit):
             "id": "day-one",
             "title": "Day 1",
             "content": {"$ref": "item:#/content"},
-        })
+        },
+    )
+    assert isinstance(stream, collections.abc.Iterable)
 
-    for i, item in zip(range(10), stream):
-        assert item == core.Item(
-            {
-                "content": "the way of the Force, part %d" % i,
-                "published": datetime.date(2017, 9, i + 1),
-            })
+    items = list(stream)
+    assert items == list(
+        itertools.chain(
+            [
+                core.Item(
+                    {
+                        "content": "the way of the Force, part %d" % i,
+                        "published": datetime.date(2017, 9, i + 1),
+                    }
+                )
+                for i in range(10)
+            ],
+            [
+                core.WebSiteItem(
+                    {
+                        "source": "feed://feed.xml",
+                        "destination": "feed.xml",
+                        "content": unittest.mock.ANY,
+                        "baseurl": testapp.metadata["url"],
+                    }
+                )
+            ],
+        )
+    )
 
-    item = next(stream)
-    assert item == core.WebSiteItem(
-        {
-            "source": "feed://feed.xml",
-            "destination": "feed.xml",
-            "content": unittest.mock.ANY,
-            "baseurl": testapp.metadata["url"]
-        })
-
-    parsed = untangle.parse(item["content"].decode("UTF-8"))
+    parsed = untangle.parse(items[-1]["content"].decode("UTF-8"))
 
     if syndication_format == "atom":
         items = parsed.feed.entry
@@ -724,15 +753,17 @@ def test_param_limit(testapp, syndication_format, limit):
         assert item.title == "Day 1"
         assert content == "the way of the Force, part %d" % (9 - i)
 
-    with pytest.raises(StopIteration):
-        next(stream)
 
-
-@pytest.mark.parametrize("syndication_format", ["atom", "rss"])
-@pytest.mark.parametrize("pretty, check_fn", (
-    (False, lambda x: x == 2),
-    (True, lambda x: x > 10),
-))
+@pytest.mark.parametrize(
+    ["syndication_format"], [pytest.param("atom"), pytest.param("rss")]
+)
+@pytest.mark.parametrize(
+    ["pretty", "check_fn"],
+    [
+        pytest.param(False, lambda x: x == 2, id="no"),
+        pytest.param(True, lambda x: x > 10, id="yes"),
+    ],
+)
 def test_param_pretty(testapp, syndication_format, pretty, check_fn):
     """Feed processor has to respect pretty parameter."""
 
@@ -743,7 +774,8 @@ def test_param_pretty(testapp, syndication_format, pretty, check_fn):
                 {
                     "content": "the way of the Force",
                     "published": datetime.date(2017, 9, 25),
-                }),
+                }
+            )
         ],
         syndication_format=syndication_format,
         pretty=pretty,
@@ -757,34 +789,55 @@ def test_param_pretty(testapp, syndication_format, pretty, check_fn):
             "id": "day-one",
             "title": "Day 1",
             "content": "Once upon a time",
-        })
+        },
+    )
+    assert isinstance(stream, collections.abc.Iterable)
 
-    assert next(stream) == core.Item(
-        {
-            "content": "the way of the Force",
-            "published": datetime.date(2017, 9, 25),
-        })
+    items = list(stream)
+    assert items == [
+        core.Item(
+            {
+                "content": "the way of the Force",
+                "published": datetime.date(2017, 9, 25),
+            }
+        ),
+        core.WebSiteItem(
+            {
+                "source": "feed://feed.xml",
+                "destination": "feed.xml",
+                "content": unittest.mock.ANY,
+                "baseurl": testapp.metadata["url"],
+            }
+        ),
+    ]
+    assert check_fn(len(items[-1]["content"].splitlines()))
 
-    item = next(stream)
-    assert item == core.WebSiteItem(
-        {
-            "source": "feed://feed.xml",
-            "destination": "feed.xml",
-            "content": unittest.mock.ANY,
-            "baseurl": testapp.metadata["url"]
-        })
-    assert check_fn(len(item["content"].splitlines()))
 
-    with pytest.raises(StopIteration):
-        next(stream)
-
-
-@pytest.mark.parametrize("params, error", [
-    ({"encoding": "UTF-42"}, "encoding: 'UTF-42' is not a 'encoding'"),
-    ({"limit": "42"}, "limit: '42' is not of type 'integer'"),
-    ({"save_as": 42}, "save_as: 42 is not of type 'string'"),
-    ({"pretty": 42}, "pretty: 42 is not of type 'boolean'"),
-])
+@pytest.mark.parametrize(
+    ["params", "error"],
+    [
+        pytest.param(
+            {"encoding": "UTF-42"},
+            "encoding: 'UTF-42' is not a 'encoding'",
+            id="encoding-wrong",
+        ),
+        pytest.param(
+            {"limit": "42"},
+            "limit: '42' is not of type 'integer'",
+            id="limit-str",
+        ),
+        pytest.param(
+            {"save_as": 42},
+            "save_as: 42 is not of type 'string'",
+            id="save_as-int",
+        ),
+        pytest.param(
+            {"pretty": 42},
+            "pretty: 42 is not of type 'boolean'",
+            id="pretty-int",
+        ),
+    ],
+)
 def test_param_bad_value(testapp, params, error):
     """Feed processor has to validate input parameters."""
 

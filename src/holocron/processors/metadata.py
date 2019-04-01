@@ -10,7 +10,7 @@ from ._misc import parameters
             "metadata": {"type": "object"},
             "overwrite": {"type": "boolean"},
         },
-    },
+    }
 )
 def process(app, stream, *, metadata={}, overwrite=True):
     for item in stream:

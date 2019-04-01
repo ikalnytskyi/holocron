@@ -209,9 +209,7 @@ def test_invoke_anonymous_pipe():
             {"name": "processor_b"},
             {"name": "processor_c"},
         ],
-        [
-            holocron.core.Item({"a": "b"})
-        ]
+        [holocron.core.Item({"a": "b"})],
     )
 
     assert next(stream) == holocron.core.Item({"a": "b", "x": 42})
@@ -289,12 +287,12 @@ def test_invoke_passthrough_items():
 
 
 @pytest.mark.parametrize(
-    "processor_options",
+    ["processor_options"],
     [
-        {"a": 1},
-        {"b": 1.13},
-        {"a": 1, "b": 1.13},
-        {"a": {"x": [1, 2]}, "b": ["1", 2]},
+        pytest.param({"a": 1}, id="int"),
+        pytest.param({"b": 1.13}, id="float"),
+        pytest.param({"a": 1, "b": 1.13}, id="two-params"),
+        pytest.param({"a": {"x": [1, 2]}, "b": ["1", 2]}, id="deep-params"),
     ],
 )
 def test_invoke_propagates_processor_options(processor_options):
@@ -312,23 +310,39 @@ def test_invoke_propagates_processor_options(processor_options):
         next(testapp.invoke("test"))
 
 
-@pytest.mark.parametrize("options, resolved", [
-    ({"a": {"$ref": "metadata://#/is_yoda_master"}}, {"a": True}),
-    ({"a": {"$ref": "metadata://#/extra/0/luke"}}, {"a": "skywalker"}),
-    ({"a": {"$ref": "metadata://#/is_yoda_master"},
-      "b": {"$ref": "metadata://#/extra/0/luke"}},
-     {"a": True, "b": "skywalker"}),
-    ({"a": {"$ref": "item://#/content"}},
-     {"a": {"$ref": "item://#/content"}}),
-])
+@pytest.mark.parametrize(
+    ["options", "resolved"],
+    [
+        pytest.param(
+            {"a": {"$ref": "metadata://#/is_yoda_master"}},
+            {"a": True},
+            id="key",
+        ),
+        pytest.param(
+            {"a": {"$ref": "metadata://#/extra/0/luke"}},
+            {"a": "skywalker"},
+            id="array-key",
+        ),
+        pytest.param(
+            {
+                "a": {"$ref": "metadata://#/is_yoda_master"},
+                "b": {"$ref": "metadata://#/extra/0/luke"},
+            },
+            {"a": True, "b": "skywalker"},
+            id="two-refs",
+        ),
+        pytest.param(
+            {"a": {"$ref": "item://#/content"}},
+            {"a": {"$ref": "item://#/content"}},
+            id="unresolvable",
+        ),
+    ],
+)
 def test_invoke_resolves_jsonref(options, resolved):
     """.invoke() resolves JSON references in processor's options."""
 
     testapp = holocron.core.Application(
-        {
-            "extra": [{"luke": "skywalker"}],
-            "is_yoda_master": True,
-        },
+        {"extra": [{"luke": "skywalker"}], "is_yoda_master": True}
     )
 
     def processor(app, items, **options):

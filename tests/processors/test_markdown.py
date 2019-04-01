@@ -1,5 +1,6 @@
 """Markdown processor test suite."""
 
+import collections.abc
 import re
 import textwrap
 import unittest.mock
@@ -36,25 +37,31 @@ def test_item(testapp):
         [
             core.Item(
                 {
-                    "content": textwrap.dedent("""\
+                    "content": textwrap.dedent(
+                        """\
                         # some title
 
                         text with **bold**
-                    """),
+                    """
+                    ),
                     "destination": "1.md",
-                }),
-        ])
+                }
+            )
+        ],
+    )
 
-    assert next(stream) == core.Item(
-        {
-            "content": _pytest_regex(
-                r"<p>text with <strong>bold</strong></p>"),
-            "destination": "1.html",
-            "title": "some title",
-        })
-
-    with pytest.raises(StopIteration):
-        next(stream)
+    assert isinstance(stream, collections.abc.Iterable)
+    assert list(stream) == [
+        core.Item(
+            {
+                "content": _pytest_regex(
+                    r"<p>text with <strong>bold</strong></p>"
+                ),
+                "destination": "1.html",
+                "title": "some title",
+            }
+        )
+    ]
 
 
 def test_item_with_alt_title_syntax(testapp):
@@ -65,26 +72,32 @@ def test_item_with_alt_title_syntax(testapp):
         [
             core.Item(
                 {
-                    "content": textwrap.dedent("""\
+                    "content": textwrap.dedent(
+                        """\
                         some title
                         ==========
 
                         text with **bold**
-                    """),
+                    """
+                    ),
                     "destination": "1.md",
-                }),
-        ])
+                }
+            )
+        ],
+    )
 
-    assert next(stream) == core.Item(
-        {
-            "content": _pytest_regex(
-                r"<p>text with <strong>bold</strong></p>"),
-            "destination": "1.html",
-            "title": "some title",
-        })
-
-    with pytest.raises(StopIteration):
-        next(stream)
+    assert isinstance(stream, collections.abc.Iterable)
+    assert list(stream) == [
+        core.Item(
+            {
+                "content": _pytest_regex(
+                    r"<p>text with <strong>bold</strong></p>"
+                ),
+                "destination": "1.html",
+                "title": "some title",
+            }
+        )
+    ]
 
 
 def test_item_with_newlines_at_the_beginning(testapp):
@@ -95,27 +108,33 @@ def test_item_with_newlines_at_the_beginning(testapp):
         [
             core.Item(
                 {
-                    "content": textwrap.dedent("""\
+                    "content": textwrap.dedent(
+                        """\
 
 
                         # some title
 
                         text with **bold**
-                    """),
+                    """
+                    ),
                     "destination": "1.md",
-                }),
-        ])
+                }
+            )
+        ],
+    )
 
-    assert next(stream) == core.Item(
-        {
-            "content": _pytest_regex(
-                r"<p>text with <strong>bold</strong></p>"),
-            "destination": "1.html",
-            "title": "some title",
-        })
-
-    with pytest.raises(StopIteration):
-        next(stream)
+    assert isinstance(stream, collections.abc.Iterable)
+    assert list(stream) == [
+        core.Item(
+            {
+                "content": _pytest_regex(
+                    r"<p>text with <strong>bold</strong></p>"
+                ),
+                "destination": "1.html",
+                "title": "some title",
+            }
+        )
+    ]
 
 
 def test_item_without_title(testapp):
@@ -126,22 +145,28 @@ def test_item_without_title(testapp):
         [
             core.Item(
                 {
-                    "content": textwrap.dedent("""\
+                    "content": textwrap.dedent(
+                        """\
                         text with **bold**
-                    """),
+                    """
+                    ),
                     "destination": "1.md",
-                }),
-        ])
+                }
+            )
+        ],
+    )
 
-    assert next(stream) == core.Item(
-        {
-            "content": _pytest_regex(
-                r"<p>text with <strong>bold</strong></p>"),
-            "destination": "1.html",
-        })
-
-    with pytest.raises(StopIteration):
-        next(stream)
+    assert isinstance(stream, collections.abc.Iterable)
+    assert list(stream) == [
+        core.Item(
+            {
+                "content": _pytest_regex(
+                    r"<p>text with <strong>bold</strong></p>"
+                ),
+                "destination": "1.html",
+            }
+        )
+    ]
 
 
 def test_item_title_is_not_overwritten(testapp):
@@ -152,26 +177,32 @@ def test_item_title_is_not_overwritten(testapp):
         [
             core.Item(
                 {
-                    "content": textwrap.dedent("""\
+                    "content": textwrap.dedent(
+                        """\
                         # some title
 
                         text with **bold**
-                    """),
+                    """
+                    ),
                     "destination": "1.md",
                     "title": "another title",
-                }),
-        ])
+                }
+            )
+        ],
+    )
 
-    assert next(stream) == core.Item(
-        {
-            "content": _pytest_regex(
-                r"<p>text with <strong>bold</strong></p>"),
-            "destination": "1.html",
-            "title": "another title",
-        })
-
-    with pytest.raises(StopIteration):
-        next(stream)
+    assert isinstance(stream, collections.abc.Iterable)
+    assert list(stream) == [
+        core.Item(
+            {
+                "content": _pytest_regex(
+                    r"<p>text with <strong>bold</strong></p>"
+                ),
+                "destination": "1.html",
+                "title": "another title",
+            }
+        )
+    ]
 
 
 def test_item_title_ignored_in_the_middle_of_text(testapp):
@@ -182,28 +213,34 @@ def test_item_title_ignored_in_the_middle_of_text(testapp):
         [
             core.Item(
                 {
-                    "content": textwrap.dedent("""\
+                    "content": textwrap.dedent(
+                        """\
                         text
 
                         # some title
 
                         text with **bold**
-                    """),
+                    """
+                    ),
                     "destination": "1.md",
-                }),
-        ])
+                }
+            )
+        ],
+    )
 
-    assert next(stream) == core.Item(
-        {
-            "content": _pytest_regex(
-                r"<p>text</p>\s*"
-                r"<h1>some title</h1>\s*"
-                r"<p>text with <strong>bold</strong></p>"),
-            "destination": "1.html",
-        })
-
-    with pytest.raises(StopIteration):
-        next(stream)
+    assert isinstance(stream, collections.abc.Iterable)
+    assert list(stream) == [
+        core.Item(
+            {
+                "content": _pytest_regex(
+                    r"<p>text</p>\s*"
+                    r"<h1>some title</h1>\s*"
+                    r"<p>text with <strong>bold</strong></p>"
+                ),
+                "destination": "1.html",
+            }
+        )
+    ]
 
 
 def test_item_with_sections(testapp):
@@ -214,7 +251,8 @@ def test_item_with_sections(testapp):
         [
             core.Item(
                 {
-                    "content": textwrap.dedent("""\
+                    "content": textwrap.dedent(
+                        """\
                         some title 1
                         ============
 
@@ -237,25 +275,30 @@ def test_item_with_sections(testapp):
                         ## some section 3
 
                         yyy
-                    """),
+                    """
+                    ),
                     "destination": "1.md",
-                }),
-        ])
+                }
+            )
+        ],
+    )
 
-    assert next(stream) == core.Item(
-        {
-            "content": _pytest_regex(
-                r"<p>aaa</p>\s*"
-                r"<h2>some section 1</h2>\s*<p>bbb</p>\s*"
-                r"<h2>some section 2</h2>\s*<p>ccc</p>\s*"
-                r"<h1>some title 2</h1>\s*<p>xxx</p>\s*"
-                r"<h2>some section 3</h2>\s*<p>yyy</p>\s*"),
-            "destination": "1.html",
-            "title": "some title 1",
-        })
-
-    with pytest.raises(StopIteration):
-        next(stream)
+    assert isinstance(stream, collections.abc.Iterable)
+    assert list(stream) == [
+        core.Item(
+            {
+                "content": _pytest_regex(
+                    r"<p>aaa</p>\s*"
+                    r"<h2>some section 1</h2>\s*<p>bbb</p>\s*"
+                    r"<h2>some section 2</h2>\s*<p>ccc</p>\s*"
+                    r"<h1>some title 2</h1>\s*<p>xxx</p>\s*"
+                    r"<h2>some section 3</h2>\s*<p>yyy</p>\s*"
+                ),
+                "destination": "1.html",
+                "title": "some title 1",
+            }
+        )
+    ]
 
 
 def test_item_with_code(testapp):
@@ -266,25 +309,32 @@ def test_item_with_code(testapp):
         [
             core.Item(
                 {
-                    "content": textwrap.dedent("""\
+                    "content": textwrap.dedent(
+                        """\
                         test codeblock
 
                             :::python
                             lambda x: pass
-                    """),
+                    """
+                    ),
                     "destination": "1.md",
-                }),
-        ])
+                }
+            )
+        ],
+    )
 
-    assert next(stream) == core.Item(
-        {
-            "content": _pytest_regex(
-                r"<p>test codeblock</p>\s*.*highlight.*<pre>[\s\S]+</pre>.*"),
-            "destination": "1.html",
-        })
-
-    with pytest.raises(StopIteration):
-        next(stream)
+    assert isinstance(stream, collections.abc.Iterable)
+    assert list(stream) == [
+        core.Item(
+            {
+                "content": _pytest_regex(
+                    r"<p>test codeblock</p>\s*.*highlight.*"
+                    r"<pre>[\s\S]+</pre>.*"
+                ),
+                "destination": "1.html",
+            }
+        )
+    ]
 
 
 def test_item_with_fenced_code(testapp):
@@ -295,26 +345,33 @@ def test_item_with_fenced_code(testapp):
         [
             core.Item(
                 {
-                    "content": textwrap.dedent("""\
+                    "content": textwrap.dedent(
+                        """\
                         test codeblock
 
                         ```python
                         lambda x: pass
                         ```
-                    """),
+                    """
+                    ),
                     "destination": "1.md",
-                }),
-        ])
+                }
+            )
+        ],
+    )
 
-    assert next(stream) == core.Item(
-        {
-            "content": _pytest_regex(
-                r"<p>test codeblock</p>\s*.*highlight.*<pre>[\s\S]+</pre>.*"),
-            "destination": "1.html",
-        })
-
-    with pytest.raises(StopIteration):
-        next(stream)
+    assert isinstance(stream, collections.abc.Iterable)
+    assert list(stream) == [
+        core.Item(
+            {
+                "content": _pytest_regex(
+                    r"<p>test codeblock</p>\s*.*highlight.*"
+                    r"<pre>[\s\S]+</pre>.*"
+                ),
+                "destination": "1.html",
+            }
+        )
+    ]
 
 
 def test_item_with_table(testapp):
@@ -325,30 +382,32 @@ def test_item_with_table(testapp):
         [
             core.Item(
                 {
-                    "content": textwrap.dedent("""\
+                    "content": textwrap.dedent(
+                        """\
                         column a | column b
                         ---------|---------
                            foo   |   bar
-                    """),
+                    """
+                    ),
                     "destination": "1.md",
-                }),
-        ])
+                }
+            )
+        ],
+    )
 
-    item = next(stream)
-    assert item == core.Item(
-        {
-            "content": unittest.mock.ANY,
-            "destination": "1.html",
-        })
+    assert isinstance(stream, collections.abc.Iterable)
 
+    stream = list(stream)
+    assert stream == [
+        core.Item({"content": unittest.mock.ANY, "destination": "1.html"})
+    ]
+
+    item = stream[0]
     assert "table" in item["content"]
     assert "<th>column a</th>" in item["content"]
     assert "<th>column b</th>" in item["content"]
     assert "<td>foo</td>" in item["content"]
     assert "<td>bar</td>" in item["content"]
-
-    with pytest.raises(StopIteration):
-        next(stream)
 
 
 def test_item_with_inline_code(testapp):
@@ -359,24 +418,38 @@ def test_item_with_inline_code(testapp):
         [
             core.Item(
                 {
-                    "content": textwrap.dedent("""\
+                    "content": textwrap.dedent(
+                        """\
                         test `code`
-                    """),
+                    """
+                    ),
                     "destination": "1.md",
-                }),
-        ])
+                }
+            )
+        ],
+    )
 
-    assert next(stream) == core.Item(
-        {
-            "content": _pytest_regex(r"<p>test <code>code</code></p>"),
-            "destination": "1.html",
-        })
+    assert isinstance(stream, collections.abc.Iterable)
+    assert list(stream) == [
+        core.Item(
+            {
+                "content": _pytest_regex(r"<p>test <code>code</code></p>"),
+                "destination": "1.html",
+            }
+        )
+    ]
 
-    with pytest.raises(StopIteration):
-        next(stream)
 
-
-@pytest.mark.parametrize("amount", [0, 1, 2, 5, 10])
+@pytest.mark.parametrize(
+    ["amount"],
+    [
+        pytest.param(0),
+        pytest.param(1),
+        pytest.param(2),
+        pytest.param(5),
+        pytest.param(10),
+    ],
+)
 def test_item_many(testapp, amount):
     """Markdown processor has to work with stream."""
 
@@ -384,31 +457,40 @@ def test_item_many(testapp, amount):
         testapp,
         [
             core.Item(
-                {
-                    "content": "the key is **%d**" % i,
-                    "destination": "1.md",
-                })
+                {"content": "the key is **%d**" % i, "destination": "1.md"}
+            )
             for i in range(amount)
-        ])
+        ],
+    )
 
-    for i in range(amount):
-        assert next(stream) == core.Item(
+    assert isinstance(stream, collections.abc.Iterable)
+    assert list(stream) == [
+        core.Item(
             {
                 "content": "<p>the key is <strong>%d</strong></p>" % i,
                 "destination": "1.html",
-            })
+            }
+        )
+        for i in range(amount)
+    ]
 
-    with pytest.raises(StopIteration):
-        next(stream)
 
-
-@pytest.mark.parametrize("extensions, rendered", [
-    ({},
-     r"<p>test codeblock</p>\s*"
-     r"<pre><code>:::\s*lambda x: pass\s*</code></pre>"),
-    ({"markdown.extensions.codehilite": {"css_class": "vader"}},
-     r"<p>test codeblock</p>\s*.*vader.*<pre>[\s\S]+</pre>.*"),
-])
+@pytest.mark.parametrize(
+    ["extensions", "rendered"],
+    [
+        pytest.param(
+            {},
+            r"<p>test codeblock</p>\s*"
+            r"<pre><code>:::\s*lambda x: pass\s*</code></pre>",
+            id="no",
+        ),
+        pytest.param(
+            {"markdown.extensions.codehilite": {"css_class": "vader"}},
+            r"<p>test codeblock</p>\s*.*vader.*<pre>[\s\S]+</pre>.*",
+            id="codehilite",
+        ),
+    ],
+)
 def test_param_extensions(testapp, extensions, rendered):
     """Markdown processor has to respect extensions parameter."""
 
@@ -417,32 +499,44 @@ def test_param_extensions(testapp, extensions, rendered):
         [
             core.Item(
                 {
-                    "content": textwrap.dedent("""\
+                    "content": textwrap.dedent(
+                        """\
                         test codeblock
 
                             :::
                             lambda x: pass
-                    """),
+                    """
+                    ),
                     "destination": "1.md",
-                }),
+                }
+            )
         ],
-        extensions=extensions)
+        extensions=extensions,
+    )
 
-    assert next(stream) == core.Item(
-        {
-            "content": _pytest_regex(rendered),
-            "destination": "1.html",
-        })
-
-    with pytest.raises(StopIteration):
-        next(stream)
+    assert isinstance(stream, collections.abc.Iterable)
+    assert list(stream) == [
+        core.Item(
+            {"content": _pytest_regex(rendered), "destination": "1.html"}
+        )
+    ]
 
 
-@pytest.mark.parametrize("params, error", [
-    ({"extensions": 42}, "extensions: 42 is not of type 'object'"),
-    ({"extensions": {"a": 42}},
-     r"extensions: 'a' does not match '^markdown\\.extensions\\..*'"),
-])
+@pytest.mark.parametrize(
+    ["params", "error"],
+    [
+        pytest.param(
+            {"extensions": 42},
+            "extensions: 42 is not of type 'object'",
+            id="extensions-int",
+        ),
+        pytest.param(
+            {"extensions": {"a": 42}},
+            r"extensions: 'a' does not match '^markdown\\.extensions\\..*'",
+            id="extensions-dict",
+        ),
+    ],
+)
 def test_param_bad_value(testapp, params, error):
     """Markdown processor has to validate input parameters."""
 
