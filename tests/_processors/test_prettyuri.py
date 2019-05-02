@@ -5,25 +5,28 @@ import collections.abc
 
 import pytest
 
-from holocron import core
-from holocron.processors import prettyuri
+import holocron
+from holocron._processors import prettyuri
 
 
 @pytest.fixture(scope="function")
 def testapp():
-    return core.Application()
+    return holocron.Application()
 
 
 def test_item(testapp):
     """Prettyuri processor has to work!"""
 
     stream = prettyuri.process(
-        testapp, [core.Item({"destination": os.path.join("about", "cv.html")})]
+        testapp,
+        [holocron.Item({"destination": os.path.join("about", "cv.html")})],
     )
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item({"destination": os.path.join("about", "cv", "index.html")})
+        holocron.Item(
+            {"destination": os.path.join("about", "cv", "index.html")}
+        )
     ]
 
 
@@ -35,12 +38,12 @@ def test_item_index(testapp, index):
 
     stream = prettyuri.process(
         testapp,
-        [core.Item({"destination": os.path.join("about", "cv", index)})],
+        [holocron.Item({"destination": os.path.join("about", "cv", index)})],
     )
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item({"destination": os.path.join("about", "cv", index)})
+        holocron.Item({"destination": os.path.join("about", "cv", index)})
     ]
 
 
@@ -60,13 +63,17 @@ def test_item_many(testapp, amount):
     stream = prettyuri.process(
         testapp,
         [
-            core.Item({"destination": os.path.join("about", "%d.html" % i)})
+            holocron.Item(
+                {"destination": os.path.join("about", "%d.html" % i)}
+            )
             for i in range(amount)
         ],
     )
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item({"destination": os.path.join("about", str(i), "index.html")})
+        holocron.Item(
+            {"destination": os.path.join("about", str(i), "index.html")}
+        )
         for i in range(amount)
     ]

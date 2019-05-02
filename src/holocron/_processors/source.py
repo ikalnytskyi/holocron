@@ -6,7 +6,7 @@ import datetime
 
 import dateutil.tz
 
-import holocron.core
+import holocron
 from ._misc import parameters
 
 
@@ -21,7 +21,7 @@ def _createitem(app, path, basepath, encoding, tzinfo):
     created = datetime.datetime.fromtimestamp(os.path.getctime(path), tzinfo)
     updated = datetime.datetime.fromtimestamp(os.path.getmtime(path), tzinfo)
 
-    return holocron.core.WebSiteItem(
+    return holocron.WebSiteItem(
         # Memorizing 'source' property is not required for application core,
         # however, it may be useful for troubleshooting pipes as well as
         # writing 'when' conditions.

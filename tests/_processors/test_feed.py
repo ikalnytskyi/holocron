@@ -10,8 +10,8 @@ import pkg_resources
 import pytest
 import untangle
 
-from holocron import core
-from holocron.processors import feed
+import holocron
+from holocron._processors import feed
 
 
 _HOLOCRON_VERSION = pkg_resources.get_distribution("holocron").version
@@ -19,7 +19,7 @@ _HOLOCRON_VERSION = pkg_resources.get_distribution("holocron").version
 
 @pytest.fixture(scope="function")
 def testapp():
-    return core.Application({"url": "https://yoda.ua"})
+    return holocron.Application({"url": "https://yoda.ua"})
 
 
 def test_item_atom(testapp):
@@ -28,7 +28,7 @@ def test_item_atom(testapp):
     stream = feed.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": "the way of the Force",
                     "published": datetime.date(2017, 9, 25),
@@ -51,13 +51,13 @@ def test_item_atom(testapp):
 
     items = list(stream)
     assert items == [
-        core.Item(
+        holocron.Item(
             {
                 "content": "the way of the Force",
                 "published": datetime.date(2017, 9, 25),
             }
         ),
-        core.WebSiteItem(
+        holocron.WebSiteItem(
             {
                 "source": "feed://feed.xml",
                 "destination": "feed.xml",
@@ -100,7 +100,7 @@ def test_item_atom_feed_metadata(testapp):
     stream = feed.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {"content": "the way of the Force", "published": published}
             )
         ],
@@ -132,8 +132,10 @@ def test_item_atom_feed_metadata(testapp):
 
     items = list(stream)
     assert items == [
-        core.Item({"content": "the way of the Force", "published": published}),
-        core.WebSiteItem(
+        holocron.Item(
+            {"content": "the way of the Force", "published": published}
+        ),
+        holocron.WebSiteItem(
             {
                 "source": "feed://feed.xml",
                 "destination": "feed.xml",
@@ -208,7 +210,7 @@ def test_item_rss(testapp):
     stream = feed.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": "the way of the Force",
                     "published": datetime.date(2017, 9, 25),
@@ -227,13 +229,13 @@ def test_item_rss(testapp):
 
     items = list(stream)
     assert items == [
-        core.Item(
+        holocron.Item(
             {
                 "content": "the way of the Force",
                 "published": datetime.date(2017, 9, 25),
             }
         ),
-        core.WebSiteItem(
+        holocron.WebSiteItem(
             {
                 "source": "feed://feed.xml",
                 "destination": "feed.xml",
@@ -275,7 +277,7 @@ def test_item_rss_feed_metadata(testapp):
     stream = feed.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {"content": "the way of the Force", "published": published}
             )
         ],
@@ -330,8 +332,10 @@ def test_item_rss_feed_metadata(testapp):
 
     items = list(stream)
     assert items == [
-        core.Item({"content": "the way of the Force", "published": published}),
-        core.WebSiteItem(
+        holocron.Item(
+            {"content": "the way of the Force", "published": published}
+        ),
+        holocron.WebSiteItem(
             {
                 "source": "feed://feed.xml",
                 "destination": "feed.xml",
@@ -476,7 +480,7 @@ def test_item_many(testapp, syndication_format, amount):
     stream = feed.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": "the key is %d" % i,
                     "published": datetime.date(2017, 9, 25),
@@ -503,7 +507,7 @@ def test_item_many(testapp, syndication_format, amount):
     assert items == list(
         itertools.chain(
             [
-                core.Item(
+                holocron.Item(
                     {
                         "content": "the key is %d" % i,
                         "published": datetime.date(2017, 9, 25),
@@ -512,7 +516,7 @@ def test_item_many(testapp, syndication_format, amount):
                 for i in range(amount)
             ],
             [
-                core.WebSiteItem(
+                holocron.WebSiteItem(
                     {
                         "source": "feed://feed.xml",
                         "destination": "feed.xml",
@@ -538,7 +542,7 @@ def test_param_encoding(testapp, syndication_format, encoding):
     stream = feed.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {"content": "the way of the Force", "published": published}
             )
         ],
@@ -560,8 +564,10 @@ def test_param_encoding(testapp, syndication_format, encoding):
 
     items = list(stream)
     assert items == [
-        core.Item({"content": "the way of the Force", "published": published}),
-        core.WebSiteItem(
+        holocron.Item(
+            {"content": "the way of the Force", "published": published}
+        ),
+        holocron.WebSiteItem(
             {
                 "source": "feed://feed.xml",
                 "destination": "feed.xml",
@@ -588,7 +594,7 @@ def test_param_encoding_fallback(testapp, syndication_format, encoding):
     stream = feed.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {"content": "the way of the Force", "published": published}
             )
         ],
@@ -609,8 +615,10 @@ def test_param_encoding_fallback(testapp, syndication_format, encoding):
 
     items = list(stream)
     assert items == [
-        core.Item({"content": "the way of the Force", "published": published}),
-        core.WebSiteItem(
+        holocron.Item(
+            {"content": "the way of the Force", "published": published}
+        ),
+        holocron.WebSiteItem(
             {
                 "source": "feed://feed.xml",
                 "destination": "feed.xml",
@@ -635,7 +643,7 @@ def test_param_save_as(testapp, syndication_format, save_as):
     stream = feed.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": "the way of the Force",
                     "published": datetime.date(2017, 9, 25),
@@ -659,13 +667,13 @@ def test_param_save_as(testapp, syndication_format, save_as):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": "the way of the Force",
                 "published": datetime.date(2017, 9, 25),
             }
         ),
-        core.WebSiteItem(
+        holocron.WebSiteItem(
             {
                 "source": "feed://%s" % save_as,
                 "destination": save_as,
@@ -686,7 +694,7 @@ def test_param_limit(testapp, syndication_format, limit):
     stream = feed.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": "the way of the Force, part %d" % i,
                     "published": datetime.date(2017, 9, i + 1),
@@ -714,7 +722,7 @@ def test_param_limit(testapp, syndication_format, limit):
     assert items == list(
         itertools.chain(
             [
-                core.Item(
+                holocron.Item(
                     {
                         "content": "the way of the Force, part %d" % i,
                         "published": datetime.date(2017, 9, i + 1),
@@ -723,7 +731,7 @@ def test_param_limit(testapp, syndication_format, limit):
                 for i in range(10)
             ],
             [
-                core.WebSiteItem(
+                holocron.WebSiteItem(
                     {
                         "source": "feed://feed.xml",
                         "destination": "feed.xml",
@@ -770,7 +778,7 @@ def test_param_pretty(testapp, syndication_format, pretty, check_fn):
     stream = feed.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": "the way of the Force",
                     "published": datetime.date(2017, 9, 25),
@@ -795,13 +803,13 @@ def test_param_pretty(testapp, syndication_format, pretty, check_fn):
 
     items = list(stream)
     assert items == [
-        core.Item(
+        holocron.Item(
             {
                 "content": "the way of the Force",
                 "published": datetime.date(2017, 9, 25),
             }
         ),
-        core.WebSiteItem(
+        holocron.WebSiteItem(
             {
                 "source": "feed://feed.xml",
                 "destination": "feed.xml",

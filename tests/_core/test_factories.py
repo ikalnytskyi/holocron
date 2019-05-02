@@ -1,12 +1,12 @@
 """Core factories test suite."""
 
-import holocron.core
+import holocron
 
 
 def test_create_app_processors_discover():
     """Processors must be discovered and setup."""
 
-    testapp = holocron.core.create_app({})
+    testapp = holocron.create_app({})
 
     assert set(testapp._processors) == {
         "archive",
@@ -38,7 +38,7 @@ def test_create_app_processors_pass(caplog):
         marker = 13
         yield from items
 
-    testapp = holocron.core.create_app({}, processors={"test": processor})
+    testapp = holocron.create_app({}, processors={"test": processor})
 
     for _ in testapp.invoke([{"name": "test"}], []):
         pass
@@ -57,7 +57,7 @@ def test_create_app_processors_pass_precedence(caplog):
         marker = 13
         yield from items
 
-    testapp = holocron.core.create_app({}, processors={name: processor})
+    testapp = holocron.create_app({}, processors={name: processor})
     assert name in testapp._processors
 
     for _ in testapp.invoke([{"name": "archive"}], []):
@@ -74,7 +74,7 @@ def test_create_app_processors_pass_precedence(caplog):
 def test_create_app_pipes_discover():
     """Pipes must be discovered and setup."""
 
-    testapp = holocron.core.create_app({})
+    testapp = holocron.create_app({})
 
     assert set(testapp._pipes) == set()
 
@@ -83,9 +83,9 @@ def test_create_app_pipes_pass():
     """Passed pipes must be setup."""
 
     pipe = [{"name": "markdown"}]
-    item = holocron.core.Item(content="**text**", destination="1.md")
+    item = holocron.Item(content="**text**", destination="1.md")
 
-    testapp = holocron.core.create_app({}, pipes={"test": pipe})
+    testapp = holocron.create_app({}, pipes={"test": pipe})
 
     for processed in testapp.invoke("test", [item]):
         assert processed["content"] == "<p><strong>text</strong></p>"

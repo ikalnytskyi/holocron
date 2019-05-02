@@ -5,13 +5,13 @@ import textwrap
 
 import pytest
 
-from holocron import core
-from holocron.processors import import_processors
+import holocron
+from holocron._processors import import_processors
 
 
 @pytest.fixture(scope="function")
 def testapp(request):
-    return core.Application()
+    return holocron.Application()
 
 
 @pytest.fixture(scope="function", params=["process", "invoke"])

@@ -5,7 +5,7 @@ import itertools
 import feedgen.feed
 import pkg_resources
 
-from ..core import WebSiteItem
+import holocron
 from ._misc import parameters, resolve_json_references
 
 
@@ -160,7 +160,7 @@ def process(
     to_bytes = {"atom": feed_generator.atom_str, "rss": feed_generator.rss_str}
     to_bytes = to_bytes[syndication_format]
 
-    feed_item = WebSiteItem(
+    feed_item = holocron.WebSiteItem(
         {
             "source": "feed://%s" % save_as,
             "destination": save_as,

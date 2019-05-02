@@ -6,8 +6,8 @@ import os
 
 import pytest
 
-from holocron import core
-from holocron.processors import when
+import holocron
+from holocron._processors import when
 
 
 @pytest.fixture(scope="function")
@@ -19,7 +19,7 @@ def testapp(request):
 
     def rice(app, items):
         yield from items
-        yield core.Item({"content": "rice"})
+        yield holocron.Item({"content": "rice"})
 
     def eggs(app, items):
         while True:
@@ -29,9 +29,9 @@ def testapp(request):
             except StopIteration:
                 break
             else:
-                yield core.Item({"key": item_a["key"] + item_b["key"]})
+                yield holocron.Item({"key": item_a["key"] + item_b["key"]})
 
-    instance = core.Application()
+    instance = holocron.Application()
     instance.add_processor("spam", spam)
     instance.add_processor("rice", rice)
     instance.add_processor("eggs", eggs)
@@ -58,13 +58,13 @@ def test_item_spam(testapp, cond, item):
 
     stream = when.process(
         testapp,
-        [core.Item({"content": "eh", "author": "yoda"})],
+        [holocron.Item({"content": "eh", "author": "yoda"})],
         processor={"name": "spam"},
         when=[cond],
     )
 
     assert isinstance(stream, collections.abc.Iterable)
-    assert list(stream) == [core.Item(item)]
+    assert list(stream) == [holocron.Item(item)]
 
 
 @pytest.mark.parametrize(
@@ -83,7 +83,7 @@ def test_item_many_spam(testapp, amount):
     stream = when.process(
         testapp,
         [
-            core.Item({"content": "the great jedi", "key": i})
+            holocron.Item({"content": "the great jedi", "key": i})
             for i in range(amount)
         ],
         processor={"name": "spam"},
@@ -92,9 +92,9 @@ def test_item_many_spam(testapp, amount):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item({"content": "the great jedi", "key": i})
+        holocron.Item({"content": "the great jedi", "key": i})
         if i % 2
-        else core.Item({"content": "the great jedi", "key": i, "spam": 42})
+        else holocron.Item({"content": "the great jedi", "key": i, "spam": 42})
         for i in range(amount)
     ]
 
@@ -115,7 +115,7 @@ def test_item_many_rice(testapp, amount):
     stream = when.process(
         testapp,
         [
-            core.Item({"content": "the great jedi", "key": i})
+            holocron.Item({"content": "the great jedi", "key": i})
             for i in range(amount)
         ],
         processor={"name": "rice"},
@@ -126,10 +126,10 @@ def test_item_many_rice(testapp, amount):
     assert list(stream) == list(
         itertools.chain(
             [
-                core.Item({"content": "the great jedi", "key": i})
+                holocron.Item({"content": "the great jedi", "key": i})
                 for i in range(amount)
             ],
-            [core.Item({"content": "rice"})],
+            [holocron.Item({"content": "rice"})],
         )
     )
 
@@ -139,17 +139,20 @@ def test_item_many_eggs(testapp):
 
     stream = when.process(
         testapp,
-        [core.Item({"content": "the great jedi", "key": i}) for i in range(5)],
+        [
+            holocron.Item({"content": "the great jedi", "key": i})
+            for i in range(5)
+        ],
         processor={"name": "eggs"},
         when=["item.key % 2 != 0"],
     )
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item({"content": "the great jedi", "key": 0}),
-        core.Item({"content": "the great jedi", "key": 2}),
-        core.Item({"key": 4}),
-        core.Item({"content": "the great jedi", "key": 4}),
+        holocron.Item({"content": "the great jedi", "key": 0}),
+        holocron.Item({"content": "the great jedi", "key": 2}),
+        holocron.Item({"key": 4}),
+        holocron.Item({"content": "the great jedi", "key": 4}),
     ]
 
 
@@ -172,7 +175,7 @@ def test_param_when(testapp, cond):
     stream = when.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": "eh",
                     "author": "yoda",
@@ -186,7 +189,7 @@ def test_param_when(testapp, cond):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": "eh",
                 "author": "yoda",

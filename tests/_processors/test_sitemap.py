@@ -10,8 +10,8 @@ import unittest.mock
 import pytest
 import xmltodict
 
-from holocron import core
-from holocron.processors import sitemap
+import holocron
+from holocron._processors import sitemap
 
 
 class _pytest_xmlasdict:
@@ -33,7 +33,7 @@ class _pytest_xmlasdict:
 
 @pytest.fixture(scope="function")
 def testapp():
-    return core.Application({"url": "https://yoda.ua"})
+    return holocron.Application({"url": "https://yoda.ua"})
 
 
 @pytest.mark.parametrize(
@@ -55,7 +55,7 @@ def test_item(testapp, filename, escaped):
     stream = sitemap.process(
         testapp,
         [
-            core.WebSiteItem(
+            holocron.WebSiteItem(
                 {
                     "destination": filename,
                     "updated": timepoint,
@@ -67,14 +67,14 @@ def test_item(testapp, filename, escaped):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.WebSiteItem(
+        holocron.WebSiteItem(
             {
                 "destination": filename,
                 "updated": timepoint,
                 "baseurl": testapp.metadata["url"],
             }
         ),
-        core.WebSiteItem(
+        holocron.WebSiteItem(
             {
                 "source": "sitemap://sitemap.xml",
                 "destination": "sitemap.xml",
@@ -112,7 +112,7 @@ def test_item_many(testapp, amount):
     stream = sitemap.process(
         testapp,
         [
-            core.WebSiteItem(
+            holocron.WebSiteItem(
                 {
                     "destination": str(i),
                     "updated": timepoint,
@@ -127,7 +127,7 @@ def test_item_many(testapp, amount):
     assert list(stream) == list(
         itertools.chain(
             [
-                core.WebSiteItem(
+                holocron.WebSiteItem(
                     {
                         "destination": str(i),
                         "updated": timepoint,
@@ -137,7 +137,7 @@ def test_item_many(testapp, amount):
                 for i in range(amount)
             ],
             [
-                core.WebSiteItem(
+                holocron.WebSiteItem(
                     {
                         "source": "sitemap://sitemap.xml",
                         "destination": "sitemap.xml",
@@ -170,7 +170,7 @@ def test_param_gzip(testapp):
     stream = sitemap.process(
         testapp,
         [
-            core.WebSiteItem(
+            holocron.WebSiteItem(
                 {
                     "destination": "1.html",
                     "updated": timepoint,
@@ -183,14 +183,14 @@ def test_param_gzip(testapp):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.WebSiteItem(
+        holocron.WebSiteItem(
             {
                 "destination": "1.html",
                 "updated": timepoint,
                 "baseurl": testapp.metadata["url"],
             }
         ),
-        core.WebSiteItem(
+        holocron.WebSiteItem(
             {
                 "source": "sitemap://sitemap.xml.gz",
                 "destination": "sitemap.xml.gz",
@@ -226,7 +226,7 @@ def test_param_save_as(testapp, save_as):
     stream = sitemap.process(
         testapp,
         [
-            core.WebSiteItem(
+            holocron.WebSiteItem(
                 {
                     "destination": os.path.join("posts", "1.html"),
                     "updated": timepoint,
@@ -239,14 +239,14 @@ def test_param_save_as(testapp, save_as):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.WebSiteItem(
+        holocron.WebSiteItem(
             {
                 "destination": os.path.join("posts", "1.html"),
                 "updated": timepoint,
                 "baseurl": testapp.metadata["url"],
             }
         ),
-        core.WebSiteItem(
+        holocron.WebSiteItem(
             {
                 "source": "sitemap://%s" % save_as,
                 "destination": save_as,
@@ -279,7 +279,7 @@ def test_param_save_as_unsupported(testapp, document_path, sitemap_path):
     stream = sitemap.process(
         testapp,
         [
-            core.WebSiteItem(
+            holocron.WebSiteItem(
                 {
                     "destination": document_path,
                     "updated": timepoint,
@@ -313,7 +313,7 @@ def test_param_pretty(testapp, pretty, lines):
     stream = sitemap.process(
         testapp,
         [
-            core.WebSiteItem(
+            holocron.WebSiteItem(
                 {
                     "destination": "1.html",
                     "updated": timepoint,
@@ -328,14 +328,14 @@ def test_param_pretty(testapp, pretty, lines):
 
     items = list(stream)
     assert items == [
-        core.WebSiteItem(
+        holocron.WebSiteItem(
             {
                 "destination": "1.html",
                 "updated": timepoint,
                 "baseurl": testapp.metadata["url"],
             }
         ),
-        core.WebSiteItem(
+        holocron.WebSiteItem(
             {
                 "source": "sitemap://sitemap.xml",
                 "destination": "sitemap.xml",

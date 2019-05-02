@@ -6,13 +6,13 @@ import textwrap
 import pytest
 import yaml
 
-from holocron import core
-from holocron.processors import frontmatter
+import holocron
+from holocron._processors import frontmatter
 
 
 @pytest.fixture(scope="function")
 def testapp():
-    return core.Application()
+    return holocron.Application()
 
 
 def test_item(testapp):
@@ -21,7 +21,7 @@ def test_item(testapp):
     stream = frontmatter.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": textwrap.dedent(
                         """\
@@ -41,7 +41,7 @@ def test_item(testapp):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": "May the Force be with you!\n",
                 "author": "Yoda",
@@ -58,7 +58,7 @@ def test_item_without_frontmatter(testapp):
     stream = frontmatter.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": textwrap.dedent(
                         """\
@@ -78,7 +78,7 @@ def test_item_without_frontmatter(testapp):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": textwrap.dedent(
                     """\
@@ -102,7 +102,7 @@ def test_item_with_frontmatter_in_text(testapp):
     stream = frontmatter.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": textwrap.dedent(
                         """\
@@ -124,7 +124,7 @@ def test_item_with_frontmatter_in_text(testapp):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": textwrap.dedent(
                     """\
@@ -150,7 +150,7 @@ def test_item_with_frontmatter_leading_whitespaces(testapp):
     stream = frontmatter.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": textwrap.dedent(
                         """\
@@ -172,7 +172,7 @@ def test_item_with_frontmatter_leading_whitespaces(testapp):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": "May the Force be with you!\n",
                 "author": "Yoda",
@@ -189,7 +189,7 @@ def test_item_invalid_yaml(testapp):
     stream = frontmatter.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": textwrap.dedent(
                         """\
@@ -218,7 +218,7 @@ def test_item_with_exploit(testapp):
     stream = frontmatter.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": textwrap.dedent(
                         """\
@@ -258,7 +258,7 @@ def test_item_many(testapp, amount):
     stream = frontmatter.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": textwrap.dedent(
                         """\
@@ -279,7 +279,7 @@ def test_item_many(testapp, amount):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "master": i,
                 "labels": ["force", "motto"],
@@ -299,7 +299,7 @@ def test_param_delimiter(testapp, delimiter):
     stream = frontmatter.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": textwrap.dedent(
                         """\
@@ -321,7 +321,7 @@ def test_param_delimiter(testapp, delimiter):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": "May the Force be with you!\n",
                 "author": "Yoda",
@@ -341,7 +341,7 @@ def test_param_overwrite(testapp, overwrite):
     stream = frontmatter.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "author": "Obi-Wan Kenobi",
                     "content": textwrap.dedent(
@@ -363,7 +363,7 @@ def test_param_overwrite(testapp, overwrite):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": "May the Force be with you!\n",
                 "author": "Yoda" if overwrite else "Obi-Wan Kenobi",

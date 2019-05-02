@@ -6,8 +6,8 @@ import textwrap
 
 import pytest
 
-from holocron import core
-from holocron.processors import restructuredtext
+import holocron
+from holocron._processors import restructuredtext
 
 
 class _pytest_regex:
@@ -25,7 +25,7 @@ class _pytest_regex:
 
 @pytest.fixture(scope="function")
 def testapp():
-    return core.Application()
+    return holocron.Application()
 
 
 def test_item(testapp):
@@ -34,7 +34,7 @@ def test_item(testapp):
     stream = restructuredtext.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": textwrap.dedent(
                         """\
@@ -52,7 +52,7 @@ def test_item(testapp):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": _pytest_regex(
                     r"<p>text with <strong>bold</strong></p>\s*"
@@ -70,7 +70,7 @@ def test_item_with_subsection(testapp):
     stream = restructuredtext.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": textwrap.dedent(
                         """\
@@ -93,7 +93,7 @@ def test_item_with_subsection(testapp):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": _pytest_regex(
                     r"<p>abstract</p>\s*"
@@ -113,7 +113,7 @@ def test_item_without_title(testapp):
     stream = restructuredtext.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": textwrap.dedent(
                         """\
@@ -128,7 +128,7 @@ def test_item_without_title(testapp):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": _pytest_regex(
                     r"<p>text with <strong>bold</strong></p>\s*"
@@ -145,7 +145,7 @@ def test_item_with_sections(testapp):
     stream = restructuredtext.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": textwrap.dedent(
                         """\
@@ -183,7 +183,7 @@ def test_item_with_sections(testapp):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": _pytest_regex(
                     r"<h2>some title 1</h2>\s*"
@@ -209,7 +209,7 @@ def test_item_with_code(testapp):
     stream = restructuredtext.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": textwrap.dedent(
                         """\
@@ -228,7 +228,7 @@ def test_item_with_code(testapp):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": _pytest_regex(
                     r"<p>test codeblock</p>\s*<pre.*python[^>]*>[\s\S]+</pre>"
@@ -245,7 +245,7 @@ def test_item_with_inline_code(testapp):
     stream = restructuredtext.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": textwrap.dedent(
                         """\
@@ -260,7 +260,7 @@ def test_item_with_inline_code(testapp):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": _pytest_regex(r"<p>test <code>code</code></p>"),
                 "destination": "1.html",
@@ -275,7 +275,7 @@ def test_param_settings(testapp):
     stream = restructuredtext.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": textwrap.dedent(
                         """\
@@ -299,7 +299,7 @@ def test_param_settings(testapp):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": _pytest_regex(
                     # by default, initial header level is 2 and so the sections
@@ -331,7 +331,7 @@ def test_item_many(testapp, amount):
     stream = restructuredtext.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {"content": "the key is **%d**" % i, "destination": "1.rst"}
             )
             for i in range(amount)
@@ -340,7 +340,7 @@ def test_item_many(testapp, amount):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": "<p>the key is <strong>%d</strong></p>" % i,
                 "destination": "1.html",

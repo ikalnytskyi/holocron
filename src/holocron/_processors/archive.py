@@ -2,7 +2,7 @@
 
 import itertools
 
-from ..core import WebSiteItem
+import holocron
 from ._misc import parameters
 
 
@@ -18,7 +18,7 @@ from ._misc import parameters
 def process(app, stream, *, template="archive.j2", save_as="index.html"):
     passthrough, stream = itertools.tee(stream)
 
-    index = WebSiteItem(
+    index = holocron.WebSiteItem(
         {
             "source": "archive://%s" % save_as,
             "destination": save_as,

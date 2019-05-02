@@ -6,32 +6,32 @@ import os
 
 import pytest
 
-from holocron import core
-from holocron.processors import archive
+import holocron
+from holocron._processors import archive
 
 
 @pytest.fixture(scope="function")
 def testapp():
-    return core.Application({"url": "https://yoda.ua"})
+    return holocron.Application({"url": "https://yoda.ua"})
 
 
 def test_item(testapp):
     """Archive processor has to work!"""
 
     stream = archive.process(
-        testapp, [core.Item({"title": "The Force", "content": "Obi-Wan"})]
+        testapp, [holocron.Item({"title": "The Force", "content": "Obi-Wan"})]
     )
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item({"title": "The Force", "content": "Obi-Wan"}),
-        core.WebSiteItem(
+        holocron.Item({"title": "The Force", "content": "Obi-Wan"}),
+        holocron.WebSiteItem(
             {
                 "source": "archive://index.html",
                 "destination": "index.html",
                 "template": "archive.j2",
                 "items": [
-                    core.Item({"title": "The Force", "content": "Obi-Wan"})
+                    holocron.Item({"title": "The Force", "content": "Obi-Wan"})
                 ],
                 "baseurl": testapp.metadata["url"],
             }
@@ -55,7 +55,7 @@ def test_item_many(testapp, amount):
     stream = archive.process(
         testapp,
         [
-            core.Item({"title": "The Force (part #%d)" % i})
+            holocron.Item({"title": "The Force (part #%d)" % i})
             for i in range(amount)
         ],
     )
@@ -64,17 +64,19 @@ def test_item_many(testapp, amount):
     assert list(stream) == list(
         itertools.chain(
             [
-                core.Item({"title": "The Force (part #%d)" % i})
+                holocron.Item({"title": "The Force (part #%d)" % i})
                 for i in range(amount)
             ],
             [
-                core.WebSiteItem(
+                holocron.WebSiteItem(
                     {
                         "source": "archive://index.html",
                         "destination": "index.html",
                         "template": "archive.j2",
                         "items": [
-                            core.Item({"title": "The Force (part #%d)" % i})
+                            holocron.Item(
+                                {"title": "The Force (part #%d)" % i}
+                            )
                             for i in range(amount)
                         ],
                         "baseurl": testapp.metadata["url"],
@@ -90,20 +92,20 @@ def test_param_template(testapp):
 
     stream = archive.process(
         testapp,
-        [core.Item({"title": "The Force", "content": "Obi-Wan"})],
+        [holocron.Item({"title": "The Force", "content": "Obi-Wan"})],
         template="foobar.txt",
     )
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item({"title": "The Force", "content": "Obi-Wan"}),
-        core.WebSiteItem(
+        holocron.Item({"title": "The Force", "content": "Obi-Wan"}),
+        holocron.WebSiteItem(
             {
                 "source": "archive://index.html",
                 "destination": "index.html",
                 "template": "foobar.txt",
                 "items": [
-                    core.Item({"title": "The Force", "content": "Obi-Wan"})
+                    holocron.Item({"title": "The Force", "content": "Obi-Wan"})
                 ],
                 "baseurl": testapp.metadata["url"],
             }
@@ -123,20 +125,20 @@ def test_param_save_as(testapp, save_as):
 
     stream = archive.process(
         testapp,
-        [core.Item({"title": "The Force", "content": "Obi-Wan"})],
+        [holocron.Item({"title": "The Force", "content": "Obi-Wan"})],
         save_as=save_as,
     )
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item({"title": "The Force", "content": "Obi-Wan"}),
-        core.WebSiteItem(
+        holocron.Item({"title": "The Force", "content": "Obi-Wan"}),
+        holocron.WebSiteItem(
             {
                 "source": "archive://%s" % save_as,
                 "destination": save_as,
                 "template": "archive.j2",
                 "items": [
-                    core.Item({"title": "The Force", "content": "Obi-Wan"})
+                    holocron.Item({"title": "The Force", "content": "Obi-Wan"})
                 ],
                 "baseurl": testapp.metadata["url"],
             }

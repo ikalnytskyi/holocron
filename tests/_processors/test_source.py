@@ -6,8 +6,8 @@ import unittest.mock
 
 import pytest
 
-from holocron import core
-from holocron.processors import source
+import holocron
+from holocron._processors import source
 
 
 class _pytest_timestamp:
@@ -28,7 +28,7 @@ class _pytest_timestamp:
 
 @pytest.fixture(scope="function")
 def testapp():
-    return core.Application({"url": "https://yoda.ua"})
+    return holocron.Application({"url": "https://yoda.ua"})
 
 
 @pytest.mark.parametrize(
@@ -50,7 +50,7 @@ def test_item(testapp, monkeypatch, tmpdir, path):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.WebSiteItem(
+        holocron.WebSiteItem(
             {
                 "source": os.path.join(*path),
                 "destination": os.path.join(*path),
@@ -81,7 +81,7 @@ def test_item_content_types(testapp, monkeypatch, tmpdir, data):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.WebSiteItem(
+        holocron.WebSiteItem(
             {
                 "source": "cv.md",
                 "destination": "cv.md",
@@ -108,7 +108,7 @@ def test_item_empty(testapp, monkeypatch, tmpdir):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.WebSiteItem(
+        holocron.WebSiteItem(
             {
                 "source": "cv.md",
                 "destination": "cv.md",
@@ -155,20 +155,23 @@ def test_item_many(testapp, monkeypatch, tmpdir, discovered, passed):
 
     stream = source.process(
         testapp,
-        [core.Item({"marker": "the key is %d" % i}) for i in range(passed)],
+        [
+            holocron.Item({"marker": "the key is %d" % i})
+            for i in range(passed)
+        ],
     )
 
     assert isinstance(stream, collections.abc.Iterable)
 
     items = list(stream)
     assert items[:passed] == [
-        core.Item({"marker": "the key is %d" % i}) for i in range(passed)
+        holocron.Item({"marker": "the key is %d" % i}) for i in range(passed)
     ]
 
     # Since we don"t know in which order items are discovered, we sort them so
     # we can avoid possible flakes of the test.
     assert sorted(items[passed:], key=lambda item: item["source"]) == [
-        core.WebSiteItem(
+        holocron.WebSiteItem(
             {
                 "source": str(i),
                 "destination": str(i),
@@ -200,7 +203,7 @@ def test_param_path(testapp, monkeypatch, tmpdir, path):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.WebSiteItem(
+        holocron.WebSiteItem(
             {
                 "source": "test",
                 "destination": "test",
@@ -233,7 +236,7 @@ def test_param_pattern(testapp, monkeypatch, tmpdir):
     # Since we don"t know in which order items are discovered, we sort them so
     # we can avoid possible flakes of the test.
     assert sorted(stream, key=lambda item: item["source"]) == [
-        core.WebSiteItem(
+        holocron.WebSiteItem(
             {
                 "source": "1.md",
                 "destination": "1.md",
@@ -243,7 +246,7 @@ def test_param_pattern(testapp, monkeypatch, tmpdir):
                 "baseurl": testapp.metadata["url"],
             }
         ),
-        core.WebSiteItem(
+        holocron.WebSiteItem(
             {
                 "source": "4.markdown",
                 "destination": "4.markdown",
@@ -273,7 +276,7 @@ def test_param_encoding(testapp, monkeypatch, tmpdir, encoding):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.WebSiteItem(
+        holocron.WebSiteItem(
             {
                 "source": "cv.md",
                 "destination": "cv.md",
@@ -300,7 +303,7 @@ def test_param_encoding_fallback(testapp, monkeypatch, tmpdir, encoding):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.WebSiteItem(
+        holocron.WebSiteItem(
             {
                 "source": "cv.md",
                 "destination": "cv.md",

@@ -5,7 +5,7 @@ import itertools
 import gzip as _gzip
 import xml.dom.minidom as minidom
 
-from ..core import WebSiteItem
+import holocron
 from ._misc import parameters
 
 
@@ -22,7 +22,7 @@ from ._misc import parameters
 def process(app, stream, *, gzip=False, save_as="sitemap.xml", pretty=True):
     passthrough, stream = itertools.tee(stream)
 
-    sitemap = WebSiteItem(
+    sitemap = holocron.WebSiteItem(
         {
             "source": "sitemap://%s" % save_as,
             "destination": save_as,

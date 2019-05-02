@@ -12,7 +12,7 @@ import pkg_resources
 import termcolor
 import yaml
 
-from . import core
+from . import create_app
 
 
 def create_app_from_yml(path):
@@ -39,7 +39,7 @@ def create_app_from_yml(path):
     except FileNotFoundError:
         conf = {"metadata": None, "pipes": {}}
 
-    return core.create_app(conf["metadata"], pipes=conf["pipes"])
+    return create_app(conf["metadata"], pipes=conf["pipes"])
 
 
 def configure_logger(level):

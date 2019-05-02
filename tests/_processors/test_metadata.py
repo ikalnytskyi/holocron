@@ -4,13 +4,13 @@ import collections.abc
 
 import pytest
 
-from holocron import core
-from holocron.processors import metadata
+import holocron
+from holocron._processors import metadata
 
 
 @pytest.fixture(scope="function")
 def testapp():
-    return core.Application()
+    return holocron.Application()
 
 
 def test_item(testapp):
@@ -18,13 +18,13 @@ def test_item(testapp):
 
     stream = metadata.process(
         testapp,
-        [core.Item({"content": "the Force", "author": "skywalker"})],
+        [holocron.Item({"content": "the Force", "author": "skywalker"})],
         metadata={"author": "yoda", "type": "memoire"},
     )
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {"content": "the Force", "author": "yoda", "type": "memoire"}
         )
     ]
@@ -34,12 +34,13 @@ def test_item_untouched(testapp):
     """Metadata processor has to ignore items if no metadata are passed."""
 
     stream = metadata.process(
-        testapp, [core.Item({"content": "the Force", "author": "skywalker"})]
+        testapp,
+        [holocron.Item({"content": "the Force", "author": "skywalker"})],
     )
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item({"content": "the Force", "author": "skywalker"})
+        holocron.Item({"content": "the Force", "author": "skywalker"})
     ]
 
 
@@ -59,7 +60,7 @@ def test_item_many(testapp, amount):
     stream = metadata.process(
         testapp,
         [
-            core.Item({"content": "the key is #%d" % i, "author": "luke"})
+            holocron.Item({"content": "the key is #%d" % i, "author": "luke"})
             for i in range(amount)
         ],
         metadata={"author": "yoda", "type": "memoire"},
@@ -67,7 +68,7 @@ def test_item_many(testapp, amount):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": "the key is #%d" % i,
                 "author": "yoda",
@@ -90,14 +91,14 @@ def test_param_overwrite(testapp, overwrite, author):
 
     stream = metadata.process(
         testapp,
-        [core.Item({"content": "the Force", "author": "skywalker"})],
+        [holocron.Item({"content": "the Force", "author": "skywalker"})],
         metadata={"author": "yoda", "type": "memoire"},
         overwrite=overwrite,
     )
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {"content": "the Force", "author": author, "type": "memoire"}
         )
     ]

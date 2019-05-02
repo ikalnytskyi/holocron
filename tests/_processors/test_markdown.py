@@ -7,8 +7,8 @@ import unittest.mock
 
 import pytest
 
-from holocron import core
-from holocron.processors import markdown
+import holocron
+from holocron._processors import markdown
 
 
 class _pytest_regex:
@@ -26,7 +26,7 @@ class _pytest_regex:
 
 @pytest.fixture(scope="function")
 def testapp():
-    return core.Application()
+    return holocron.Application()
 
 
 def test_item(testapp):
@@ -35,7 +35,7 @@ def test_item(testapp):
     stream = markdown.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": textwrap.dedent(
                         """\
@@ -52,7 +52,7 @@ def test_item(testapp):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": _pytest_regex(
                     r"<p>text with <strong>bold</strong></p>"
@@ -70,7 +70,7 @@ def test_item_with_alt_title_syntax(testapp):
     stream = markdown.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": textwrap.dedent(
                         """\
@@ -88,7 +88,7 @@ def test_item_with_alt_title_syntax(testapp):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": _pytest_regex(
                     r"<p>text with <strong>bold</strong></p>"
@@ -106,7 +106,7 @@ def test_item_with_newlines_at_the_beginning(testapp):
     stream = markdown.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": textwrap.dedent(
                         """\
@@ -125,7 +125,7 @@ def test_item_with_newlines_at_the_beginning(testapp):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": _pytest_regex(
                     r"<p>text with <strong>bold</strong></p>"
@@ -143,7 +143,7 @@ def test_item_without_title(testapp):
     stream = markdown.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": textwrap.dedent(
                         """\
@@ -158,7 +158,7 @@ def test_item_without_title(testapp):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": _pytest_regex(
                     r"<p>text with <strong>bold</strong></p>"
@@ -175,7 +175,7 @@ def test_item_title_is_not_overwritten(testapp):
     stream = markdown.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": textwrap.dedent(
                         """\
@@ -193,7 +193,7 @@ def test_item_title_is_not_overwritten(testapp):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": _pytest_regex(
                     r"<p>text with <strong>bold</strong></p>"
@@ -211,7 +211,7 @@ def test_item_title_ignored_in_the_middle_of_text(testapp):
     stream = markdown.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": textwrap.dedent(
                         """\
@@ -230,7 +230,7 @@ def test_item_title_ignored_in_the_middle_of_text(testapp):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": _pytest_regex(
                     r"<p>text</p>\s*"
@@ -249,7 +249,7 @@ def test_item_with_sections(testapp):
     stream = markdown.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": textwrap.dedent(
                         """\
@@ -285,7 +285,7 @@ def test_item_with_sections(testapp):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": _pytest_regex(
                     r"<p>aaa</p>\s*"
@@ -307,7 +307,7 @@ def test_item_with_code(testapp):
     stream = markdown.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": textwrap.dedent(
                         """\
@@ -325,7 +325,7 @@ def test_item_with_code(testapp):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": _pytest_regex(
                     r"<p>test codeblock</p>\s*.*highlight.*"
@@ -343,7 +343,7 @@ def test_item_with_fenced_code(testapp):
     stream = markdown.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": textwrap.dedent(
                         """\
@@ -362,7 +362,7 @@ def test_item_with_fenced_code(testapp):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": _pytest_regex(
                     r"<p>test codeblock</p>\s*.*highlight.*"
@@ -380,7 +380,7 @@ def test_item_with_table(testapp):
     stream = markdown.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": textwrap.dedent(
                         """\
@@ -399,7 +399,7 @@ def test_item_with_table(testapp):
 
     stream = list(stream)
     assert stream == [
-        core.Item({"content": unittest.mock.ANY, "destination": "1.html"})
+        holocron.Item({"content": unittest.mock.ANY, "destination": "1.html"})
     ]
 
     item = stream[0]
@@ -416,7 +416,7 @@ def test_item_with_inline_code(testapp):
     stream = markdown.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": textwrap.dedent(
                         """\
@@ -431,7 +431,7 @@ def test_item_with_inline_code(testapp):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": _pytest_regex(r"<p>test <code>code</code></p>"),
                 "destination": "1.html",
@@ -456,7 +456,7 @@ def test_item_many(testapp, amount):
     stream = markdown.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {"content": "the key is **%d**" % i, "destination": "1.md"}
             )
             for i in range(amount)
@@ -465,7 +465,7 @@ def test_item_many(testapp, amount):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": "<p>the key is <strong>%d</strong></p>" % i,
                 "destination": "1.html",
@@ -497,7 +497,7 @@ def test_param_extensions(testapp, extensions, rendered):
     stream = markdown.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": textwrap.dedent(
                         """\
@@ -516,7 +516,7 @@ def test_param_extensions(testapp, extensions, rendered):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {"content": _pytest_regex(rendered), "destination": "1.html"}
         )
     ]

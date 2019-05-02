@@ -8,13 +8,13 @@ import unittest.mock
 import pytest
 import bs4
 
-from holocron import core
-from holocron.processors import jinja2
+import holocron
+from holocron._processors import jinja2
 
 
 @pytest.fixture(scope="function")
 def testapp():
-    return core.Application({"url": "https://yoda.ua"})
+    return holocron.Application({"url": "https://yoda.ua"})
 
 
 def test_item(testapp):
@@ -22,13 +22,17 @@ def test_item(testapp):
 
     stream = jinja2.process(
         testapp,
-        [core.Item({"title": "History of the Force", "content": "the Force"})],
+        [
+            holocron.Item(
+                {"title": "History of the Force", "content": "the Force"}
+            )
+        ],
     )
     assert isinstance(stream, collections.abc.Iterable)
 
     items = list(stream)
     assert items[:1] == [
-        core.Item(
+        holocron.Item(
             {"title": "History of the Force", "content": unittest.mock.ANY}
         )
     ]
@@ -66,7 +70,7 @@ def test_item_template(testapp, tmpdir):
     stream = jinja2.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "title": "History of the Force",
                     "content": "the Force",
@@ -79,7 +83,7 @@ def test_item_template(testapp, tmpdir):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "title": "History of the Force",
                 "template": "holiday.j2",
@@ -109,7 +113,7 @@ def test_item_many(testapp, tmpdir, amount):
     stream = jinja2.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "title": "History of the Force",
                     "content": "the Force #%d" % i,
@@ -124,7 +128,7 @@ def test_item_many(testapp, tmpdir, amount):
     assert (
         items[:amount]
         == [
-            core.Item(
+            holocron.Item(
                 {"title": "History of the Force", "content": unittest.mock.ANY}
             )
         ]
@@ -168,13 +172,17 @@ def test_param_themes(testapp, tmpdir):
 
     stream = jinja2.process(
         testapp,
-        [core.Item({"title": "History of the Force", "content": "the Force"})],
+        [
+            holocron.Item(
+                {"title": "History of the Force", "content": "the Force"}
+            )
+        ],
         themes=[tmpdir.join("theme_a").strpath],
     )
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "title": "History of the Force",
                 "content": textwrap.dedent(
@@ -184,7 +192,7 @@ def test_param_themes(testapp, tmpdir):
                 ),
             }
         ),
-        core.WebSiteItem(
+        holocron.WebSiteItem(
             {
                 "content": "article { margin: 0 }",
                 "source": os.path.join("static", "style.css"),
@@ -233,14 +241,14 @@ def test_param_themes_two_themes(testapp, tmpdir):
     stream = jinja2.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "title": "History of the Force",
                     "content": "the Force",
                     "template": "page.j2",
                 }
             ),
-            core.Item(
+            holocron.Item(
                 {
                     "title": "History of the Force",
                     "content": "the Force",
@@ -256,7 +264,7 @@ def test_param_themes_two_themes(testapp, tmpdir):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "title": "History of the Force",
                 "template": "page.j2",
@@ -267,7 +275,7 @@ def test_param_themes_two_themes(testapp, tmpdir):
                 ),
             }
         ),
-        core.Item(
+        holocron.Item(
             {
                 "title": "History of the Force",
                 "template": "holiday.j2",

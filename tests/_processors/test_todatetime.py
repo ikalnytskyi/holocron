@@ -6,8 +6,8 @@ import datetime
 import pytest
 import dateutil.tz
 
-from holocron import core
-from holocron.processors import todatetime
+import holocron
+from holocron._processors import todatetime
 
 
 _TZ_UTC = dateutil.tz.gettz("UTC")
@@ -16,7 +16,7 @@ _TZ_EET = dateutil.tz.gettz("EET")
 
 @pytest.fixture(scope="function")
 def testapp():
-    return core.Application()
+    return holocron.Application()
 
 
 @pytest.mark.parametrize(
@@ -106,7 +106,7 @@ def test_item(testapp, timestamp, parsed):
     stream = todatetime.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": "the Force is strong with this one",
                     "timestamp": timestamp,
@@ -118,7 +118,7 @@ def test_item(testapp, timestamp, parsed):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": "the Force is strong with this one",
                 "timestamp": parsed,
@@ -143,7 +143,7 @@ def test_item_many(testapp, amount):
     stream = todatetime.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": "the Force is strong with this one",
                     "timestamp": "2019-01-%d" % (i + 1),
@@ -156,7 +156,7 @@ def test_item_many(testapp, amount):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": "the Force is strong with this one",
                 "timestamp": datetime.datetime(2019, 1, i + 1, tzinfo=_TZ_UTC),
@@ -171,13 +171,13 @@ def test_item_timestamp_missing(testapp):
 
     stream = todatetime.process(
         testapp,
-        [core.Item({"content": "the Force is strong with this one"})],
+        [holocron.Item({"content": "the Force is strong with this one"})],
         todatetime="timestamp",
     )
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item({"content": "the Force is strong with this one"})
+        holocron.Item({"content": "the Force is strong with this one"})
     ]
 
 
@@ -187,7 +187,7 @@ def test_item_timestamp_bad_value(testapp):
     stream = todatetime.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": "the Force is strong with this one",
                     "timestamp": "yoda",
@@ -210,7 +210,7 @@ def test_param_todatetime(testapp):
     stream = todatetime.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": "the Force is strong with this one",
                     "timestamp": "2019-01-11",
@@ -222,7 +222,7 @@ def test_param_todatetime(testapp):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": "the Force is strong with this one",
                 "timestamp": "2019-01-11",
@@ -257,7 +257,7 @@ def test_param_parsearea(testapp, timestamp, parsearea):
     stream = todatetime.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": "the Force is strong with this one",
                     "timestamp": timestamp,
@@ -271,7 +271,7 @@ def test_param_parsearea(testapp, timestamp, parsearea):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": "the Force is strong with this one",
                 "timestamp": datetime.datetime(2019, 1, 11, tzinfo=_TZ_UTC),
@@ -286,7 +286,7 @@ def test_param_parsearea_not_found(testapp):
     stream = todatetime.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": "the Force is strong with this one",
                     "timestamp": "luke-skywalker-part-1.txt",
@@ -299,7 +299,7 @@ def test_param_parsearea_not_found(testapp):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": "the Force is strong with this one",
                 "timestamp": "luke-skywalker-part-1.txt",
@@ -329,7 +329,7 @@ def test_param_fuzzy(testapp, timestamp):
     stream = todatetime.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": "the Force is strong with this one",
                     "timestamp": timestamp,
@@ -342,7 +342,7 @@ def test_param_fuzzy(testapp, timestamp):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": "the Force is strong with this one",
                 "timestamp": datetime.datetime(2019, 1, 11, tzinfo=_TZ_UTC),
@@ -358,13 +358,13 @@ def test_param_timezone(testapp, tz):
     stream = todatetime.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": "the Force is strong with this one",
                     "timestamp": "2019-01-15T21:07+00:00",
                 }
             ),
-            core.Item(
+            holocron.Item(
                 {
                     "content": "may the Force be with you",
                     "timestamp": "2019-01-15T21:07",
@@ -380,7 +380,7 @@ def test_param_timezone(testapp, tz):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": "the Force is strong with this one",
                 "timestamp": datetime.datetime(
@@ -388,7 +388,7 @@ def test_param_timezone(testapp, tz):
                 ),
             }
         ),
-        core.Item(
+        holocron.Item(
             {
                 "content": "may the Force be with you",
                 "timestamp": datetime.datetime(
@@ -411,13 +411,13 @@ def test_param_timezone_fallback(testapp, tz):
     stream = todatetime.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": "the Force is strong with this one",
                     "timestamp": "2019-01-15T21:07+00:00",
                 }
             ),
-            core.Item(
+            holocron.Item(
                 {
                     "content": "may the Force be with you",
                     "timestamp": "2019-01-15T21:07",
@@ -429,7 +429,7 @@ def test_param_timezone_fallback(testapp, tz):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": "the Force is strong with this one",
                 "timestamp": datetime.datetime(
@@ -437,7 +437,7 @@ def test_param_timezone_fallback(testapp, tz):
                 ),
             }
         ),
-        core.Item(
+        holocron.Item(
             {
                 "content": "may the Force be with you",
                 "timestamp": datetime.datetime(

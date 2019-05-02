@@ -4,8 +4,8 @@ import collections.abc
 
 import pytest
 
-from holocron import core
-from holocron.processors import pipe
+import holocron
+from holocron._processors import pipe
 
 
 @pytest.fixture(scope="function")
@@ -22,9 +22,9 @@ def testapp():
 
     def rice(app, items, **options):
         yield from items
-        yield core.Item({"content": "rice"})
+        yield holocron.Item({"content": "rice"})
 
-    instance = core.Application()
+    instance = holocron.Application()
     instance.add_processor("spam", spam)
     instance.add_processor("eggs", eggs)
     instance.add_processor("rice", rice)
@@ -36,20 +36,20 @@ def test_item(testapp):
 
     stream = pipe.process(
         testapp,
-        [core.Item({"content": "the Force", "author": "skywalker"})],
+        [holocron.Item({"content": "the Force", "author": "skywalker"})],
         pipe=[{"name": "spam"}, {"name": "eggs"}, {"name": "rice"}],
     )
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": "the Force #friedeggs",
                 "author": "skywalker",
                 "spam": 42,
             }
         ),
-        core.Item({"content": "rice"}),
+        holocron.Item({"content": "rice"}),
     ]
 
 
@@ -58,13 +58,15 @@ def test_item_processor_with_option(testapp):
 
     stream = pipe.process(
         testapp,
-        [core.Item({"content": "the Force", "author": "skywalker"})],
+        [holocron.Item({"content": "the Force", "author": "skywalker"})],
         pipe=[{"name": "spam", "text": 1}],
     )
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item({"content": "the Force", "author": "skywalker", "spam": 1})
+        holocron.Item(
+            {"content": "the Force", "author": "skywalker", "spam": 1}
+        )
     ]
 
 
@@ -73,13 +75,13 @@ def test_param_pipeline_empty(testapp):
 
     stream = pipe.process(
         testapp,
-        [core.Item({"content": "the Force", "author": "skywalker"})],
+        [holocron.Item({"content": "the Force", "author": "skywalker"})],
         pipe=[],
     )
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item({"content": "the Force", "author": "skywalker"})
+        holocron.Item({"content": "the Force", "author": "skywalker"})
     ]
 
 
@@ -99,7 +101,9 @@ def test_item_many(testapp, amount):
     stream = pipe.process(
         testapp,
         [
-            core.Item({"content": "the Force (%d)" % i, "author": "skywalker"})
+            holocron.Item(
+                {"content": "the Force (%d)" % i, "author": "skywalker"}
+            )
             for i in range(amount)
         ],
         pipe=[{"name": "spam"}, {"name": "eggs"}],
@@ -107,7 +111,7 @@ def test_item_many(testapp, amount):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": "the Force (%d) #friedeggs" % i,
                 "author": "skywalker",

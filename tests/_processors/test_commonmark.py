@@ -6,8 +6,8 @@ import textwrap
 
 import pytest
 
-from holocron import core
-from holocron.processors import commonmark
+import holocron
+from holocron._processors import commonmark
 
 
 class _pytest_regex:
@@ -25,7 +25,7 @@ class _pytest_regex:
 
 @pytest.fixture(scope="function")
 def testapp():
-    return core.Application()
+    return holocron.Application()
 
 
 def test_item(testapp):
@@ -33,12 +33,16 @@ def test_item(testapp):
 
     stream = commonmark.process(
         testapp,
-        [core.Item({"content": "text with **bold**", "destination": "1.md"})],
+        [
+            holocron.Item(
+                {"content": "text with **bold**", "destination": "1.md"}
+            )
+        ],
     )
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": "<p>text with <strong>bold</strong></p>",
                 "destination": "1.html",
@@ -102,12 +106,12 @@ def test_item_parsed_title(testapp, content):
     """Commonmark processor has to cut a title of the content."""
 
     stream = commonmark.process(
-        testapp, [core.Item({"content": content, "destination": "1.md"})]
+        testapp, [holocron.Item({"content": content, "destination": "1.md"})]
     )
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": "<p>text with <strong>bold</strong></p>",
                 "destination": "1.html",
@@ -123,7 +127,7 @@ def test_item_parsed_title_ignored(testapp):
     stream = commonmark.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": textwrap.dedent(
                         """\
@@ -141,7 +145,7 @@ def test_item_parsed_title_ignored(testapp):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": "<p>text with <strong>bold</strong></p>",
                 "destination": "1.html",
@@ -157,7 +161,7 @@ def test_item_parsed_title_in_the_middle_of_content(testapp):
     stream = commonmark.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": textwrap.dedent(
                         """\
@@ -176,7 +180,7 @@ def test_item_parsed_title_in_the_middle_of_content(testapp):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": _pytest_regex(
                     r"<p>text</p>\s*"
@@ -195,7 +199,7 @@ def test_item_with_sections(testapp):
     stream = commonmark.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": textwrap.dedent(
                         """\
@@ -231,7 +235,7 @@ def test_item_with_sections(testapp):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": _pytest_regex(
                     r"<p>aaa</p>\s*"
@@ -263,7 +267,7 @@ def test_item_many(testapp, amount):
     stream = commonmark.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {"content": "the key is **%d**" % i, "destination": "1.md"}
             )
             for i in range(amount)
@@ -272,7 +276,7 @@ def test_item_many(testapp, amount):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": "<p>the key is <strong>%d</strong></p>" % i,
                 "destination": "1.html",
@@ -307,7 +311,7 @@ def test_param_pygmentize(testapp, rendered, pygmentize):
     stream = commonmark.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": textwrap.dedent(
                         """
@@ -327,7 +331,7 @@ def test_param_pygmentize(testapp, rendered, pygmentize):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {"content": _pytest_regex(rendered), "destination": "1.html"}
         )
     ]
@@ -342,7 +346,7 @@ def test_param_pygmentize_unknown_language(testapp, language):
     stream = commonmark.process(
         testapp,
         [
-            core.Item(
+            holocron.Item(
                 {
                     "content": textwrap.dedent(
                         """
@@ -363,7 +367,7 @@ def test_param_pygmentize_unknown_language(testapp, language):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        core.Item(
+        holocron.Item(
             {
                 "content": (
                     '<p>test codeblock</p>\n<pre><code class="language-%s">'

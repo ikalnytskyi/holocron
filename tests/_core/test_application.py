@@ -2,13 +2,13 @@
 
 import pytest
 
-import holocron.core
+import holocron
 
 
 def test_metadata():
     """.metadata property works like mapping."""
 
-    testapp = holocron.core.Application()
+    testapp = holocron.Application()
 
     with pytest.raises(KeyError, match="'yoda'"):
         testapp.metadata["yoda"]
@@ -21,7 +21,7 @@ def test_metadata():
 def test_metadata_init():
     """.metadata property is initialized."""
 
-    testapp = holocron.core.Application({"yoda": "master", "vader": "sith"})
+    testapp = holocron.Application({"yoda": "master", "vader": "sith"})
 
     assert testapp.metadata["yoda"] == "master"
     assert testapp.metadata["vader"] == "sith"
@@ -34,7 +34,7 @@ def test_metadata_init():
 def test_add_processor(caplog):
     """.add_processor() registers a processor."""
 
-    testapp = holocron.core.Application()
+    testapp = holocron.Application()
     marker = None
 
     def processor(app, items):
@@ -54,7 +54,7 @@ def test_add_processor(caplog):
 def test_add_processor_override(caplog):
     """.add_processor() overrides registered one."""
 
-    testapp = holocron.core.Application()
+    testapp = holocron.Application()
     marker = None
 
     def processor_a(app, items):
@@ -82,7 +82,7 @@ def test_add_processor_override(caplog):
 def test_add_pipe(caplog):
     """.add_pipe() registers a pipe."""
 
-    testapp = holocron.core.Application()
+    testapp = holocron.Application()
     marker = None
 
     def processor(app, items):
@@ -103,7 +103,7 @@ def test_add_pipe(caplog):
 def test_add_pipe_override(caplog):
     """.add_pipe() overrides registered one."""
 
-    testapp = holocron.core.Application()
+    testapp = holocron.Application()
     marker = None
 
     def processor_a(app, items):
@@ -136,25 +136,25 @@ def test_invoke():
 
     def processor_a(app, items):
         items = list(items)
-        assert items == [holocron.core.Item({"a": "b"})]
+        assert items == [holocron.Item({"a": "b"})]
         items[0]["x"] = 42
         yield from items
 
     def processor_b(app, items):
         items = list(items)
-        assert items == [holocron.core.Item({"a": "b", "x": 42})]
-        items.append(holocron.core.Item({"z": 13}))
+        assert items == [holocron.Item({"a": "b", "x": 42})]
+        items.append(holocron.Item({"z": 13}))
         yield from items
 
     def processor_c(app, items):
         items = list(items)
         assert items == [
-            holocron.core.Item({"a": "b", "x": 42}),
-            holocron.core.Item({"z": 13}),
+            holocron.Item({"a": "b", "x": 42}),
+            holocron.Item({"z": 13}),
         ]
         yield from items
 
-    testapp = holocron.core.Application()
+    testapp = holocron.Application()
     testapp.add_processor("processor_a", processor_a)
     testapp.add_processor("processor_b", processor_b)
     testapp.add_processor("processor_c", processor_c)
@@ -167,9 +167,9 @@ def test_invoke():
         ],
     )
 
-    stream = testapp.invoke("test", [holocron.core.Item({"a": "b"})])
-    assert next(stream) == holocron.core.Item({"a": "b", "x": 42})
-    assert next(stream) == holocron.core.Item({"z": 13})
+    stream = testapp.invoke("test", [holocron.Item({"a": "b"})])
+    assert next(stream) == holocron.Item({"a": "b", "x": 42})
+    assert next(stream) == holocron.Item({"z": 13})
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -180,25 +180,25 @@ def test_invoke_anonymous_pipe():
 
     def processor_a(app, items):
         items = list(items)
-        assert items == [holocron.core.Item({"a": "b"})]
+        assert items == [holocron.Item({"a": "b"})]
         items[0]["x"] = 42
         yield from items
 
     def processor_b(app, items):
         items = list(items)
-        assert items == [holocron.core.Item({"a": "b", "x": 42})]
-        items.append(holocron.core.Item({"z": 13}))
+        assert items == [holocron.Item({"a": "b", "x": 42})]
+        items.append(holocron.Item({"z": 13}))
         yield from items
 
     def processor_c(app, items):
         items = list(items)
         assert items == [
-            holocron.core.Item({"a": "b", "x": 42}),
-            holocron.core.Item({"z": 13}),
+            holocron.Item({"a": "b", "x": 42}),
+            holocron.Item({"z": 13}),
         ]
         yield from items
 
-    testapp = holocron.core.Application()
+    testapp = holocron.Application()
     testapp.add_processor("processor_a", processor_a)
     testapp.add_processor("processor_b", processor_b)
     testapp.add_processor("processor_c", processor_c)
@@ -209,11 +209,11 @@ def test_invoke_anonymous_pipe():
             {"name": "processor_b"},
             {"name": "processor_c"},
         ],
-        [holocron.core.Item({"a": "b"})],
+        [holocron.Item({"a": "b"})],
     )
 
-    assert next(stream) == holocron.core.Item({"a": "b", "x": 42})
-    assert next(stream) == holocron.core.Item({"z": 13})
+    assert next(stream) == holocron.Item({"a": "b", "x": 42})
+    assert next(stream) == holocron.Item({"z": 13})
 
     with pytest.raises(StopIteration):
         next(stream)
@@ -222,7 +222,7 @@ def test_invoke_anonymous_pipe():
 def test_invoke_pipe_not_found():
     """.invoke() raises proper exception."""
 
-    testapp = holocron.core.Application()
+    testapp = holocron.Application()
 
     with pytest.raises(ValueError) as excinfo:
         next(testapp.invoke("test"))
@@ -233,7 +233,7 @@ def test_invoke_pipe_not_found():
 def test_invoke_empty_pipe():
     """.invoke() returns nothing."""
 
-    testapp = holocron.core.Application()
+    testapp = holocron.Application()
     testapp.add_pipe("test", [])
 
     with pytest.raises(StopIteration):
@@ -243,19 +243,19 @@ def test_invoke_empty_pipe():
 def test_invoke_passthrough_items_empty_pipe():
     """.invoke() passes through items on empty pipe."""
 
-    testapp = holocron.core.Application()
+    testapp = holocron.Application()
     testapp.add_pipe("test", [])
 
     stream = testapp.invoke(
         "test",
         [
-            holocron.core.Item(name="yoda", rank="master"),
-            holocron.core.Item(name="skywalker"),
+            holocron.Item(name="yoda", rank="master"),
+            holocron.Item(name="skywalker"),
         ],
     )
 
-    assert next(stream) == holocron.core.Item(name="yoda", rank="master")
-    assert next(stream) == holocron.core.Item(name="skywalker")
+    assert next(stream) == holocron.Item(name="yoda", rank="master")
+    assert next(stream) == holocron.Item(name="skywalker")
 
     with pytest.raises(StopIteration):
         next(testapp.invoke("test"))
@@ -267,20 +267,20 @@ def test_invoke_passthrough_items():
     def processor(app, items):
         yield from items
 
-    testapp = holocron.core.Application()
+    testapp = holocron.Application()
     testapp.add_processor("processor", processor)
     testapp.add_pipe("test", [{"name": "processor"}])
 
     stream = testapp.invoke(
         "test",
         [
-            holocron.core.Item(name="yoda", rank="master"),
-            holocron.core.Item(name="skywalker"),
+            holocron.Item(name="yoda", rank="master"),
+            holocron.Item(name="skywalker"),
         ],
     )
 
-    assert next(stream) == holocron.core.Item(name="yoda", rank="master")
-    assert next(stream) == holocron.core.Item(name="skywalker")
+    assert next(stream) == holocron.Item(name="yoda", rank="master")
+    assert next(stream) == holocron.Item(name="skywalker")
 
     with pytest.raises(StopIteration):
         next(testapp.invoke("test"))
@@ -302,7 +302,7 @@ def test_invoke_propagates_processor_options(processor_options):
         assert options == processor_options
         yield from items
 
-    testapp = holocron.core.Application()
+    testapp = holocron.Application()
     testapp.add_processor("processor", processor)
     testapp.add_pipe("test", [dict(processor_options, name="processor")])
 
@@ -341,7 +341,7 @@ def test_invoke_propagates_processor_options(processor_options):
 def test_invoke_resolves_jsonref(options, resolved):
     """.invoke() resolves JSON references in processor's options."""
 
-    testapp = holocron.core.Application(
+    testapp = holocron.Application(
         {"extra": [{"luke": "skywalker"}], "is_yoda_master": True}
     )
 
@@ -363,7 +363,7 @@ def test_invoke_processor_errors():
         raise ValueError("something bad happened")
         yield
 
-    testapp = holocron.core.Application()
+    testapp = holocron.Application()
     testapp.add_processor("processor", processor)
     testapp.add_pipe("test", [{"name": "processor"}])
 
@@ -379,7 +379,7 @@ def test_invoke_processor_errors():
 def test_invoke_processor_not_found():
     """.invoke() raises proper exception."""
 
-    testapp = holocron.core.Application()
+    testapp = holocron.Application()
     testapp.add_pipe("test", [{"name": "processor"}])
 
     with pytest.raises(ValueError) as excinfo:
