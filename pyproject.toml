@@ -19,13 +19,12 @@ classifiers = [
     "Topic :: Terminals",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.5",
     "Programming Language :: Python :: 3.6",
     "Programming Language :: Python :: 3.7",
 ]
 
 [tool.poetry.dependencies]
-python = "^3.5"
+python = "^3.6"
 Jinja2 = "^2.10"
 PyYAML = "^5.1"
 Pygments = "^2.3"
