@@ -1,6 +1,5 @@
 """Convert CommonMark into HTML."""
 
-import os
 import io
 import logging
 
@@ -77,8 +76,5 @@ def process(app, stream, *, pygmentize=False):
         if "title" in renderer.extracted:
             item["title"] = item.get("title", renderer.extracted["title"])
 
-        item["destination"] = (
-            "%s.html" % os.path.splitext(item["destination"])[0]
-        )
-
+        item["destination"] = item["destination"].with_suffix(".html")
         yield item

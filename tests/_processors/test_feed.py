@@ -3,7 +3,7 @@
 import collections.abc
 import datetime
 import itertools
-import os
+import pathlib
 import unittest.mock
 
 import pkg_resources
@@ -59,8 +59,8 @@ def test_item_atom(testapp):
         ),
         holocron.WebSiteItem(
             {
-                "source": "feed://feed.xml",
-                "destination": "feed.xml",
+                "source": pathlib.Path("feed://feed.xml"),
+                "destination": pathlib.Path("feed.xml"),
                 "content": unittest.mock.ANY,
                 "baseurl": testapp.metadata["url"],
             }
@@ -137,8 +137,8 @@ def test_item_atom_feed_metadata(testapp):
         ),
         holocron.WebSiteItem(
             {
-                "source": "feed://feed.xml",
-                "destination": "feed.xml",
+                "source": pathlib.Path("feed://feed.xml"),
+                "destination": pathlib.Path("feed.xml"),
                 "content": unittest.mock.ANY,
                 "baseurl": testapp.metadata["url"],
             }
@@ -237,8 +237,8 @@ def test_item_rss(testapp):
         ),
         holocron.WebSiteItem(
             {
-                "source": "feed://feed.xml",
-                "destination": "feed.xml",
+                "source": pathlib.Path("feed://feed.xml"),
+                "destination": pathlib.Path("feed.xml"),
                 "content": unittest.mock.ANY,
                 "baseurl": testapp.metadata["url"],
             }
@@ -337,8 +337,8 @@ def test_item_rss_feed_metadata(testapp):
         ),
         holocron.WebSiteItem(
             {
-                "source": "feed://feed.xml",
-                "destination": "feed.xml",
+                "source": pathlib.Path("feed://feed.xml"),
+                "destination": pathlib.Path("feed.xml"),
                 "content": unittest.mock.ANY,
                 "baseurl": testapp.metadata["url"],
             }
@@ -518,8 +518,8 @@ def test_item_many(testapp, syndication_format, amount):
             [
                 holocron.WebSiteItem(
                     {
-                        "source": "feed://feed.xml",
-                        "destination": "feed.xml",
+                        "source": pathlib.Path("feed://feed.xml"),
+                        "destination": pathlib.Path("feed.xml"),
                         "content": unittest.mock.ANY,
                         "baseurl": testapp.metadata["url"],
                     }
@@ -569,8 +569,8 @@ def test_param_encoding(testapp, syndication_format, encoding):
         ),
         holocron.WebSiteItem(
             {
-                "source": "feed://feed.xml",
-                "destination": "feed.xml",
+                "source": pathlib.Path("feed://feed.xml"),
+                "destination": pathlib.Path("feed.xml"),
                 "content": unittest.mock.ANY,
                 "baseurl": testapp.metadata["url"],
             }
@@ -620,8 +620,8 @@ def test_param_encoding_fallback(testapp, syndication_format, encoding):
         ),
         holocron.WebSiteItem(
             {
-                "source": "feed://feed.xml",
-                "destination": "feed.xml",
+                "source": pathlib.Path("feed://feed.xml"),
+                "destination": pathlib.Path("feed.xml"),
                 "content": unittest.mock.ANY,
                 "baseurl": testapp.metadata["url"],
             }
@@ -635,7 +635,10 @@ def test_param_encoding_fallback(testapp, syndication_format, encoding):
 )
 @pytest.mark.parametrize(
     ["save_as"],
-    [pytest.param("foo.xml"), pytest.param(os.path.join("foo", "bar.xml"))],
+    [
+        pytest.param(pathlib.Path("foo.xml")),
+        pytest.param(pathlib.Path("foo", "bar.xml")),
+    ],
 )
 def test_param_save_as(testapp, syndication_format, save_as):
     """Feed processor has to respect save_as parameter."""
@@ -651,7 +654,7 @@ def test_param_save_as(testapp, syndication_format, save_as):
             )
         ],
         syndication_format=syndication_format,
-        save_as=save_as,
+        save_as=str(save_as),
         feed={
             "id": "kenobi-way",
             "title": "Kenobi's Way",
@@ -675,8 +678,8 @@ def test_param_save_as(testapp, syndication_format, save_as):
         ),
         holocron.WebSiteItem(
             {
-                "source": "feed://%s" % save_as,
-                "destination": save_as,
+                "source": pathlib.Path("feed://", save_as),
+                "destination": pathlib.Path(save_as),
                 "content": unittest.mock.ANY,
                 "baseurl": testapp.metadata["url"],
             }
@@ -733,8 +736,8 @@ def test_param_limit(testapp, syndication_format, limit):
             [
                 holocron.WebSiteItem(
                     {
-                        "source": "feed://feed.xml",
-                        "destination": "feed.xml",
+                        "source": pathlib.Path("feed://feed.xml"),
+                        "destination": pathlib.Path("feed.xml"),
                         "content": unittest.mock.ANY,
                         "baseurl": testapp.metadata["url"],
                     }
@@ -811,8 +814,8 @@ def test_param_pretty(testapp, syndication_format, pretty, check_fn):
         ),
         holocron.WebSiteItem(
             {
-                "source": "feed://feed.xml",
-                "destination": "feed.xml",
+                "source": pathlib.Path("feed://feed.xml"),
+                "destination": pathlib.Path("feed.xml"),
                 "content": unittest.mock.ANY,
                 "baseurl": testapp.metadata["url"],
             }

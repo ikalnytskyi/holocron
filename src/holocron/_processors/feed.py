@@ -1,6 +1,7 @@
 """Generate RSS/Atom feed (with extensions if needed)."""
 
 import itertools
+import pathlib
 
 import feedgen.feed
 import pkg_resources
@@ -162,8 +163,8 @@ def process(
 
     feed_item = holocron.WebSiteItem(
         {
-            "source": "feed://%s" % save_as,
-            "destination": save_as,
+            "source": pathlib.Path("feed://", save_as),
+            "destination": pathlib.Path(save_as),
             "content": to_bytes(pretty=pretty, encoding=encoding),
             "baseurl": app.metadata["url"],
         }

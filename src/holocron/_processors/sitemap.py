@@ -4,6 +4,7 @@ import os
 import itertools
 import gzip as _gzip
 import xml.dom.minidom as minidom
+import pathlib
 
 import holocron
 from ._misc import parameters
@@ -24,8 +25,8 @@ def process(app, stream, *, gzip=False, save_as="sitemap.xml", pretty=True):
 
     sitemap = holocron.WebSiteItem(
         {
-            "source": "sitemap://%s" % save_as,
-            "destination": save_as,
+            "source": pathlib.Path("sitemap://", save_as),
+            "destination": pathlib.Path(save_as),
             "baseurl": app.metadata["url"],
         }
     )
@@ -37,8 +38,9 @@ def process(app, stream, *, gzip=False, save_as="sitemap.xml", pretty=True):
     # well as proper configuration of web server software.
     if gzip:
         sitemap["content"] = _gzip.compress(sitemap["content"])
-        sitemap["source"] += ".gz"
-        sitemap["destination"] += ".gz"
+
+        for key in ("source", "destination"):
+            sitemap[key] = pathlib.Path(str(sitemap[key]) + ".gz")
 
     yield from passthrough
     yield sitemap

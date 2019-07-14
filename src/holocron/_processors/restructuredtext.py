@@ -1,7 +1,5 @@
 """Convert reStructuredText into HTML."""
 
-import os
-
 from docutils.core import publish_parts
 from docutils.writers import html5_polyglot
 from docutils import nodes
@@ -55,9 +53,7 @@ def process(app, stream, *, settings={}):
         )
 
         item["content"] = parts["fragment"].strip()
-        item["destination"] = (
-            "%s.html" % os.path.splitext(item["destination"])[0]
-        )
+        item["destination"] = item["destination"].with_suffix(".html")
 
         # Usually converters go after frontmatter processor and that
         # means any explicitly specified attribute is already set on

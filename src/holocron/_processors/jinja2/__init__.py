@@ -1,6 +1,6 @@
 """Render items using Jinja2 template engine."""
 
-import os
+import pathlib
 
 import jinja2
 import jsonpointer
@@ -21,12 +21,12 @@ from .._misc import parameters
 )
 def process(app, stream, *, template="item.j2", context={}, themes=None):
     if themes is None:
-        themes = [os.path.join(os.path.dirname(__file__), "theme")]
+        themes = [str(pathlib.Path(__file__).parent / "theme")]
 
     env = jinja2.Environment(
         loader=jinja2.ChoiceLoader(
             [
-                jinja2.FileSystemLoader(os.path.join(theme, "templates"))
+                jinja2.FileSystemLoader(str(pathlib.Path(theme, "templates")))
                 for theme in themes
             ]
         )

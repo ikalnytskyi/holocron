@@ -2,6 +2,7 @@
 
 import re
 import collections
+import pathlib
 
 import jinja2
 
@@ -9,6 +10,11 @@ from ._misc import parameters
 
 
 def _re_match(value, pattern, flags=0):
+    # If a regular expression is used agains a Python's path class, we can cast
+    # the path object to string for user, because it's a behaviour a user would
+    # expect anyway.
+    if isinstance(value, pathlib.PurePath):
+        value = str(value)
     return re.match(pattern, value, flags)
 
 

@@ -3,6 +3,7 @@
 import re
 import os
 import datetime
+import pathlib
 
 import dateutil.tz
 
@@ -10,23 +11,21 @@ import holocron
 from ._misc import parameters
 
 
-def _createitem(app, path, basepath, encoding, tzinfo):
+def _createitem(app, path, source, encoding, tzinfo):
     try:
-        with open(path, "rt", encoding=encoding) as f:
-            content = f.read()
+        content = path.read_text(encoding)
     except UnicodeDecodeError:
-        with open(path, "rb") as f:
-            content = f.read()
+        content = path.read_bytes()
 
-    created = datetime.datetime.fromtimestamp(os.path.getctime(path), tzinfo)
-    updated = datetime.datetime.fromtimestamp(os.path.getmtime(path), tzinfo)
+    created = datetime.datetime.fromtimestamp(path.stat().st_ctime, tzinfo)
+    updated = datetime.datetime.fromtimestamp(path.stat().st_mtime, tzinfo)
 
     return holocron.WebSiteItem(
         # Memorizing 'source' property is not required for application core,
         # however, it may be useful for troubleshooting pipes as well as
         # writing 'when' conditions.
-        source=os.path.relpath(path, basepath),
-        destination=os.path.relpath(path, basepath),
+        source=source,
+        destination=source,
         content=content,
         created=created,
         updated=updated,
@@ -39,18 +38,16 @@ def _finditems(app, path, pattern, encoding, tzinfo):
         re_name = re.compile(pattern)
 
     for root, dirnames, filenames in os.walk(path, topdown=True):
-        for filename in filenames:
-            source = os.path.relpath(os.path.join(root, filename), path)
+        root = pathlib.Path(root)
 
-            if pattern and not re_name.match(source):
+        for filename in filenames:
+            source = root.joinpath(filename).relative_to(path)
+
+            if pattern and not re_name.match(str(source)):
                 continue
 
             yield _createitem(
-                app,
-                os.path.join(root, filename),
-                basepath=path,
-                encoding=encoding,
-                tzinfo=tzinfo,
+                app, root / filename, source, encoding=encoding, tzinfo=tzinfo
             )
 
 

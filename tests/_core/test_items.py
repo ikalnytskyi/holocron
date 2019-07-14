@@ -1,6 +1,6 @@
 """Core items test suite."""
 
-import os
+import pathlib
 
 import pytest
 
@@ -244,13 +244,13 @@ def test_websiteitem_init_mapping(supported_value):
     instance = holocron.WebSiteItem(
         {
             "x": supported_value,
-            "destination": os.path.join("path", "to", "item"),
+            "destination": pathlib.Path("path", "to", "item"),
             "baseurl": "https://yoda.ua",
         }
     )
 
     assert instance["x"] == supported_value
-    assert instance["destination"] == os.path.join("path", "to", "item")
+    assert instance["destination"] == pathlib.Path("path", "to", "item")
     assert instance["baseurl"] == "https://yoda.ua"
     assert instance["url"] == "/path/to/item"
     assert instance["absurl"] == "https://yoda.ua/path/to/item"
@@ -258,7 +258,7 @@ def test_websiteitem_init_mapping(supported_value):
     assert instance == holocron.WebSiteItem(
         {
             "x": supported_value,
-            "destination": os.path.join("path", "to", "item"),
+            "destination": pathlib.Path("path", "to", "item"),
             "baseurl": "https://yoda.ua",
         }
     )
@@ -269,12 +269,12 @@ def test_websiteitem_init_kwargs(supported_value):
 
     instance = holocron.WebSiteItem(
         x=supported_value,
-        destination=os.path.join("path", "to", "item"),
+        destination=pathlib.Path("path", "to", "item"),
         baseurl="https://yoda.ua",
     )
 
     assert instance["x"] == supported_value
-    assert instance["destination"] == os.path.join("path", "to", "item")
+    assert instance["destination"] == pathlib.Path("path", "to", "item")
     assert instance["baseurl"] == "https://yoda.ua"
     assert instance["url"] == "/path/to/item"
     assert instance["absurl"] == "https://yoda.ua/path/to/item"
@@ -282,7 +282,7 @@ def test_websiteitem_init_kwargs(supported_value):
     assert instance == holocron.WebSiteItem(
         {
             "x": supported_value,
-            "destination": os.path.join("path", "to", "item"),
+            "destination": pathlib.Path("path", "to", "item"),
             "baseurl": "https://yoda.ua",
         }
     )
@@ -294,13 +294,13 @@ def test_websiteitem_init_mapping_kwargs(supported_value):
     instance = holocron.WebSiteItem(
         {
             "x": supported_value,
-            "destination": os.path.join("path", "to", "item"),
+            "destination": pathlib.Path("path", "to", "item"),
         },
         baseurl="https://yoda.ua",
     )
 
     assert instance["x"] == supported_value
-    assert instance["destination"] == os.path.join("path", "to", "item")
+    assert instance["destination"] == pathlib.Path("path", "to", "item")
     assert instance["baseurl"] == "https://yoda.ua"
     assert instance["url"] == "/path/to/item"
     assert instance["absurl"] == "https://yoda.ua/path/to/item"
@@ -308,7 +308,7 @@ def test_websiteitem_init_mapping_kwargs(supported_value):
     assert instance == holocron.WebSiteItem(
         {
             "x": supported_value,
-            "destination": os.path.join("path", "to", "item"),
+            "destination": pathlib.Path("path", "to", "item"),
             "baseurl": "https://yoda.ua",
         }
     )
@@ -319,7 +319,7 @@ def test_websiteitem_init_multiple_mappings(supported_value):
 
     with pytest.raises(TypeError) as excinfo:
         holocron.WebSiteItem(
-            {"destination": os.path.join("path", "to", "item")},
+            {"destination": pathlib.Path("path", "to", "item")},
             {"baseurl": "https://yoda.ua"},
         )
 
@@ -360,14 +360,14 @@ def test_websiteitem_setitem(supported_value):
 
     instance = holocron.WebSiteItem(
         {
-            "destination": os.path.join("path", "to", "item"),
+            "destination": pathlib.Path("path", "to", "item"),
             "baseurl": "https://yoda.ua",
         }
     )
     instance["x"] = supported_value
 
     assert instance["x"] == supported_value
-    assert instance["destination"] == os.path.join("path", "to", "item")
+    assert instance["destination"] == pathlib.Path("path", "to", "item")
     assert instance["baseurl"] == "https://yoda.ua"
     assert instance["url"] == "/path/to/item"
     assert instance["absurl"] == "https://yoda.ua/path/to/item"
@@ -375,7 +375,7 @@ def test_websiteitem_setitem(supported_value):
     assert instance == holocron.WebSiteItem(
         {
             "x": supported_value,
-            "destination": os.path.join("path", "to", "item"),
+            "destination": pathlib.Path("path", "to", "item"),
             "baseurl": "https://yoda.ua",
         }
     )
@@ -387,7 +387,7 @@ def test_websiteitem_init_setitem(supported_value):
     instance = holocron.WebSiteItem(
         {
             "x": supported_value,
-            "destination": os.path.join("path", "to", "item"),
+            "destination": pathlib.Path("path", "to", "item"),
             "baseurl": "https://yoda.ua",
         }
     )
@@ -395,7 +395,7 @@ def test_websiteitem_init_setitem(supported_value):
 
     assert instance["x"] == supported_value
     assert instance["y"] == 42
-    assert instance["destination"] == os.path.join("path", "to", "item")
+    assert instance["destination"] == pathlib.Path("path", "to", "item")
     assert instance["baseurl"] == "https://yoda.ua"
     assert instance["url"] == "/path/to/item"
     assert instance["absurl"] == "https://yoda.ua/path/to/item"
@@ -404,7 +404,7 @@ def test_websiteitem_init_setitem(supported_value):
         {
             "x": supported_value,
             "y": 42,
-            "destination": os.path.join("path", "to", "item"),
+            "destination": pathlib.Path("path", "to", "item"),
             "baseurl": "https://yoda.ua",
         }
     )
@@ -415,12 +415,12 @@ def test_websiteitem_getitem():
 
     instance = holocron.WebSiteItem(
         {
-            "destination": os.path.join("path", "to", "item"),
+            "destination": pathlib.Path("path", "to", "item"),
             "baseurl": "https://yoda.ua",
         }
     )
 
-    assert instance["destination"] == os.path.join("path", "to", "item")
+    assert instance["destination"] == pathlib.Path("path", "to", "item")
     assert instance["baseurl"] == "https://yoda.ua"
     assert instance["url"] == "/path/to/item"
     assert instance["absurl"] == "https://yoda.ua/path/to/item"
@@ -431,7 +431,7 @@ def test_websiteitem_getitem_keyerror():
 
     instance = holocron.WebSiteItem(
         {
-            "destination": os.path.join("path", "to", "item"),
+            "destination": pathlib.Path("path", "to", "item"),
             "baseurl": "https://yoda.ua",
         }
     )
@@ -445,13 +445,13 @@ def test_websiteitem_items():
 
     instance = holocron.WebSiteItem(
         {
-            "destination": os.path.join("path", "to", "item"),
+            "destination": pathlib.Path("path", "to", "item"),
             "baseurl": "https://yoda.ua",
         }
     )
 
     assert set(instance.items()) == {
-        ("destination", os.path.join("path", "to", "item")),
+        ("destination", pathlib.Path("path", "to", "item")),
         ("baseurl", "https://yoda.ua"),
         ("url", "/path/to/item"),
         ("absurl", "https://yoda.ua/path/to/item"),
@@ -463,7 +463,7 @@ def test_websiteitem_keys():
 
     instance = holocron.WebSiteItem(
         {
-            "destination": os.path.join("path", "to", "item"),
+            "destination": pathlib.Path("path", "to", "item"),
             "baseurl": "https://yoda.ua",
         }
     )
@@ -476,13 +476,13 @@ def test_websiteitem_values():
 
     instance = holocron.WebSiteItem(
         {
-            "destination": os.path.join("path", "to", "item"),
+            "destination": pathlib.Path("path", "to", "item"),
             "baseurl": "https://yoda.ua",
         }
     )
 
     assert set(instance.values()) == {
-        os.path.join("path", "to", "item"),
+        pathlib.Path("path", "to", "item"),
         "https://yoda.ua",
         "/path/to/item",
         "https://yoda.ua/path/to/item",
@@ -495,14 +495,14 @@ def test_websiteitem_as_mapping(supported_value):
     instance = holocron.WebSiteItem(
         {
             "x": supported_value,
-            "destination": os.path.join("path", "to", "item"),
+            "destination": pathlib.Path("path", "to", "item"),
             "baseurl": "https://yoda.ua",
         }
     )
 
     assert instance.as_mapping() == {
         "x": supported_value,
-        "destination": os.path.join("path", "to", "item"),
+        "destination": pathlib.Path("path", "to", "item"),
         "baseurl": "https://yoda.ua",
         "url": "/path/to/item",
         "absurl": "https://yoda.ua/path/to/item",
@@ -515,7 +515,7 @@ def test_websiteitem_contains():
     instance = holocron.WebSiteItem(
         {
             "x": supported_value,
-            "destination": os.path.join("path", "to", "item"),
+            "destination": pathlib.Path("path", "to", "item"),
             "baseurl": "https://yoda.ua",
         }
     )
@@ -531,16 +531,16 @@ def test_websiteitem_contains():
 @pytest.mark.parametrize(
     ["destination", "url"],
     [
-        pytest.param(os.path.join("path-to-item"), "/path-to-item", id="flat"),
+        pytest.param(pathlib.Path("path-to-item"), "/path-to-item", id="flat"),
         pytest.param(
-            os.path.join("path", "to", "item"), "/path/to/item", id="nested"
+            pathlib.Path("path", "to", "item"), "/path/to/item", id="nested"
         ),
         pytest.param(
-            os.path.join("path to item"), "/path%20to%20item", id="quoted"
+            pathlib.Path("path to item"), "/path%20to%20item", id="quoted"
         ),
-        pytest.param("index.html", "/", id="pretty-root-url"),
+        pytest.param(pathlib.Path("index.html"), "/", id="pretty-root-url"),
         pytest.param(
-            os.path.join("jedi", "index.html"), "/jedi/", id="pretty-url"
+            pathlib.Path("jedi", "index.html"), "/jedi/", id="pretty-url"
         ),
     ],
 )
@@ -559,7 +559,7 @@ def test_websiteitem_url(destination, url):
     [
         pytest.param(
             {
-                "destination": os.path.join("path-to-item"),
+                "destination": pathlib.Path("path-to-item"),
                 "baseurl": "https://yoda.ua",
             },
             "https://yoda.ua/path-to-item",
@@ -567,7 +567,7 @@ def test_websiteitem_url(destination, url):
         ),
         pytest.param(
             {
-                "destination": os.path.join("path", "to", "item"),
+                "destination": pathlib.Path("path", "to", "item"),
                 "baseurl": "https://yoda.ua",
             },
             "https://yoda.ua/path/to/item",
@@ -575,7 +575,7 @@ def test_websiteitem_url(destination, url):
         ),
         pytest.param(
             {
-                "destination": os.path.join("path to item"),
+                "destination": pathlib.Path("path to item"),
                 "baseurl": "https://yoda.ua",
             },
             "https://yoda.ua/path%20to%20item",
@@ -583,7 +583,7 @@ def test_websiteitem_url(destination, url):
         ),
         pytest.param(
             {
-                "destination": os.path.join("path", "to", "item"),
+                "destination": pathlib.Path("path", "to", "item"),
                 "baseurl": "https://skywalker.org",
             },
             "https://skywalker.org/path/to/item",
@@ -591,7 +591,7 @@ def test_websiteitem_url(destination, url):
         ),
         pytest.param(
             {
-                "destination": os.path.join("path", "to", "item"),
+                "destination": pathlib.Path("path", "to", "item"),
                 "baseurl": "https://skywalker.org/",
             },
             "https://skywalker.org/path/to/item",
@@ -599,7 +599,7 @@ def test_websiteitem_url(destination, url):
         ),
         pytest.param(
             {
-                "destination": os.path.join("path", "to", "item"),
+                "destination": pathlib.Path("path", "to", "item"),
                 "baseurl": "https://skywalker.org/blog",
             },
             "https://skywalker.org/blog/path/to/item",
@@ -607,20 +607,23 @@ def test_websiteitem_url(destination, url):
         ),
         pytest.param(
             {
-                "destination": os.path.join("path", "to", "item"),
+                "destination": pathlib.Path("path", "to", "item"),
                 "baseurl": "https://skywalker.org/blog/",
             },
             "https://skywalker.org/blog/path/to/item",
             id="subdir-trailing-/",
         ),
         pytest.param(
-            {"destination": "index.html", "baseurl": "https://skywalker.org"},
+            {
+                "destination": pathlib.Path("index.html"),
+                "baseurl": "https://skywalker.org",
+            },
             "https://skywalker.org/",
             id="pretty-root-url",
         ),
         pytest.param(
             {
-                "destination": os.path.join("jedi", "index.html"),
+                "destination": pathlib.Path("jedi", "index.html"),
                 "baseurl": "https://skywalker.org",
             },
             "https://skywalker.org/jedi/",

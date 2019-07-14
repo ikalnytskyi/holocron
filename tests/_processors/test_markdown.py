@@ -4,6 +4,7 @@ import collections.abc
 import re
 import textwrap
 import unittest.mock
+import pathlib
 
 import pytest
 
@@ -44,7 +45,7 @@ def test_item(testapp):
                         text with **bold**
                     """
                     ),
-                    "destination": "1.md",
+                    "destination": pathlib.Path("1.md"),
                 }
             )
         ],
@@ -57,7 +58,7 @@ def test_item(testapp):
                 "content": _pytest_regex(
                     r"<p>text with <strong>bold</strong></p>"
                 ),
-                "destination": "1.html",
+                "destination": pathlib.Path("1.html"),
                 "title": "some title",
             }
         )
@@ -80,7 +81,7 @@ def test_item_with_alt_title_syntax(testapp):
                         text with **bold**
                     """
                     ),
-                    "destination": "1.md",
+                    "destination": pathlib.Path("1.md"),
                 }
             )
         ],
@@ -93,7 +94,7 @@ def test_item_with_alt_title_syntax(testapp):
                 "content": _pytest_regex(
                     r"<p>text with <strong>bold</strong></p>"
                 ),
-                "destination": "1.html",
+                "destination": pathlib.Path("1.html"),
                 "title": "some title",
             }
         )
@@ -117,7 +118,7 @@ def test_item_with_newlines_at_the_beginning(testapp):
                         text with **bold**
                     """
                     ),
-                    "destination": "1.md",
+                    "destination": pathlib.Path("1.md"),
                 }
             )
         ],
@@ -130,7 +131,7 @@ def test_item_with_newlines_at_the_beginning(testapp):
                 "content": _pytest_regex(
                     r"<p>text with <strong>bold</strong></p>"
                 ),
-                "destination": "1.html",
+                "destination": pathlib.Path("1.html"),
                 "title": "some title",
             }
         )
@@ -150,7 +151,7 @@ def test_item_without_title(testapp):
                         text with **bold**
                     """
                     ),
-                    "destination": "1.md",
+                    "destination": pathlib.Path("1.md"),
                 }
             )
         ],
@@ -163,7 +164,7 @@ def test_item_without_title(testapp):
                 "content": _pytest_regex(
                     r"<p>text with <strong>bold</strong></p>"
                 ),
-                "destination": "1.html",
+                "destination": pathlib.Path("1.html"),
             }
         )
     ]
@@ -184,7 +185,7 @@ def test_item_title_is_not_overwritten(testapp):
                         text with **bold**
                     """
                     ),
-                    "destination": "1.md",
+                    "destination": pathlib.Path("1.md"),
                     "title": "another title",
                 }
             )
@@ -198,7 +199,7 @@ def test_item_title_is_not_overwritten(testapp):
                 "content": _pytest_regex(
                     r"<p>text with <strong>bold</strong></p>"
                 ),
-                "destination": "1.html",
+                "destination": pathlib.Path("1.html"),
                 "title": "another title",
             }
         )
@@ -222,7 +223,7 @@ def test_item_title_ignored_in_the_middle_of_text(testapp):
                         text with **bold**
                     """
                     ),
-                    "destination": "1.md",
+                    "destination": pathlib.Path("1.md"),
                 }
             )
         ],
@@ -237,7 +238,7 @@ def test_item_title_ignored_in_the_middle_of_text(testapp):
                     r"<h1>some title</h1>\s*"
                     r"<p>text with <strong>bold</strong></p>"
                 ),
-                "destination": "1.html",
+                "destination": pathlib.Path("1.html"),
             }
         )
     ]
@@ -277,7 +278,7 @@ def test_item_with_sections(testapp):
                         yyy
                     """
                     ),
-                    "destination": "1.md",
+                    "destination": pathlib.Path("1.md"),
                 }
             )
         ],
@@ -294,7 +295,7 @@ def test_item_with_sections(testapp):
                     r"<h1>some title 2</h1>\s*<p>xxx</p>\s*"
                     r"<h2>some section 3</h2>\s*<p>yyy</p>\s*"
                 ),
-                "destination": "1.html",
+                "destination": pathlib.Path("1.html"),
                 "title": "some title 1",
             }
         )
@@ -317,7 +318,7 @@ def test_item_with_code(testapp):
                             lambda x: pass
                     """
                     ),
-                    "destination": "1.md",
+                    "destination": pathlib.Path("1.md"),
                 }
             )
         ],
@@ -331,7 +332,7 @@ def test_item_with_code(testapp):
                     r"<p>test codeblock</p>\s*.*highlight.*"
                     r"<pre>[\s\S]+</pre>.*"
                 ),
-                "destination": "1.html",
+                "destination": pathlib.Path("1.html"),
             }
         )
     ]
@@ -354,7 +355,7 @@ def test_item_with_fenced_code(testapp):
                         ```
                     """
                     ),
-                    "destination": "1.md",
+                    "destination": pathlib.Path("1.md"),
                 }
             )
         ],
@@ -368,7 +369,7 @@ def test_item_with_fenced_code(testapp):
                     r"<p>test codeblock</p>\s*.*highlight.*"
                     r"<pre>[\s\S]+</pre>.*"
                 ),
-                "destination": "1.html",
+                "destination": pathlib.Path("1.html"),
             }
         )
     ]
@@ -389,7 +390,7 @@ def test_item_with_table(testapp):
                            foo   |   bar
                     """
                     ),
-                    "destination": "1.md",
+                    "destination": pathlib.Path("1.md"),
                 }
             )
         ],
@@ -399,7 +400,12 @@ def test_item_with_table(testapp):
 
     stream = list(stream)
     assert stream == [
-        holocron.Item({"content": unittest.mock.ANY, "destination": "1.html"})
+        holocron.Item(
+            {
+                "content": unittest.mock.ANY,
+                "destination": pathlib.Path("1.html"),
+            }
+        )
     ]
 
     item = stream[0]
@@ -423,7 +429,7 @@ def test_item_with_inline_code(testapp):
                         test `code`
                     """
                     ),
-                    "destination": "1.md",
+                    "destination": pathlib.Path("1.md"),
                 }
             )
         ],
@@ -434,7 +440,7 @@ def test_item_with_inline_code(testapp):
         holocron.Item(
             {
                 "content": _pytest_regex(r"<p>test <code>code</code></p>"),
-                "destination": "1.html",
+                "destination": pathlib.Path("1.html"),
             }
         )
     ]
@@ -457,7 +463,10 @@ def test_item_many(testapp, amount):
         testapp,
         [
             holocron.Item(
-                {"content": "the key is **%d**" % i, "destination": "1.md"}
+                {
+                    "content": "the key is **%d**" % i,
+                    "destination": pathlib.Path("1.md"),
+                }
             )
             for i in range(amount)
         ],
@@ -468,7 +477,7 @@ def test_item_many(testapp, amount):
         holocron.Item(
             {
                 "content": "<p>the key is <strong>%d</strong></p>" % i,
-                "destination": "1.html",
+                "destination": pathlib.Path("1.html"),
             }
         )
         for i in range(amount)
@@ -507,7 +516,7 @@ def test_param_extensions(testapp, extensions, rendered):
                             lambda x: pass
                     """
                     ),
-                    "destination": "1.md",
+                    "destination": pathlib.Path("1.md"),
                 }
             )
         ],
@@ -517,7 +526,10 @@ def test_param_extensions(testapp, extensions, rendered):
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
         holocron.Item(
-            {"content": _pytest_regex(rendered), "destination": "1.html"}
+            {
+                "content": _pytest_regex(rendered),
+                "destination": pathlib.Path("1.html"),
+            }
         )
     ]
 

@@ -1,6 +1,7 @@
 """Generate an archive page."""
 
 import itertools
+import pathlib
 
 import holocron
 from ._misc import parameters
@@ -20,8 +21,8 @@ def process(app, stream, *, template="archive.j2", save_as="index.html"):
 
     index = holocron.WebSiteItem(
         {
-            "source": "archive://%s" % save_as,
-            "destination": save_as,
+            "source": pathlib.Path("archive://", save_as),
+            "destination": pathlib.Path(save_as),
             "template": template,
             "items": list(stream),
             "baseurl": app.metadata["url"],

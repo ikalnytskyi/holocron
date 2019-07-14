@@ -1,7 +1,7 @@
 """Source processor test suite."""
 
 import collections.abc
-import os
+import pathlib
 import unittest.mock
 
 import pytest
@@ -52,8 +52,8 @@ def test_item(testapp, monkeypatch, tmpdir, path):
     assert list(stream) == [
         holocron.WebSiteItem(
             {
-                "source": os.path.join(*path),
-                "destination": os.path.join(*path),
+                "source": pathlib.Path(*path),
+                "destination": pathlib.Path(*path),
                 "content": "Obi-Wan",
                 "created": _pytest_timestamp(tmpdir.join(*path).stat().ctime),
                 "updated": _pytest_timestamp(tmpdir.join(*path).stat().mtime),
@@ -83,8 +83,8 @@ def test_item_content_types(testapp, monkeypatch, tmpdir, data):
     assert list(stream) == [
         holocron.WebSiteItem(
             {
-                "source": "cv.md",
-                "destination": "cv.md",
+                "source": pathlib.Path("cv.md"),
+                "destination": pathlib.Path("cv.md"),
                 "content": data,
                 "created": _pytest_timestamp(
                     tmpdir.join("cv.md").stat().ctime
@@ -110,8 +110,8 @@ def test_item_empty(testapp, monkeypatch, tmpdir):
     assert list(stream) == [
         holocron.WebSiteItem(
             {
-                "source": "cv.md",
-                "destination": "cv.md",
+                "source": pathlib.Path("cv.md"),
+                "destination": pathlib.Path("cv.md"),
                 "content": "",
                 "created": _pytest_timestamp(
                     tmpdir.join("cv.md").stat().ctime
@@ -173,8 +173,8 @@ def test_item_many(testapp, monkeypatch, tmpdir, discovered, passed):
     assert sorted(items[passed:], key=lambda item: item["source"]) == [
         holocron.WebSiteItem(
             {
-                "source": str(i),
-                "destination": str(i),
+                "source": pathlib.Path(str(i)),
+                "destination": pathlib.Path(str(i)),
                 "content": "key=%d" % i,
                 "created": _pytest_timestamp(tmpdir.join(str(i)).stat().ctime),
                 "updated": _pytest_timestamp(tmpdir.join(str(i)).stat().mtime),
@@ -205,8 +205,8 @@ def test_param_path(testapp, monkeypatch, tmpdir, path):
     assert list(stream) == [
         holocron.WebSiteItem(
             {
-                "source": "test",
-                "destination": "test",
+                "source": pathlib.Path("test"),
+                "destination": pathlib.Path("test"),
                 "content": "Obi-Wan",
                 "created": _pytest_timestamp(
                     tmpdir.join(*path).join("test").stat().ctime
@@ -238,8 +238,8 @@ def test_param_pattern(testapp, monkeypatch, tmpdir):
     assert sorted(stream, key=lambda item: item["source"]) == [
         holocron.WebSiteItem(
             {
-                "source": "1.md",
-                "destination": "1.md",
+                "source": pathlib.Path("1.md"),
+                "destination": pathlib.Path("1.md"),
                 "content": "Skywalker",
                 "created": _pytest_timestamp(tmpdir.join("1.md").stat().ctime),
                 "updated": _pytest_timestamp(tmpdir.join("1.md").stat().mtime),
@@ -248,8 +248,8 @@ def test_param_pattern(testapp, monkeypatch, tmpdir):
         ),
         holocron.WebSiteItem(
             {
-                "source": "4.markdown",
-                "destination": "4.markdown",
+                "source": pathlib.Path("4.markdown"),
+                "destination": pathlib.Path("4.markdown"),
                 "content": "Yoda",
                 "created": _pytest_timestamp(
                     tmpdir.join("4.markdown").stat().ctime
@@ -278,8 +278,8 @@ def test_param_encoding(testapp, monkeypatch, tmpdir, encoding):
     assert list(stream) == [
         holocron.WebSiteItem(
             {
-                "source": "cv.md",
-                "destination": "cv.md",
+                "source": pathlib.Path("cv.md"),
+                "destination": pathlib.Path("cv.md"),
                 "content": "Оби-Ван",
                 "created": unittest.mock.ANY,
                 "updated": unittest.mock.ANY,
@@ -305,8 +305,8 @@ def test_param_encoding_fallback(testapp, monkeypatch, tmpdir, encoding):
     assert list(stream) == [
         holocron.WebSiteItem(
             {
-                "source": "cv.md",
-                "destination": "cv.md",
+                "source": pathlib.Path("cv.md"),
+                "destination": pathlib.Path("cv.md"),
                 "content": "Оби-Ван",
                 "created": unittest.mock.ANY,
                 "updated": unittest.mock.ANY,

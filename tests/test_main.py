@@ -1,6 +1,6 @@
 """Tests Holocron CLI."""
 
-import os
+import pathlib
 import sys
 import textwrap
 import subprocess
@@ -32,13 +32,13 @@ def example_site(create_site):
 
     return create_site(
         [
-            (os.path.join("cv.md"), b"yoda"),
-            (os.path.join("about", "photo.png"), b""),
+            (pathlib.Path("cv.md"), b"yoda"),
+            (pathlib.Path("about", "photo.png"), b""),
             (
-                os.path.join("2019", "02", "12", "skywalker", "index.html"),
+                pathlib.Path("2019", "02", "12", "skywalker", "index.html"),
                 b"luke",
             ),
-            (os.path.join(".holocron.yml"), holocron_yml),
+            (pathlib.Path(".holocron.yml"), holocron_yml),
         ]
     )
 

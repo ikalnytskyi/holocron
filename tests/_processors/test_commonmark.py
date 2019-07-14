@@ -3,6 +3,7 @@
 import collections.abc
 import re
 import textwrap
+import pathlib
 
 import pytest
 
@@ -35,7 +36,10 @@ def test_item(testapp):
         testapp,
         [
             holocron.Item(
-                {"content": "text with **bold**", "destination": "1.md"}
+                {
+                    "content": "text with **bold**",
+                    "destination": pathlib.Path("1.md"),
+                }
             )
         ],
     )
@@ -45,7 +49,7 @@ def test_item(testapp):
         holocron.Item(
             {
                 "content": "<p>text with <strong>bold</strong></p>",
-                "destination": "1.html",
+                "destination": pathlib.Path("1.html"),
             }
         )
     ]
@@ -106,7 +110,12 @@ def test_item_parsed_title(testapp, content):
     """Commonmark processor has to cut a title of the content."""
 
     stream = commonmark.process(
-        testapp, [holocron.Item({"content": content, "destination": "1.md"})]
+        testapp,
+        [
+            holocron.Item(
+                {"content": content, "destination": pathlib.Path("1.md")}
+            )
+        ],
     )
 
     assert isinstance(stream, collections.abc.Iterable)
@@ -114,7 +123,7 @@ def test_item_parsed_title(testapp, content):
         holocron.Item(
             {
                 "content": "<p>text with <strong>bold</strong></p>",
-                "destination": "1.html",
+                "destination": pathlib.Path("1.html"),
                 "title": "some title",
             }
         )
@@ -136,7 +145,7 @@ def test_item_parsed_title_ignored(testapp):
                         text with **bold**
                     """
                     ),
-                    "destination": "1.md",
+                    "destination": pathlib.Path("1.md"),
                     "title": "another title",
                 }
             )
@@ -148,7 +157,7 @@ def test_item_parsed_title_ignored(testapp):
         holocron.Item(
             {
                 "content": "<p>text with <strong>bold</strong></p>",
-                "destination": "1.html",
+                "destination": pathlib.Path("1.html"),
                 "title": "another title",
             }
         )
@@ -172,7 +181,7 @@ def test_item_parsed_title_in_the_middle_of_content(testapp):
                         text with **bold**
                     """
                     ),
-                    "destination": "1.md",
+                    "destination": pathlib.Path("1.md"),
                 }
             )
         ],
@@ -187,7 +196,7 @@ def test_item_parsed_title_in_the_middle_of_content(testapp):
                     r"<h1>some title</h1>\s*"
                     r"<p>text with <strong>bold</strong></p>"
                 ),
-                "destination": "1.html",
+                "destination": pathlib.Path("1.html"),
             }
         )
     ]
@@ -227,7 +236,7 @@ def test_item_with_sections(testapp):
                         yyy
                     """
                     ),
-                    "destination": "1.md",
+                    "destination": pathlib.Path("1.md"),
                 }
             )
         ],
@@ -244,7 +253,7 @@ def test_item_with_sections(testapp):
                     r"<h1>some title 2</h1>\s*<p>xxx</p>\s*"
                     r"<h2>some section 3</h2>\s*<p>yyy</p>\s*"
                 ),
-                "destination": "1.html",
+                "destination": pathlib.Path("1.html"),
                 "title": "some title 1",
             }
         )
@@ -268,7 +277,10 @@ def test_item_many(testapp, amount):
         testapp,
         [
             holocron.Item(
-                {"content": "the key is **%d**" % i, "destination": "1.md"}
+                {
+                    "content": "the key is **%d**" % i,
+                    "destination": pathlib.Path("1.md"),
+                }
             )
             for i in range(amount)
         ],
@@ -279,7 +291,7 @@ def test_item_many(testapp, amount):
         holocron.Item(
             {
                 "content": "<p>the key is <strong>%d</strong></p>" % i,
-                "destination": "1.html",
+                "destination": pathlib.Path("1.html"),
             }
         )
         for i in range(amount)
@@ -322,7 +334,7 @@ def test_param_pygmentize(testapp, rendered, pygmentize):
                         ```
                     """
                     ),
-                    "destination": "1.md",
+                    "destination": pathlib.Path("1.md"),
                 }
             )
         ],
@@ -332,7 +344,10 @@ def test_param_pygmentize(testapp, rendered, pygmentize):
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
         holocron.Item(
-            {"content": _pytest_regex(rendered), "destination": "1.html"}
+            {
+                "content": _pytest_regex(rendered),
+                "destination": pathlib.Path("1.html"),
+            }
         )
     ]
 
@@ -358,7 +373,7 @@ def test_param_pygmentize_unknown_language(testapp, language):
                     """
                     )
                     % language,
-                    "destination": "1.md",
+                    "destination": pathlib.Path("1.md"),
                 }
             )
         ],
@@ -374,7 +389,7 @@ def test_param_pygmentize_unknown_language(testapp, language):
                     "lambda x: pass\n</code></pre>"
                 )
                 % language,
-                "destination": "1.html",
+                "destination": pathlib.Path("1.html"),
             }
         )
     ]

@@ -1,7 +1,7 @@
 """Yo! Holocron CLI is here!"""
 
 import io
-import os
+import pathlib
 import sys
 import logging
 import argparse
@@ -26,7 +26,8 @@ def create_app_from_yml(path):
                 # wrap the result into 'io.StringIO' in order to preserve
                 # original filename in 'yaml.safe_load()' errors.
                 interpolated = io.StringIO(
-                    f.read() % {"here": os.path.abspath(os.path.dirname(path))}
+                    f.read()
+                    % {"here": str(pathlib.Path(path).parent.resolve())}
                 )
                 interpolated.name = f.name
 

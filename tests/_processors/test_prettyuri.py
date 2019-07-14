@@ -1,6 +1,6 @@
 """Prettyuri processor test suite."""
 
-import os
+import pathlib
 import collections.abc
 
 import pytest
@@ -19,13 +19,13 @@ def test_item(testapp):
 
     stream = prettyuri.process(
         testapp,
-        [holocron.Item({"destination": os.path.join("about", "cv.html")})],
+        [holocron.Item({"destination": pathlib.Path("about", "cv.html")})],
     )
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
         holocron.Item(
-            {"destination": os.path.join("about", "cv", "index.html")}
+            {"destination": pathlib.Path("about", "cv", "index.html")}
         )
     ]
 
@@ -38,12 +38,12 @@ def test_item_index(testapp, index):
 
     stream = prettyuri.process(
         testapp,
-        [holocron.Item({"destination": os.path.join("about", "cv", index)})],
+        [holocron.Item({"destination": pathlib.Path("about", "cv", index)})],
     )
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        holocron.Item({"destination": os.path.join("about", "cv", index)})
+        holocron.Item({"destination": pathlib.Path("about", "cv", index)})
     ]
 
 
@@ -64,7 +64,7 @@ def test_item_many(testapp, amount):
         testapp,
         [
             holocron.Item(
-                {"destination": os.path.join("about", "%d.html" % i)}
+                {"destination": pathlib.Path("about", "%d.html" % i)}
             )
             for i in range(amount)
         ],
@@ -73,7 +73,7 @@ def test_item_many(testapp, amount):
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
         holocron.Item(
-            {"destination": os.path.join("about", str(i), "index.html")}
+            {"destination": pathlib.Path("about", str(i), "index.html")}
         )
         for i in range(amount)
     ]

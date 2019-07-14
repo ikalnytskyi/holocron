@@ -3,6 +3,7 @@
 import collections.abc
 import re
 import textwrap
+import pathlib
 
 import pytest
 
@@ -44,7 +45,7 @@ def test_item(testapp):
                         text with **bold**
                     """
                     ),
-                    "destination": "1.rst",
+                    "destination": pathlib.Path("1.rst"),
                 }
             )
         ],
@@ -57,7 +58,7 @@ def test_item(testapp):
                 "content": _pytest_regex(
                     r"<p>text with <strong>bold</strong></p>\s*"
                 ),
-                "destination": "1.html",
+                "destination": pathlib.Path("1.html"),
                 "title": "some title",
             }
         )
@@ -85,7 +86,7 @@ def test_item_with_subsection(testapp):
                         text with **bold**
                     """
                     ),
-                    "destination": "1.rst",
+                    "destination": pathlib.Path("1.rst"),
                 }
             )
         ],
@@ -100,7 +101,7 @@ def test_item_with_subsection(testapp):
                     r"<h2>some section</h2>\s*"
                     r"<p>text with <strong>bold</strong></p>\s*"
                 ),
-                "destination": "1.html",
+                "destination": pathlib.Path("1.html"),
                 "title": "some title",
             }
         )
@@ -120,7 +121,7 @@ def test_item_without_title(testapp):
                         text with **bold**
                     """
                     ),
-                    "destination": "1.rst",
+                    "destination": pathlib.Path("1.rst"),
                 }
             )
         ],
@@ -133,7 +134,7 @@ def test_item_without_title(testapp):
                 "content": _pytest_regex(
                     r"<p>text with <strong>bold</strong></p>\s*"
                 ),
-                "destination": "1.html",
+                "destination": pathlib.Path("1.html"),
             }
         )
     ]
@@ -175,7 +176,7 @@ def test_item_with_sections(testapp):
                         yyy
                     """
                     ),
-                    "destination": "1.rst",
+                    "destination": pathlib.Path("1.rst"),
                 }
             )
         ],
@@ -197,7 +198,7 @@ def test_item_with_sections(testapp):
                     r"<h3>some section 3</h3>\s*"
                     r"<p>yyy</p>\s*"
                 ),
-                "destination": "1.html",
+                "destination": pathlib.Path("1.html"),
             }
         )
     ]
@@ -220,7 +221,7 @@ def test_item_with_code(testapp):
                             lambda x: pass
                     """
                     ),
-                    "destination": "1.rst",
+                    "destination": pathlib.Path("1.rst"),
                 }
             )
         ],
@@ -233,7 +234,7 @@ def test_item_with_code(testapp):
                 "content": _pytest_regex(
                     r"<p>test codeblock</p>\s*<pre.*python[^>]*>[\s\S]+</pre>"
                 ),
-                "destination": "1.html",
+                "destination": pathlib.Path("1.html"),
             }
         )
     ]
@@ -252,7 +253,7 @@ def test_item_with_inline_code(testapp):
                         test ``code``
                     """
                     ),
-                    "destination": "1.rst",
+                    "destination": pathlib.Path("1.rst"),
                 }
             )
         ],
@@ -263,7 +264,7 @@ def test_item_with_inline_code(testapp):
         holocron.Item(
             {
                 "content": _pytest_regex(r"<p>test <code>code</code></p>"),
-                "destination": "1.html",
+                "destination": pathlib.Path("1.html"),
             }
         )
     ]
@@ -290,7 +291,7 @@ def test_param_settings(testapp):
                         bbb
                     """
                     ),
-                    "destination": "1.rst",
+                    "destination": pathlib.Path("1.rst"),
                 }
             )
         ],
@@ -309,7 +310,7 @@ def test_param_settings(testapp):
                     r"<h3>section 2</h3>\s*"
                     r"<p>bbb</p>\s*"
                 ),
-                "destination": "1.html",
+                "destination": pathlib.Path("1.html"),
             }
         )
     ]
@@ -332,7 +333,10 @@ def test_item_many(testapp, amount):
         testapp,
         [
             holocron.Item(
-                {"content": "the key is **%d**" % i, "destination": "1.rst"}
+                {
+                    "content": "the key is **%d**" % i,
+                    "destination": pathlib.Path("1.rst"),
+                }
             )
             for i in range(amount)
         ],
@@ -343,7 +347,7 @@ def test_item_many(testapp, amount):
         holocron.Item(
             {
                 "content": "<p>the key is <strong>%d</strong></p>" % i,
-                "destination": "1.html",
+                "destination": pathlib.Path("1.html"),
             }
         )
         for i in range(amount)

@@ -2,7 +2,7 @@
 
 import collections.abc
 import itertools
-import os
+import pathlib
 
 import pytest
 
@@ -27,8 +27,8 @@ def test_item(testapp):
         holocron.Item({"title": "The Force", "content": "Obi-Wan"}),
         holocron.WebSiteItem(
             {
-                "source": "archive://index.html",
-                "destination": "index.html",
+                "source": pathlib.Path("archive://index.html"),
+                "destination": pathlib.Path("index.html"),
                 "template": "archive.j2",
                 "items": [
                     holocron.Item({"title": "The Force", "content": "Obi-Wan"})
@@ -70,8 +70,8 @@ def test_item_many(testapp, amount):
             [
                 holocron.WebSiteItem(
                     {
-                        "source": "archive://index.html",
-                        "destination": "index.html",
+                        "source": pathlib.Path("archive://index.html"),
+                        "destination": pathlib.Path("index.html"),
                         "template": "archive.j2",
                         "items": [
                             holocron.Item(
@@ -101,8 +101,8 @@ def test_param_template(testapp):
         holocron.Item({"title": "The Force", "content": "Obi-Wan"}),
         holocron.WebSiteItem(
             {
-                "source": "archive://index.html",
-                "destination": "index.html",
+                "source": pathlib.Path("archive://index.html"),
+                "destination": pathlib.Path("index.html"),
                 "template": "foobar.txt",
                 "items": [
                     holocron.Item({"title": "The Force", "content": "Obi-Wan"})
@@ -116,8 +116,8 @@ def test_param_template(testapp):
 @pytest.mark.parametrize(
     ["save_as"],
     [
-        pytest.param(os.path.join("posts", "skywalker.luke"), id="deep"),
-        pytest.param(os.path.join("yoda.jedi"), id="flat"),
+        pytest.param(pathlib.Path("posts", "skywalker.luke"), id="deep"),
+        pytest.param(pathlib.Path("yoda.jedi"), id="flat"),
     ],
 )
 def test_param_save_as(testapp, save_as):
@@ -126,7 +126,7 @@ def test_param_save_as(testapp, save_as):
     stream = archive.process(
         testapp,
         [holocron.Item({"title": "The Force", "content": "Obi-Wan"})],
-        save_as=save_as,
+        save_as=str(save_as),
     )
 
     assert isinstance(stream, collections.abc.Iterable)
@@ -134,7 +134,7 @@ def test_param_save_as(testapp, save_as):
         holocron.Item({"title": "The Force", "content": "Obi-Wan"}),
         holocron.WebSiteItem(
             {
-                "source": "archive://%s" % save_as,
+                "source": pathlib.Path("archive://", save_as),
                 "destination": save_as,
                 "template": "archive.j2",
                 "items": [

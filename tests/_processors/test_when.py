@@ -2,7 +2,7 @@
 
 import collections.abc
 import itertools
-import os
+import pathlib
 
 import pytest
 
@@ -160,9 +160,9 @@ def test_item_many_eggs(testapp):
     ["cond"],
     [
         pytest.param([r"item.author == 'yoda'"], id="=="),
-        pytest.param([r"item.source.endswith('.md')"], id="endswith"),
+        pytest.param([r"item.source.suffix == '.md'"], id="endswith"),
         pytest.param(
-            [r"item.author == 'yoda'", "item.source.endswith('.md')"],
+            [r"item.author == 'yoda'", "item.source.suffix == '.md'"],
             id="two-conditions",
         ),
         pytest.param([r"item.source | match('.*\.md')"], id="match-md"),
@@ -179,7 +179,7 @@ def test_param_when(testapp, cond):
                 {
                     "content": "eh",
                     "author": "yoda",
-                    "source": os.path.join("about", "index.md"),
+                    "source": pathlib.Path("about", "index.md"),
                 }
             )
         ],
@@ -193,7 +193,7 @@ def test_param_when(testapp, cond):
             {
                 "content": "eh",
                 "author": "yoda",
-                "source": os.path.join("about", "index.md"),
+                "source": pathlib.Path("about", "index.md"),
                 "spam": 42,
             }
         )

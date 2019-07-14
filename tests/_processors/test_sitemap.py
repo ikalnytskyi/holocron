@@ -4,7 +4,7 @@ import collections.abc
 import datetime
 import gzip
 import itertools
-import os
+import pathlib
 import unittest.mock
 
 import pytest
@@ -57,7 +57,7 @@ def test_item(testapp, filename, escaped):
         [
             holocron.WebSiteItem(
                 {
-                    "destination": filename,
+                    "destination": pathlib.Path(filename),
                     "updated": timepoint,
                     "baseurl": testapp.metadata["url"],
                 }
@@ -69,15 +69,15 @@ def test_item(testapp, filename, escaped):
     assert list(stream) == [
         holocron.WebSiteItem(
             {
-                "destination": filename,
+                "destination": pathlib.Path(filename),
                 "updated": timepoint,
                 "baseurl": testapp.metadata["url"],
             }
         ),
         holocron.WebSiteItem(
             {
-                "source": "sitemap://sitemap.xml",
-                "destination": "sitemap.xml",
+                "source": pathlib.Path("sitemap://sitemap.xml"),
+                "destination": pathlib.Path("sitemap.xml"),
                 "content": _pytest_xmlasdict(
                     {
                         "urlset": {
@@ -114,7 +114,7 @@ def test_item_many(testapp, amount):
         [
             holocron.WebSiteItem(
                 {
-                    "destination": str(i),
+                    "destination": pathlib.Path(str(i)),
                     "updated": timepoint,
                     "baseurl": testapp.metadata["url"],
                 }
@@ -129,7 +129,7 @@ def test_item_many(testapp, amount):
             [
                 holocron.WebSiteItem(
                     {
-                        "destination": str(i),
+                        "destination": pathlib.Path(str(i)),
                         "updated": timepoint,
                         "baseurl": testapp.metadata["url"],
                     }
@@ -139,8 +139,8 @@ def test_item_many(testapp, amount):
             [
                 holocron.WebSiteItem(
                     {
-                        "source": "sitemap://sitemap.xml",
-                        "destination": "sitemap.xml",
+                        "source": pathlib.Path("sitemap://sitemap.xml"),
+                        "destination": pathlib.Path("sitemap.xml"),
                         "content": _pytest_xmlasdict(
                             {
                                 "urlset": {
@@ -172,7 +172,7 @@ def test_param_gzip(testapp):
         [
             holocron.WebSiteItem(
                 {
-                    "destination": "1.html",
+                    "destination": pathlib.Path("1.html"),
                     "updated": timepoint,
                     "baseurl": testapp.metadata["url"],
                 }
@@ -185,15 +185,15 @@ def test_param_gzip(testapp):
     assert list(stream) == [
         holocron.WebSiteItem(
             {
-                "destination": "1.html",
+                "destination": pathlib.Path("1.html"),
                 "updated": timepoint,
                 "baseurl": testapp.metadata["url"],
             }
         ),
         holocron.WebSiteItem(
             {
-                "source": "sitemap://sitemap.xml.gz",
-                "destination": "sitemap.xml.gz",
+                "source": pathlib.Path("sitemap://sitemap.xml.gz"),
+                "destination": pathlib.Path("sitemap.xml.gz"),
                 "content": _pytest_xmlasdict(
                     {
                         "urlset": {
@@ -215,8 +215,8 @@ def test_param_gzip(testapp):
 @pytest.mark.parametrize(
     ["save_as"],
     [
-        pytest.param(os.path.join("posts", "skywalker.luke"), id="deep"),
-        pytest.param(os.path.join("yoda.jedi"), id="flat"),
+        pytest.param(pathlib.Path("posts", "skywalker.luke"), id="deep"),
+        pytest.param(pathlib.Path("yoda.jedi"), id="flat"),
     ],
 )
 def test_param_save_as(testapp, save_as):
@@ -228,28 +228,28 @@ def test_param_save_as(testapp, save_as):
         [
             holocron.WebSiteItem(
                 {
-                    "destination": os.path.join("posts", "1.html"),
+                    "destination": pathlib.Path("posts", "1.html"),
                     "updated": timepoint,
                     "baseurl": testapp.metadata["url"],
                 }
             )
         ],
-        save_as=save_as,
+        save_as=str(save_as),
     )
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
         holocron.WebSiteItem(
             {
-                "destination": os.path.join("posts", "1.html"),
+                "destination": pathlib.Path("posts", "1.html"),
                 "updated": timepoint,
                 "baseurl": testapp.metadata["url"],
             }
         ),
         holocron.WebSiteItem(
             {
-                "source": "sitemap://%s" % save_as,
-                "destination": save_as,
+                "source": pathlib.Path("sitemap://", save_as),
+                "destination": pathlib.Path(save_as),
                 "content": unittest.mock.ANY,
                 "baseurl": testapp.metadata["url"],
             }
@@ -260,15 +260,15 @@ def test_param_save_as(testapp, save_as):
 @pytest.mark.parametrize(
     ["document_path", "sitemap_path"],
     [
-        pytest.param(os.path.join("1.html"), os.path.join("b", "sitemap.xml")),
+        pytest.param(pathlib.Path("1.html"), pathlib.Path("b", "sitemap.xml")),
         pytest.param(
-            os.path.join("a", "1.html"), os.path.join("b", "sitemap.xml")
+            pathlib.Path("a", "1.html"), pathlib.Path("b", "sitemap.xml")
         ),
         pytest.param(
-            os.path.join("a", "1.html"), os.path.join("a", "c", "sitemap.xml")
+            pathlib.Path("a", "1.html"), pathlib.Path("a", "c", "sitemap.xml")
         ),
         pytest.param(
-            os.path.join("ab", "1.html"), os.path.join("a", "sitemap.xml")
+            pathlib.Path("ab", "1.html"), pathlib.Path("a", "sitemap.xml")
         ),
     ],
 )
@@ -287,7 +287,7 @@ def test_param_save_as_unsupported(testapp, document_path, sitemap_path):
                 }
             )
         ],
-        save_as=sitemap_path,
+        save_as=str(sitemap_path),
     )
 
     assert isinstance(stream, collections.abc.Iterable)
@@ -315,7 +315,7 @@ def test_param_pretty(testapp, pretty, lines):
         [
             holocron.WebSiteItem(
                 {
-                    "destination": "1.html",
+                    "destination": pathlib.Path("1.html"),
                     "updated": timepoint,
                     "baseurl": testapp.metadata["url"],
                 }
@@ -330,15 +330,15 @@ def test_param_pretty(testapp, pretty, lines):
     assert items == [
         holocron.WebSiteItem(
             {
-                "destination": "1.html",
+                "destination": pathlib.Path("1.html"),
                 "updated": timepoint,
                 "baseurl": testapp.metadata["url"],
             }
         ),
         holocron.WebSiteItem(
             {
-                "source": "sitemap://sitemap.xml",
-                "destination": "sitemap.xml",
+                "source": pathlib.Path("sitemap://sitemap.xml"),
+                "destination": pathlib.Path("sitemap.xml"),
                 "content": unittest.mock.ANY,
                 "baseurl": testapp.metadata["url"],
             }

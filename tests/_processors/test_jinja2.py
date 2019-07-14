@@ -1,7 +1,7 @@
 """Jinja2 processor test suite."""
 
 import collections.abc
-import os
+import pathlib
 import textwrap
 import unittest.mock
 
@@ -45,11 +45,11 @@ def test_item(testapp):
     # Since we don't know in which order statics are discovered, we sort them
     # so we can avoid possible flakes.
     static = sorted(items[1:], key=lambda d: d["source"])
-    assert static[0]["source"] == os.path.join("static", "logo.svg")
+    assert static[0]["source"] == pathlib.Path("static", "logo.svg")
     assert static[0]["destination"] == static[0]["source"]
-    assert static[1]["source"] == os.path.join("static", "pygments.css")
+    assert static[1]["source"] == pathlib.Path("static", "pygments.css")
     assert static[1]["destination"] == static[1]["source"]
-    assert static[2]["source"] == os.path.join("static", "style.css")
+    assert static[2]["source"] == pathlib.Path("static", "style.css")
     assert static[2]["destination"] == static[2]["source"]
     assert len(static) == 3
 
@@ -144,11 +144,11 @@ def test_item_many(testapp, tmpdir, amount):
     # Since we don't know in which order statics are discovered, we sort them
     # so we can avoid possible flakes.
     static = sorted(items[amount:], key=lambda d: d["source"])
-    assert static[0]["source"] == os.path.join("static", "logo.svg")
+    assert static[0]["source"] == pathlib.Path("static", "logo.svg")
     assert static[0]["destination"] == static[0]["source"]
-    assert static[1]["source"] == os.path.join("static", "pygments.css")
+    assert static[1]["source"] == pathlib.Path("static", "pygments.css")
     assert static[1]["destination"] == static[1]["source"]
-    assert static[2]["source"] == os.path.join("static", "style.css")
+    assert static[2]["source"] == pathlib.Path("static", "style.css")
     assert static[2]["destination"] == static[2]["source"]
     assert len(static) == 3
 
@@ -195,8 +195,8 @@ def test_param_themes(testapp, tmpdir):
         holocron.WebSiteItem(
             {
                 "content": "article { margin: 0 }",
-                "source": os.path.join("static", "style.css"),
-                "destination": os.path.join("static", "style.css"),
+                "source": pathlib.Path("static", "style.css"),
+                "destination": pathlib.Path("static", "style.css"),
                 "created": unittest.mock.ANY,
                 "updated": unittest.mock.ANY,
                 "baseurl": testapp.metadata["url"],

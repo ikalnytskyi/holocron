@@ -3,7 +3,6 @@
 import collections.abc
 import itertools
 import inspect
-import os
 import urllib.parse
 
 
@@ -95,16 +94,16 @@ class WebSiteItem(Item):
         # Most modern HTTP servers serve 'index.html' implicitly if a URL
         # that points to a directory is requested. Since we want to produce
         # beautiful URLs, we strip 'index.html' away from a URL.
-        if os.path.basename(destination) in ("index.html", "index.htm"):
-            destination = os.path.dirname(destination)
+        if destination.name in ("index.html", "index.htm"):
+            destination = destination.parent
 
-            # A trailing slash should be added only if an item is not in the
-            # root. Otherwise, the item will have two trailing slashes. E.g.
-            # '//' or 'https://yoda.ua//'.
-            if destination:
-                destination += "/"
+            if not destination.parts:
+                return "/"
+            destination = destination.as_posix() + "/"
+        else:
+            destination = destination.as_posix()
 
-        return urllib.parse.quote("/" + destination)
+        return "/" + urllib.parse.quote(destination)
 
     @property
     def absurl(self):

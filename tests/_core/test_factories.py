@@ -1,5 +1,7 @@
 """Core factories test suite."""
 
+import pathlib
+
 import holocron
 
 
@@ -83,10 +85,10 @@ def test_create_app_pipes_pass():
     """Passed pipes must be setup."""
 
     pipe = [{"name": "markdown"}]
-    item = holocron.Item(content="**text**", destination="1.md")
+    item = holocron.Item(content="**text**", destination=pathlib.Path("1.md"))
 
     testapp = holocron.create_app({}, pipes={"test": pipe})
 
     for processed in testapp.invoke("test", [item]):
         assert processed["content"] == "<p><strong>text</strong></p>"
-        assert processed["destination"] == "1.html"
+        assert processed["destination"] == pathlib.Path("1.html")

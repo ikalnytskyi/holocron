@@ -1,7 +1,7 @@
 """Save processor test suite."""
 
 import collections.abc
-import os
+import pathlib
 
 import py
 import pytest
@@ -22,12 +22,18 @@ def test_item(testapp, monkeypatch, tmpdir):
 
     stream = save.process(
         testapp,
-        [holocron.Item({"content": "Obi-Wan", "destination": "1.html"})],
+        [
+            holocron.Item(
+                {"content": "Obi-Wan", "destination": pathlib.Path("1.html")}
+            )
+        ],
     )
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        holocron.Item({"content": "Obi-Wan", "destination": "1.html"})
+        holocron.Item(
+            {"content": "Obi-Wan", "destination": pathlib.Path("1.html")}
+        )
     ]
     assert tmpdir.join("_site", "1.html").read_text("UTF-8") == "Obi-Wan"
 
@@ -45,12 +51,17 @@ def test_item_content_types(testapp, monkeypatch, tmpdir, data, loader):
     monkeypatch.chdir(tmpdir)
 
     stream = save.process(
-        testapp, [holocron.Item({"content": data, "destination": "1.dat"})]
+        testapp,
+        [
+            holocron.Item(
+                {"content": data, "destination": pathlib.Path("1.dat")}
+            )
+        ],
     )
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        holocron.Item({"content": data, "destination": "1.dat"})
+        holocron.Item({"content": data, "destination": pathlib.Path("1.dat")})
     ]
     assert loader(tmpdir.join("_site", "1.dat")) == data
 
@@ -58,10 +69,10 @@ def test_item_content_types(testapp, monkeypatch, tmpdir, data, loader):
 @pytest.mark.parametrize(
     ["destination"],
     [
-        pytest.param(os.path.join("1.txt"), id="deep-0"),
-        pytest.param(os.path.join("a", "2.txt"), id="deep-1"),
-        pytest.param(os.path.join("a", "b", "3.txt"), id="deep-2"),
-        pytest.param(os.path.join("a", "b", "c", "4.txt"), id="deep-3"),
+        pytest.param(pathlib.Path("1.txt"), id="deep-0"),
+        pytest.param(pathlib.Path("a", "2.txt"), id="deep-1"),
+        pytest.param(pathlib.Path("a", "b", "3.txt"), id="deep-2"),
+        pytest.param(pathlib.Path("a", "b", "c", "4.txt"), id="deep-3"),
     ],
 )
 def test_item_destination(testapp, monkeypatch, tmpdir, destination):
@@ -99,14 +110,18 @@ def test_item_many(testapp, monkeypatch, tmpdir, amount):
     stream = save.process(
         testapp,
         [
-            holocron.Item({"content": "Obi-Wan", "destination": str(i)})
+            holocron.Item(
+                {"content": "Obi-Wan", "destination": pathlib.Path(str(i))}
+            )
             for i in range(amount)
         ],
     )
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        holocron.Item({"content": "Obi-Wan", "destination": str(i)})
+        holocron.Item(
+            {"content": "Obi-Wan", "destination": pathlib.Path(str(i))}
+        )
         for i in range(amount)
     ]
 
@@ -124,13 +139,19 @@ def test_param_encoding(testapp, monkeypatch, tmpdir, encoding):
 
     stream = save.process(
         testapp,
-        [holocron.Item({"content": "Обі-Ван", "destination": "1.html"})],
+        [
+            holocron.Item(
+                {"content": "Обі-Ван", "destination": pathlib.Path("1.html")}
+            )
+        ],
         encoding=encoding,
     )
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        holocron.Item({"content": "Обі-Ван", "destination": "1.html"})
+        holocron.Item(
+            {"content": "Обі-Ван", "destination": pathlib.Path("1.html")}
+        )
     ]
     assert tmpdir.join("_site", "1.html").read_text(encoding) == "Обі-Ван"
 
@@ -146,12 +167,18 @@ def test_param_encoding_fallback(testapp, monkeypatch, tmpdir, encoding):
 
     stream = save.process(
         testapp,
-        [holocron.Item({"content": "Обі-Ван", "destination": "1.html"})],
+        [
+            holocron.Item(
+                {"content": "Обі-Ван", "destination": pathlib.Path("1.html")}
+            )
+        ],
     )
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        holocron.Item({"content": "Обі-Ван", "destination": "1.html"})
+        holocron.Item(
+            {"content": "Обі-Ван", "destination": pathlib.Path("1.html")}
+        )
     ]
     assert tmpdir.join("_site", "1.html").read_text(encoding) == "Обі-Ван"
 
@@ -166,13 +193,19 @@ def test_param_to(testapp, monkeypatch, tmpdir, to):
 
     stream = save.process(
         testapp,
-        [holocron.Item({"content": "Obi-Wan", "destination": "1.html"})],
+        [
+            holocron.Item(
+                {"content": "Obi-Wan", "destination": pathlib.Path("1.html")}
+            )
+        ],
         to=to,
     )
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        holocron.Item({"content": "Obi-Wan", "destination": "1.html"})
+        holocron.Item(
+            {"content": "Obi-Wan", "destination": pathlib.Path("1.html")}
+        )
     ]
     assert tmpdir.join(to, "1.html").read_text("UTF-8") == "Obi-Wan"
 

@@ -1,6 +1,5 @@
 """Convert Markdown into HTML."""
 
-import os
 import re
 
 import markdown
@@ -71,8 +70,6 @@ def process(app, stream, *, extensions=None):
             item["title"] = item.get("title", title)
 
         item["content"] = markdown_.convert(item["content"])
-        item["destination"] = (
-            "%s.html" % os.path.splitext(item["destination"])[0]
-        )
+        item["destination"] = item["destination"].with_suffix(".html")
 
         yield item
