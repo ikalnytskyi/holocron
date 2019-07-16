@@ -31,9 +31,7 @@ class _WhenEvaluator:
         self._env.filters.update({"match": _re_match})
 
     def eval(self, when, **context):
-        template = self._env.from_string(
-            "{%% if %s %%}true{%% endif %%}" % when
-        )
+        template = self._env.from_string(f"{{% if {when} %}}true{{% endif %}}")
         return template.render(**context) == "true"
 
 

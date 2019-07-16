@@ -84,7 +84,7 @@ def test_item_atom(testapp):
     assert parsed.feed.link["href"] == testapp.metadata["url"]
     assert parsed.feed.generator["uri"] == "https://holocron.readthedocs.io"
     assert parsed.feed.generator["version"] == _HOLOCRON_VERSION
-    assert parsed.feed.generator == "Holocron/v%s" % _HOLOCRON_VERSION
+    assert parsed.feed.generator == f"Holocron/v{_HOLOCRON_VERSION}"
 
     assert set(dir(parsed.feed.entry)) == {"id", "title", "content", "updated"}
     assert parsed.feed.entry.id == "day-one"
@@ -168,7 +168,7 @@ def test_item_atom_feed_metadata(testapp):
     assert parsed.feed.link["href"] == testapp.metadata["url"]
     assert parsed.feed.generator["uri"] == "https://holocron.readthedocs.io"
     assert parsed.feed.generator["version"] == _HOLOCRON_VERSION
-    assert parsed.feed.generator == "Holocron/v%s" % _HOLOCRON_VERSION
+    assert parsed.feed.generator == f"Holocron/v{_HOLOCRON_VERSION}"
     assert parsed.feed.author.name == "Obi-Wan"
     assert parsed.feed.author.email == "obi1@kenobi.com"
     assert parsed.feed.contributor.name == "Yoda"
@@ -263,7 +263,7 @@ def test_item_rss(testapp):
     assert parsed.rss.channel.title == "Kenobi's Way"
     assert parsed.rss.channel.description == "Labours of Obi-Wan"
     assert parsed.rss.channel.link == testapp.metadata["url"]
-    assert parsed.rss.channel.generator == "Holocron/v%s" % _HOLOCRON_VERSION
+    assert parsed.rss.channel.generator == f"Holocron/v{_HOLOCRON_VERSION}"
 
     assert set(dir(parsed.rss.channel.item)) == {"title", "description"}
     assert parsed.rss.channel.item.title == "Day 1"
@@ -386,7 +386,7 @@ def test_item_rss_feed_metadata(testapp):
     assert parsed.rss.channel.title == "Kenobi's Way"
     assert parsed.rss.channel.description == "Labours of Obi-Wan"
     assert parsed.rss.channel.link == testapp.metadata["url"]
-    assert parsed.rss.channel.generator == "Holocron/v%s" % _HOLOCRON_VERSION
+    assert parsed.rss.channel.generator == f"Holocron/v{_HOLOCRON_VERSION}"
     assert parsed.rss.channel.category == "Jedi"
     assert parsed.rss.channel.image.url == "path/to/image"
     assert parsed.rss.channel.image.title == "Kenobi's Way"

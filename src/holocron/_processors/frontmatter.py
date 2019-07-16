@@ -23,7 +23,7 @@ def process(app, stream, *, delimiter="---", overwrite=True):
         match = re.match(
             # Match block between delimiters and block outsides of them, if
             # the block between delimiters is on the beginning of content.
-            r"\s*{0}\s*\n(.*)\n{0}\s*\n(.*)".format(delimiter),
+            rf"\s*{delimiter}\s*\n(.*)\n{delimiter}\s*\n(.*)",
             item["content"],
             re.M | re.S,
         )

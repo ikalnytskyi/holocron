@@ -57,7 +57,7 @@ class Application:
         # from some processor.
         if isinstance(pipe, str):
             if pipe not in self._pipes:
-                raise ValueError("no such pipe: '%s'" % pipe)
+                raise ValueError(f"no such pipe: '{pipe}'")
             pipe = self._pipes[pipe]
 
         # Since processors expect an input stream to be an iterator, we cast a
@@ -71,7 +71,7 @@ class Application:
             processor_name = processor.pop("name")
 
             if processor_name not in self._processors:
-                raise ValueError("no such processor: '%s'" % processor_name)
+                raise ValueError(f"no such processor: '{processor_name}'")
 
             processfn = self._processors[processor_name]
 

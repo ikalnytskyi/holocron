@@ -59,10 +59,10 @@ def _create_sitemap_xml(stream, sitemap, pretty):
     for item in stream:
         if not item["absurl"].startswith(owned_url):
             raise ValueError(
-                "The location of a Sitemap file determines the set of URLs "
-                "that can be included in that Sitemap. A Sitemap file located "
-                "at %s can include any URLs starting with %s but can not "
-                "include %s." % (sitemap["absurl"], owned_url, item["absurl"])
+                f"The location of a Sitemap file determines the set of URLs "
+                f"that can be included in that Sitemap. A Sitemap file located "
+                f"at {sitemap['absurl']} can include any URLs starting with "
+                f"{owned_url} but can not include {item['absurl']}."
             )
 
         url = dom.createElement("url")

@@ -364,15 +364,14 @@ def test_param_pygmentize_unknown_language(testapp, language):
             holocron.Item(
                 {
                     "content": textwrap.dedent(
-                        """
+                        f"""
                         test codeblock
 
-                        ```%s
+                        ```{language}
                         lambda x: pass
                         ```
-                    """
-                    )
-                    % language,
+                        """
+                    ),
                     "destination": pathlib.Path("1.md"),
                 }
             )
@@ -385,10 +384,10 @@ def test_param_pygmentize_unknown_language(testapp, language):
         holocron.Item(
             {
                 "content": (
-                    '<p>test codeblock</p>\n<pre><code class="language-%s">'
-                    "lambda x: pass\n</code></pre>"
-                )
-                % language,
+                    f"<p>test codeblock</p>\n"
+                    f'<pre><code class="language-{language}">'
+                    f"lambda x: pass\n</code></pre>"
+                ),
                 "destination": pathlib.Path("1.html"),
             }
         )

@@ -102,9 +102,8 @@ class parameters:
                     message = exc.message
 
                     if exc.absolute_path:
-                        message = "%s: %s" % (
-                            ".".join(exc.absolute_path),
-                            exc.message,
+                        message = (
+                            f"{'.'.join(exc.absolute_path)}: {exc.message}"
                         )
 
                     raise ValueError(message)

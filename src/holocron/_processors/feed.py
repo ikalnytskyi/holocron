@@ -87,7 +87,7 @@ def process(
     feed_generator.contributor(_resolvefeed("contributor"), replace=True)
     _generator_version = pkg_resources.get_distribution("holocron").version
     feed_generator.generator(
-        generator="Holocron/v%s" % _generator_version,
+        generator=f"Holocron/v{_generator_version}",
         version=_generator_version,
         uri="https://holocron.readthedocs.io",
     )

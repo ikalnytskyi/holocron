@@ -70,7 +70,7 @@ def test_create_app_processors_pass_precedence(caplog):
     # Ensure a processor has indeed been overridden. Otherwise, the test cannot
     # be used to prove that passed processors have greater precedence.
     assert len(caplog.records) == 1
-    assert caplog.records[0].message == "processor override: '%s'" % name
+    assert caplog.records[0].message == f"processor override: '{name}'"
 
 
 def test_create_app_pipes_discover():

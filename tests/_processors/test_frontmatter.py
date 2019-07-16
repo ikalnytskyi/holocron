@@ -302,16 +302,15 @@ def test_param_delimiter(testapp, delimiter):
             holocron.Item(
                 {
                     "content": textwrap.dedent(
-                        """\
-                        %s
+                        f"""\
+                        {delimiter}
                         author: Yoda
                         master: true
                         labels: [force, motto]
-                        %s
+                        {delimiter}
 
                         May the Force be with you!
-                    """
-                        % (delimiter, delimiter)
+                        """
                     )
                 }
             )
