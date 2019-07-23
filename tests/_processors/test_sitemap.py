@@ -17,14 +17,15 @@ from holocron._processors import sitemap
 class _pytest_xmlasdict:
     """Assert that a given XML has the same semantic meaning."""
 
-    def __init__(self, expected, ungzip=False):
+    def __init__(self, expected, ungzip=False, **kwargs):
         self._expected = expected
         self._ungzip = ungzip
+        self._kwargs = kwargs
 
     def __eq__(self, actual):
         if self._ungzip:
             actual = gzip.decompress(actual)
-        actual = xmltodict.parse(actual, "UTF-8")
+        actual = xmltodict.parse(actual, "UTF-8", **self._kwargs)
         return self._expected == actual
 
     def __repr__(self):
@@ -97,13 +98,7 @@ def test_item(testapp, filename, escaped):
 
 @pytest.mark.parametrize(
     ["amount"],
-    [
-        # pytest.param(0),
-        # pytest.param(1),
-        pytest.param(2),
-        pytest.param(5),
-        pytest.param(10),
-    ],
+    [pytest.param(1), pytest.param(2), pytest.param(5), pytest.param(10)],
 )
 def test_item_many(testapp, amount):
     """Sitemap processor has to work with stream."""
@@ -153,7 +148,8 @@ def test_item_many(testapp, amount):
                                         for i in range(amount)
                                     ],
                                 }
-                            }
+                            },
+                            force_list=["url"],
                         ),
                         "baseurl": testapp.metadata["url"],
                     }
@@ -161,6 +157,30 @@ def test_item_many(testapp, amount):
             ],
         )
     )
+
+
+def test_item_many_zero(testapp):
+    """Sitemap processor has to work with stream of zero items."""
+
+    stream = sitemap.process(testapp, [])
+
+    assert isinstance(stream, collections.abc.Iterable)
+    assert list(stream) == [
+        holocron.WebSiteItem(
+            {
+                "source": pathlib.Path("sitemap://sitemap.xml"),
+                "destination": pathlib.Path("sitemap.xml"),
+                "content": _pytest_xmlasdict(
+                    {
+                        "urlset": {
+                            "@xmlns": "http://www.sitemaps.org/schemas/sitemap/0.9"
+                        }
+                    }
+                ),
+                "baseurl": testapp.metadata["url"],
+            }
+        )
+    ]
 
 
 def test_param_gzip(testapp):
