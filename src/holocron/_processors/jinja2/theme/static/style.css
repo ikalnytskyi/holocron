@@ -149,6 +149,21 @@ footer.footer p {
   margin-left: 2em;
 }
 
+#content dl {
+  display: grid;
+  grid-template-columns: max-content auto;
+  column-gap: 2rem;
+}
+
+#content dt {
+  grid-column-start: 1;
+  font-weight: bold;
+}
+
+#content dd {
+  grid-column-start: 2;
+}
+
 #content h2,
 #content h3,
 #content h4,
@@ -158,11 +173,11 @@ footer.footer p {
   margin-bottom: 0.5em;
 }
 
-#content h1 { font-size: 1.7em; }
-#content h2 { font-size: 1.35em; }
-#content h3 { font-size: 1.25em; }
-#content h4 { font-size: 1.17em; }
-#content h5 { font-size: 1.1em; }
+#content h1 { font-size: 1.8em; }
+#content h2 { font-size: 1.4em; }
+#content h3 { font-size: 1em; }
+#content h4 { font-size: 1em; }
+#content h5 { font-size: 1em; }
 #content h6 { font-size: 1em; }
 
 #content table {
@@ -214,7 +229,7 @@ footer.footer p {
   font-size: 17px;
   line-height: 1.2em;
   font-family: 'Ubuntu Mono', 'PT Mono', 'Droid Sans Mono', monospace;
-  overflow: scroll;
+  overflow: auto;
   display: block;
 }
 

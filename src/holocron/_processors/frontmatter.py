@@ -78,6 +78,57 @@ class _FrontmatterParser:
     }
 )
 def process(app, stream, *, delimiter="---", overwrite=True, format=None):
+    r"""Parse documents' front matter blocks and assign properties on them.
+
+    The front matter must be the first thing in the file and must take the form
+    of JSON, TOML or YAML set between triple-dashed line (``---``). Between
+    these triple-dashed lines, you can set various variables that will then be
+    set as properties on corresponding document items.
+
+    Assuming you have the following input document
+
+    .. code:: json
+
+       {
+          "content": "---\\nauthor: Batman\\n---\\n\\nI'm Batman!\\n"
+       }
+
+    the front matter processor will transform it into the following one:
+
+    .. code:: json
+
+       {
+          "author": "Batman",
+          "content": "I'm Batman!\\n"
+       }
+
+    Parameters
+    ``````````
+
+    :delimiter:
+        The delimiter to separate document's content from the front matter
+        block. ``---`` is used by default.
+
+    :overwrite:
+        When ``true``, the metadata from the front matter block is assigned on
+        the document from the stream even if it's already set.
+
+    :format:
+        The format of front matter blocks to parse in your documents. Could be
+        ``json``, ``toml`` or ``yaml``. If not specified, the formats are
+        probed one by one in the mentioned order.
+
+    Example
+    ```````
+
+    .. code:: yaml
+
+       - name: frontmatter
+         args:
+           delimiter: +++
+           format: toml
+    """
+
     delimiter = re.escape(delimiter)
     parser = _FrontmatterParser(format)
 
