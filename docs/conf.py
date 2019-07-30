@@ -30,6 +30,7 @@ html_static_path = ["_static"]
 
 if not os.environ.get("READTHEDOCS") == "True":
     import sphinx_rtd_theme
+
     html_theme = "sphinx_rtd_theme"
     html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
@@ -40,6 +41,7 @@ if not os.environ.get("READTHEDOCS") == "True":
 # https://github.com/sphinx-doc/sphinx/issues/2155
 from docutils.parsers.rst import directives
 from sphinx.directives.code import CodeBlock
+
 directives.register_directive("code", CodeBlock)
 
 # flake8: noqa

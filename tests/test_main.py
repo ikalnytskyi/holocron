@@ -1,6 +1,6 @@
 """Tests Holocron CLI."""
 
-import os
+import pathlib
 import sys
 import textwrap
 import subprocess
@@ -15,29 +15,32 @@ def create_site(tmpdir):
     def create(structure):
         for path, content in structure:
             tmpdir.ensure(path).write_binary(content)
+
     return create
 
 
 @pytest.fixture(scope="function")
 def example_site(create_site):
-    holocron_yml = yaml.safe_dump({
-        "metadata": {
-            "url": "https://yoda.ua",
+    holocron_yml = yaml.safe_dump(
+        {
+            "metadata": {"url": "https://yoda.ua"},
+            "pipes": {"test": [{"name": "source"}, {"name": "save"}]},
         },
-        "pipes": {
-            "test": [
-                {"name": "source"},
-                {"name": "save"},
-            ],
-        },
-    }, encoding="UTF-8", default_flow_style=False)
+        encoding="UTF-8",
+        default_flow_style=False,
+    )
 
-    return create_site([
-        (os.path.join("cv.md"), b"yoda"),
-        (os.path.join("about", "photo.png"), b""),
-        (os.path.join("2019", "02", "12", "skywalker", "index.html"), b"luke"),
-        (os.path.join(".holocron.yml"), holocron_yml),
-    ])
+    return create_site(
+        [
+            (pathlib.Path("cv.md"), b"yoda"),
+            (pathlib.Path("about", "photo.png"), b""),
+            (
+                pathlib.Path("2019", "02", "12", "skywalker", "index.html"),
+                b"luke",
+            ),
+            (pathlib.Path(".holocron.yml"), holocron_yml),
+        ]
+    )
 
 
 @pytest.fixture(scope="function")
@@ -45,11 +48,14 @@ def execute(capsys):
     def execute(args, as_subprocess=True):
         if as_subprocess:
             return subprocess.check_output(
-                ["holocron"] + args, stderr=subprocess.PIPE)
+                ["holocron"] + args, stderr=subprocess.PIPE
+            )
 
         from holocron.__main__ import main
+
         main(args)
         return capsys.readouterr().out
+
     return execute
 
 
@@ -100,11 +106,16 @@ def test_run_conf_yml_malformed(monkeypatch, tmpdir, execute, example_site):
     """Error message is printed."""
 
     monkeypatch.chdir(tmpdir)
-    tmpdir.join(".holocron.yml").write_text(textwrap.dedent("""\
-        metadata:
-          crap
-          key: value
-    """), encoding="UTF-8")
+    tmpdir.join(".holocron.yml").write_text(
+        textwrap.dedent(
+            """\
+                metadata:
+                  crap
+                  key: value
+            """
+        ),
+        encoding="UTF-8",
+    )
 
     with pytest.raises(subprocess.CalledProcessError) as excinfo:
         execute(["run", "test"])
@@ -112,7 +123,8 @@ def test_run_conf_yml_malformed(monkeypatch, tmpdir, execute, example_site):
     assert str(excinfo.value.stderr.decode("UTF-8").strip()) == (
         "Cannot parse a configuration file. Context: mapping values are not "
         "allowed here\n"
-        "  in \".holocron.yml\", line 3, column 6")
+        '  in ".holocron.yml", line 3, column 6'
+    )
 
 
 def test_run_conf_yml_directory(monkeypatch, tmpdir, execute, example_site):
@@ -125,8 +137,10 @@ def test_run_conf_yml_directory(monkeypatch, tmpdir, execute, example_site):
     with pytest.raises(subprocess.CalledProcessError) as excinfo:
         execute(["run", "test"])
 
-    assert str(excinfo.value.stderr.decode("UTF-8").strip()) \
+    assert (
+        str(excinfo.value.stderr.decode("UTF-8").strip())
         == "[Errno 21] Is a directory: '.holocron.yml'"
+    )
 
 
 def test_run_conf_yml_interpolate(monkeypatch, tmpdir, execute):
@@ -136,17 +150,16 @@ def test_run_conf_yml_interpolate(monkeypatch, tmpdir, execute):
     tmpdir.join(".holocron.yml").write_binary(
         yaml.safe_dump(
             {
-                "metadata": {
-                    "url": "https://yoda.ua",
-                },
+                "metadata": {"url": "https://yoda.ua"},
                 "pipes": {
                     "test": [
                         {"name": "source"},
-                        {"name": "metadata",
-                         "metadata": {
-                            "content": "%(here)s/secret"}},
+                        {
+                            "name": "metadata",
+                            "metadata": {"content": "%(here)s/secret"},
+                        },
                         {"name": "save"},
-                    ],
+                    ]
                 },
             },
             encoding="UTF-8",
@@ -157,28 +170,26 @@ def test_run_conf_yml_interpolate(monkeypatch, tmpdir, execute):
 
     execute(["run", "test"])
 
-    assert tmpdir.join("_site", "test.txt").read_text(encoding="UTF-8") \
+    assert (
+        tmpdir.join("_site", "test.txt").read_text(encoding="UTF-8")
         == tmpdir.join("secret").strpath
+    )
 
 
 def test_run_conf_yml_interpolate_in_path(
-        monkeypatch,
-        tmpdir,
-        execute,
-        example_site):
+    monkeypatch, tmpdir, execute, example_site
+):
     """Values such as '%(here)s' are interpolated."""
 
     tmpdir.join(".holocron.yml").write_binary(
         yaml.safe_dump(
             {
-                "metadata": {
-                    "url": "https://yoda.ua",
-                },
+                "metadata": {"url": "https://yoda.ua"},
                 "pipes": {
                     "test": [
                         {"name": "source", "path": "%(here)s"},
                         {"name": "save", "to": "%(here)s/_compiled"},
-                    ],
+                    ]
                 },
             },
             encoding="UTF-8",

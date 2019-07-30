@@ -1,7 +1,7 @@
 """Yo! Holocron CLI is here!"""
 
 import io
-import os
+import pathlib
 import sys
 import logging
 import argparse
@@ -12,7 +12,7 @@ import pkg_resources
 import termcolor
 import yaml
 
-from . import core
+from . import create_app
 
 
 def create_app_from_yml(path):
@@ -25,19 +25,22 @@ def create_app_from_yml(path):
                 # directory with '.holocron.yml'. Please note, we also want
                 # wrap the result into 'io.StringIO' in order to preserve
                 # original filename in 'yaml.safe_load()' errors.
-                interpolated = io.StringIO(f.read() % {
-                    "here": os.path.abspath(os.path.dirname(path))})
+                interpolated = io.StringIO(
+                    f.read()
+                    % {"here": str(pathlib.Path(path).parent.resolve())}
+                )
                 interpolated.name = f.name
 
                 conf = yaml.safe_load(interpolated)
             except yaml.YAMLError as exc:
                 raise RuntimeError(
-                    "Cannot parse a configuration file. Context: " + str(exc))
+                    "Cannot parse a configuration file. Context: " + str(exc)
+                )
 
     except FileNotFoundError:
         conf = {"metadata": None, "pipes": {}}
 
-    return core.create_app(conf["metadata"], pipes=conf["pipes"])
+    return create_app(conf["metadata"], pipes=conf["pipes"])
 
 
 def configure_logger(level):
@@ -55,6 +58,7 @@ def configure_logger(level):
 
     :param level: a minimum logging level to be printed
     """
+
     class _Formatter(logging.Formatter):
         def format(self, record):
             record.levelname = record.levelname[:4]
@@ -84,34 +88,59 @@ def parse_command_line(args):
     parser = argparse.ArgumentParser(
         description=(
             "Holocron is an easy and lightweight static blog generator, "
-            "based on markup text and Jinja2 templates."),
+            "based on markup text and Jinja2 templates."
+        ),
         epilog=(
             "With no CONF, read .holocron.yml in the current working dir. "
-            "If no CONF found, the default settings will be used."))
+            "If no CONF found, the default settings will be used."
+        ),
+    )
 
     parser.add_argument(
-        "-c", "--conf", dest="conf", default=".holocron.yml",
-        help="set path to the settings file")
+        "-c",
+        "--conf",
+        dest="conf",
+        default=".holocron.yml",
+        help="set path to the settings file",
+    )
 
     parser.add_argument(
-        "-q", "--quiet", dest="verbosity", action="store_const",
-        const=logging.CRITICAL, help="show only critical errors")
+        "-q",
+        "--quiet",
+        dest="verbosity",
+        action="store_const",
+        const=logging.CRITICAL,
+        help="show only critical errors",
+    )
 
     parser.add_argument(
-        "-v", "--verbose", dest="verbosity", action="store_const",
-        const=logging.INFO, help="show additional messages")
+        "-v",
+        "--verbose",
+        dest="verbosity",
+        action="store_const",
+        const=logging.INFO,
+        help="show additional messages",
+    )
 
     parser.add_argument(
-        "-d", "--debug", dest="verbosity", action="store_const",
-        const=logging.DEBUG, help="show all messages")
+        "-d",
+        "--debug",
+        dest="verbosity",
+        action="store_const",
+        const=logging.DEBUG,
+        help="show all messages",
+    )
 
     parser.add_argument(
-        "--version", action="version",
+        "--version",
+        action="version",
         version=pkg_resources.get_distribution("holocron").version,
-        help="show the holocron version and exit")
+        help="show the holocron version and exit",
+    )
 
     command_parser = parser.add_subparsers(
-        dest="command", help="command to execute")
+        dest="command", help="command to execute"
+    )
 
     run_parser = command_parser.add_parser("run")
     run_parser.add_argument("pipe", help="a pipe to run")

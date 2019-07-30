@@ -19,13 +19,12 @@ classifiers = [
     "Topic :: Terminals",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.5",
     "Programming Language :: Python :: 3.6",
     "Programming Language :: Python :: 3.7",
 ]
 
 [tool.poetry.dependencies]
-python = "^3.5"
+python = "^3.6"
 Jinja2 = "^2.10"
 PyYAML = "^5.1"
 Pygments = "^2.3"
@@ -48,10 +47,14 @@ flake8 = "^3.6"
 xmltodict = "^0.11.0"
 beautifulsoup4 = "^4.7"
 untangle = "^1.1"
-flake8-quotes = "^1.0"
+black = {version = "^19.3b0", allows-prereleases = true, python = "^3.6"}
 
 [tool.poetry.scripts]
 holocron = "holocron.__main__:main"
+
+[tool.black]
+line-length = 79
+target-version = ["py36"]
 
 [build-system]
 requires = ["poetry>=0.12"]
