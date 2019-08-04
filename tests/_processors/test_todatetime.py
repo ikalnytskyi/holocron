@@ -2,6 +2,7 @@
 
 import collections.abc
 import datetime
+import pathlib
 
 import pytest
 import dateutil.tz
@@ -204,7 +205,14 @@ def test_item_timestamp_bad_value(testapp):
         assert str(excinfo.value) == "('Unknown string format:', 'yoda')"
 
 
-def test_param_todatetime(testapp):
+@pytest.mark.parametrize(
+    ["timestamp"],
+    [
+        pytest.param("2019-01-11", id="str"),
+        pytest.param(pathlib.Path("2019-01-11"), id="path"),
+    ],
+)
+def test_param_todatetime(testapp, timestamp):
     """Todatetime processor has to respect "writeto" parameter."""
 
     stream = todatetime.process(
@@ -213,7 +221,7 @@ def test_param_todatetime(testapp):
             holocron.Item(
                 {
                     "content": "the Force is strong with this one",
-                    "timestamp": "2019-01-11",
+                    "timestamp": timestamp,
                 }
             )
         ],
@@ -225,7 +233,7 @@ def test_param_todatetime(testapp):
         holocron.Item(
             {
                 "content": "the Force is strong with this one",
-                "timestamp": "2019-01-11",
+                "timestamp": timestamp,
                 "published": datetime.datetime(
                     2019, 1, 11, 0, 0, 0, tzinfo=_TZ_UTC
                 ),
