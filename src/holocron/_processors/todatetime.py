@@ -1,5 +1,6 @@
 """Convert string based value to a datetime instance."""
 
+import pathlib
 import re
 
 import dateutil.parser
@@ -50,11 +51,19 @@ def process(
             yield item
             continue
 
+        parsein = item[parsein]
+
+        # Cast the path object to string for user, because it's a behaviour a
+        # user would expect anyway. Besides, I personally require such
+        # behaviour because I prefer to have a datetime encoded in path.
+        if isinstance(parsein, pathlib.Path):
+            parsein = str(parsein)
+
         # Reduce a parse area by applying a regular expression. May be handy if
         # you want to extract a datetime from, let's say, a filename. If a
         # regular expression matches nothing, ignore and skip an item to avoid
         # using 'when' processor to make things *safe*.
-        parsearea = re_parsearea.search(item[parsein])
+        parsearea = re_parsearea.search(parsein)
         if not parsearea:
             yield item
             continue
