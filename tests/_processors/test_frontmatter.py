@@ -15,7 +15,38 @@ def testapp():
     return holocron.Application()
 
 
-def test_item(testapp):
+@pytest.mark.parametrize(
+    ["frontsnippet"],
+    [
+        pytest.param(
+            """\
+            author: Yoda
+            master: true
+            labels: [force, motto]
+            """,
+            id="yaml",
+        ),
+        pytest.param(
+            """\
+            {
+                "author": "Yoda",
+                "master": true,
+                "labels": ["force", "motto"]
+            }
+            """,
+            id="json",
+        ),
+        pytest.param(
+            """\
+            author = "Yoda"
+            master = true
+            labels = ["force", "motto"]
+            """,
+            id="toml",
+        ),
+    ],
+)
+def test_item(testapp, frontsnippet):
     """Frontmatter has to be processed and removed from the content."""
 
     stream = frontmatter.process(
@@ -26,14 +57,13 @@ def test_item(testapp):
                     "content": textwrap.dedent(
                         """\
                         ---
-                        author: Yoda
-                        master: true
-                        labels: [force, motto]
+                        %s
                         ---
 
                         May the Force be with you!
-                    """
+                        """
                     )
+                    % textwrap.dedent(frontsnippet)
                 }
             )
         ],
@@ -183,7 +213,7 @@ def test_item_with_frontmatter_leading_whitespaces(testapp):
     ]
 
 
-def test_item_invalid_yaml(testapp):
+def test_item_yaml_invalid(testapp):
     """Frontmatter processor has to fail in case of invalid YAML."""
 
     stream = frontmatter.process(
@@ -204,6 +234,7 @@ def test_item_invalid_yaml(testapp):
                 }
             )
         ],
+        format="yaml",
     )
 
     assert isinstance(stream, collections.abc.Iterable)
@@ -212,7 +243,7 @@ def test_item_invalid_yaml(testapp):
         next(stream)
 
 
-def test_item_with_exploit(testapp):
+def test_item_yaml_exploit(testapp):
     """Frontmatter processor has to be protected from YAML attacks."""
 
     stream = frontmatter.process(
@@ -234,6 +265,7 @@ def test_item_with_exploit(testapp):
                 }
             )
         ],
+        format="yaml",
     )
 
     assert isinstance(stream, collections.abc.Iterable)
@@ -294,7 +326,7 @@ def test_item_many(testapp, amount):
     ["delimiter"], [pytest.param("+++"), pytest.param("***")]
 )
 def test_param_delimiter(testapp, delimiter):
-    """Frontmatter processor has to respect delimiter parameter."""
+    """Frontmatter processor has to respect 'delimiter' parameter."""
 
     stream = frontmatter.process(
         testapp,
@@ -335,7 +367,7 @@ def test_param_delimiter(testapp, delimiter):
     ["overwrite"], [pytest.param(False), pytest.param(True)]
 )
 def test_param_overwrite(testapp, overwrite):
-    """Frontmatter processor has to respect overwrite parameter."""
+    """Frontmatter processor has to respect 'overwrite' parameter."""
 
     stream = frontmatter.process(
         testapp,
@@ -371,6 +403,116 @@ def test_param_overwrite(testapp, overwrite):
             }
         )
     ]
+
+
+@pytest.mark.parametrize(
+    ["frontsnippet", "format", "exception"],
+    [
+        pytest.param(
+            """\
+            author: Yoda
+            master: true
+            labels: [force, motto]
+            """,
+            "yaml",
+            None,
+            id="yaml",
+        ),
+        pytest.param(
+            """\
+            {
+                "author": "Yoda",
+                "master": true,
+                "labels": ["force", "motto"]
+            }
+            """,
+            "json",
+            None,
+            id="json",
+        ),
+        pytest.param(
+            """\
+            author = "Yoda"
+            master = true
+            labels = ["force", "motto"]
+            """,
+            "toml",
+            None,
+            id="toml",
+        ),
+        pytest.param(
+            """\
+            author = "Yoda"
+            master = true
+            labels = ["force", "motto"]
+            """,
+            "yaml",
+            ValueError(
+                "Frontmatter must be a mapping (i.e. key-value pairs), "
+                "not arrays."
+            ),
+            id="toml-yaml",
+        ),
+        pytest.param(
+            """\
+            {
+                "author": "Yoda",
+                "master": true,
+                "labels": ["force", "motto"]
+            }
+            """,
+            "toml",
+            ValueError(
+                "Key name found without value. Reached end of line. "
+                "(line 1 column 2 char 1)"
+            ),
+            id="json-toml",
+        ),
+    ],
+)
+def test_param_format(testapp, frontsnippet, format, exception):
+    """Frontmatter has to respect 'format' parameter."""
+
+    stream = frontmatter.process(
+        testapp,
+        [
+            holocron.Item(
+                {
+                    "content": textwrap.dedent(
+                        """\
+                        ---
+                        %s
+                        ---
+
+                        May the Force be with you!
+                        """
+                    )
+                    % textwrap.dedent(frontsnippet)
+                }
+            )
+        ],
+        format=format,
+    )
+
+    assert isinstance(stream, collections.abc.Iterable)
+
+    if exception:
+        with pytest.raises(exception.__class__) as excinfo:
+            next(stream)
+
+        assert str(excinfo.value) == str(exception)
+
+    else:
+        assert list(stream) == [
+            holocron.Item(
+                {
+                    "content": "May the Force be with you!\n",
+                    "author": "Yoda",
+                    "master": True,
+                    "labels": ["force", "motto"],
+                }
+            )
+        ]
 
 
 @pytest.mark.parametrize(
