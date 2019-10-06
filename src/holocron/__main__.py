@@ -180,6 +180,9 @@ def main(args=sys.argv[1:]):
                     termcolor.colored("==>", "green", attrs=["bold"]),
                     termcolor.colored(item["destination"], attrs=["bold"]),
                 )
-        except Exception as exc:
+        except (RuntimeError, IsADirectoryError) as exc:
             print(str(exc), file=sys.stderr)
+            sys.exit(1)
+        except Exception:
+            logging.getLogger().exception("Oops.. something went wrong.")
             sys.exit(1)

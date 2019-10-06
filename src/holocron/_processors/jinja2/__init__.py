@@ -20,6 +20,12 @@ from .._misc import parameters
     }
 )
 def process(app, stream, *, template="item.j2", context={}, themes=None):
+    # Because it is easier to write themes if we assume that 'theme' variable
+    # is always defined in context of template, let's ensure it is always
+    # defined indeed. Frankly, I'm not exactly sure about this line and it may
+    # change in the future.
+    context.setdefault("theme", {})
+
     if themes is None:
         themes = [str(pathlib.Path(__file__).parent / "theme")]
 

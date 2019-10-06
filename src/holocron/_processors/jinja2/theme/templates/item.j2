@@ -15,9 +15,9 @@
     <meta name="description" content="{{ summary }}">
   {%- endif %}
 
-  {% if metadata | jsonpointer("/theme/twitter_cards/username", None) and item.summary -%}
+  {% if theme | jsonpointer("/twitter_cards/username", None) and item.summary -%}
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:site" content="@{{ metadata.theme.twitter_cards.username }}">
+    <meta name="twitter:site" content="@{{ theme.twitter_cards.username }}">
     <meta name="twitter:title" content="{{ item.title }}">
     <meta name="twitter:description" content="{{ summary }}">
   {% endif %}

@@ -22,7 +22,7 @@
     <a href="/" class="title">{{ metadata.title }}</a>
 
     <nav>
-      {% for name, url in metadata | jsonpointer("/theme/navigation", []) -%}
+      {% for name, url in theme | jsonpointer("/navigation", []) -%}
         <a href="{{ url }}">{{ name }}</a>
       {%- endfor %}
     </nav>
@@ -38,13 +38,13 @@
 
   <div class="footer-wrapper">
   <footer class="footer">
-    <p>{{ metadata | jsonpointer("/theme/copyright", "") }}</p>
+    <p>{{ theme | jsonpointer("/copyright", "") }}</p>
   </footer>
   </div> <!-- /.footer-wrapper -->
 
-  {% if metadata | jsonpointer("/theme/ribbon", None) %}
-    <a href="{{ metadata.theme.ribbon.link }}" class="ribbon">
-      {{ metadata.theme.ribbon.text }}
+  {% if theme | jsonpointer("/ribbon", None) %}
+    <a href="{{ theme.ribbon.link }}" class="ribbon">
+      {{ theme.ribbon.text }}
     </a>
   {% endif %}
 
