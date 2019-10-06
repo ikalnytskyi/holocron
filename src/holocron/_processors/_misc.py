@@ -2,11 +2,15 @@
 
 import collections.abc
 import inspect
+import logging
 import functools
 import urllib.parse
 
 import jsonschema
 import jsonpointer
+
+
+_logger = logging.getLogger("holocron")
 
 
 def resolve_json_references(value, context, keep_unknown=True):

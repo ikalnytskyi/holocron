@@ -4,8 +4,10 @@ import io
 import pathlib
 import sys
 import logging
+import logging.handlers
 import argparse
 import warnings
+import contextlib
 
 import colorama
 import pkg_resources
@@ -43,6 +45,7 @@ def create_app_from_yml(path):
     return create_app(conf["metadata"], pipes=conf["pipes"])
 
 
+@contextlib.contextmanager
 def configure_logger(level):
     """
     Configure a root logger to print records in pretty format.
@@ -59,6 +62,15 @@ def configure_logger(level):
     :param level: a minimum logging level to be printed
     """
 
+    class _PendingHandler(logging.handlers.MemoryHandler):
+        def __init__(self, target):
+            return super(_PendingHandler, self).__init__(
+                capacity=-1, target=target
+            )
+
+        def shouldFlush(self, record):
+            return False
+
     class _Formatter(logging.Formatter):
         def format(self, record):
             record.levelname = record.levelname[:4]
@@ -67,14 +79,17 @@ def configure_logger(level):
     # create stream handler with custom formatter
     stream_handler = logging.StreamHandler()
     stream_handler.setFormatter(_Formatter("[%(levelname)s] %(message)s"))
+    pending_handler = _PendingHandler(stream_handler)
 
     # configure root logger
     logger = logging.getLogger()
-    logger.addHandler(stream_handler)
+    logger.addHandler(pending_handler)
     logger.setLevel(level)
 
     # capture warnings issued by 'warnings' module
     logging.captureWarnings(True)
+    yield
+    pending_handler.flush()
 
 
 def parse_command_line(args):
@@ -157,32 +172,30 @@ def parse_command_line(args):
 
 
 def main(args=sys.argv[1:]):
+    # show deprecation warnings in order to be prepared for backward
+    # incompatible changes
+    warnings.filterwarnings("always", category=DeprecationWarning)
+    arguments = parse_command_line(args)
+
     # colorama.init() does two great things Holocron depends on. First, it
     # converts ANSI escape sequences printed to standard streams into proper
     # Windows API calls. Second, it strips ANSI colors away from a stream if
     # it's not connected to a tty (e.g. holocron is called from pipe).
     with colorama.colorama_text():
-        arguments = parse_command_line(args)
-
         # initial logger configuration - use custom format for records
         # and print records with WARNING level and higher.
-        configure_logger(arguments.verbosity or logging.WARNING)
+        with configure_logger(arguments.verbosity or logging.WARNING):
+            try:
+                holocron = create_app_from_yml(arguments.conf)
 
-        # show deprecation warnings in order to be prepared for backward
-        # incompatible changes
-        warnings.filterwarnings("always", category=DeprecationWarning)
-
-        try:
-            holocron = create_app_from_yml(arguments.conf)
-
-            for item in holocron.invoke(arguments.pipe):
-                print(
-                    termcolor.colored("==>", "green", attrs=["bold"]),
-                    termcolor.colored(item["destination"], attrs=["bold"]),
-                )
-        except (RuntimeError, IsADirectoryError) as exc:
-            print(str(exc), file=sys.stderr)
-            sys.exit(1)
-        except Exception:
-            logging.getLogger().exception("Oops.. something went wrong.")
-            sys.exit(1)
+                for item in holocron.invoke(arguments.pipe):
+                    print(
+                        termcolor.colored("==>", "green", attrs=["bold"]),
+                        termcolor.colored(item["destination"], attrs=["bold"]),
+                    )
+            except (RuntimeError, IsADirectoryError) as exc:
+                print(str(exc), file=sys.stderr)
+                sys.exit(1)
+            except Exception:
+                logging.getLogger().exception("Oops.. something went wrong.")
+                sys.exit(1)

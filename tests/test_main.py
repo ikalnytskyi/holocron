@@ -1,13 +1,21 @@
 """Tests Holocron CLI."""
 
+import logging
 import pathlib
+import subprocess
 import sys
 import textwrap
-import subprocess
 
 import mock
 import pytest
 import yaml
+
+
+@pytest.fixture(autouse=True)
+def _fake_root_logger(monkeypatch):
+    """Prevent modifying global root instance."""
+
+    monkeypatch.setattr(logging, "root", logging.getLogger("fakeroot"))
 
 
 @pytest.fixture(scope="function")
