@@ -25,6 +25,9 @@ def resolve_json_references(value, context, keep_unknown=True):
         elif isinstance(node, collections.abc.Sequence) and not isinstance(
             node, str
         ):
+            if not isinstance(node, collections.abc.MutableSequence):
+                node = list(node)
+
             for i in range(len(node)):
                 node[i] = _do_resolve(node[i])
         return node
