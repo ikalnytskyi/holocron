@@ -9,7 +9,7 @@ Why The Name Holocron?
 ======================
 
 Holocron (*short for holographic chronicle*) is a device in which Jedi
-stored different data. In most cases, they used it as diary. 
+stored different data. In most cases, they used it as diary.
 
 
 How To Create Stylized Post / Page?

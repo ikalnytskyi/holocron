@@ -263,7 +263,7 @@ footer.footer p {
   font-weight: bold;
   text-transform: uppercase;
   text-align: center;
-  
+
   /* math magic for positioning :) */
   display: block;
   position: absolute;
