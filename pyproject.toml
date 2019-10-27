@@ -38,6 +38,7 @@ colorama = "^0.4.1"
 mistletoe = "^0.7.1"
 jsonschema = { version = "^3.0", extras = ["format"] }
 toml = {version = "^0.10.0", optional = true}
+more-itertools = "^7.2"
 
 [tool.poetry.dev-dependencies]
 mock = "^2.0"
