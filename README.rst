@@ -2,7 +2,7 @@
  Holocron: may the blog be with you!
 =====================================
 
-|pypi-version| |license| |travis-ci| |coveralls| |docs|
+|pypi-version| |license| |docs|
 
 Holocron is an extendable static blog generator powered by the Force. Like
 others, it reads text files in various formats, renders them using templates
@@ -61,12 +61,6 @@ Links
 
 .. |license| image:: https://img.shields.io/pypi/l/holocron.svg
    :target: https://pypi.python.org/pypi/holocron
-
-.. |travis-ci| image:: https://img.shields.io/travis/ikalnytskyi/holocron.svg
-   :target: https://travis-ci.org/ikalnytskyi/holocron
-
-.. |coveralls| image:: https://img.shields.io/coveralls/ikalnytskyi/holocron.svg
-   :target: https://coveralls.io/r/ikalnytskyi/holocron
 
 .. |docs| image:: https://readthedocs.org/projects/pip/badge/
    :target: https://holocron.readthedocs.org
