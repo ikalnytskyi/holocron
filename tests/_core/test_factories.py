@@ -12,6 +12,7 @@ def test_create_app_processors_discover():
 
     assert set(testapp._processors) == {
         "archive",
+        "chain",
         "commonmark",
         "feed",
         "frontmatter",

@@ -19,6 +19,7 @@ def create_app(metadata, processors=None, pipes=None):
         [],
         imports=[
             "archive = holocron._processors.archive:process",
+            "chain = holocron._processors.chain:process",
             "commonmark = holocron._processors.commonmark:process",
             "feed = holocron._processors.feed:process",
             "frontmatter = holocron._processors.frontmatter:process",
