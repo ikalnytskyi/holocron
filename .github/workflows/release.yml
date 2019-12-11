@@ -1,0 +1,23 @@
+name: release
+
+on:
+  push:
+    tags:
+      - '[1-9]+.[0-9]+.[0-9]+*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+
+      - name: Publish to PyPI
+        run: |
+          pip install poetry
+          poetry build
+          poetry publish --username __token__ --password ${{ secrets.PYPI_TOKEN }}
