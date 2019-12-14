@@ -1,5 +1,6 @@
 """Various miscellaneous functions to make code easier to read & write."""
 
+import copy
 import collections.abc
 import inspect
 import logging
@@ -15,6 +16,8 @@ _logger = logging.getLogger("holocron")
 
 def resolve_json_references(value, context, keep_unknown=True):
     def _do_resolve(node):
+        node = copy.copy(node)
+
         if isinstance(node, collections.abc.Mapping) and "$ref" in node:
             uri, fragment = urllib.parse.urldefrag(node["$ref"])
             try:
