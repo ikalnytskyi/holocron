@@ -325,8 +325,8 @@ def test_item_many(testapp, amount):
 @pytest.mark.parametrize(
     ["delimiter"], [pytest.param("+++"), pytest.param("***")]
 )
-def test_param_delimiter(testapp, delimiter):
-    """Frontmatter processor has to respect 'delimiter' parameter."""
+def test_args_delimiter(testapp, delimiter):
+    """Frontmatter processor has to respect 'delimiter' argument."""
 
     stream = frontmatter.process(
         testapp,
@@ -366,8 +366,8 @@ def test_param_delimiter(testapp, delimiter):
 @pytest.mark.parametrize(
     ["overwrite"], [pytest.param(False), pytest.param(True)]
 )
-def test_param_overwrite(testapp, overwrite):
-    """Frontmatter processor has to respect 'overwrite' parameter."""
+def test_args_overwrite(testapp, overwrite):
+    """Frontmatter processor has to respect 'overwrite' argument."""
 
     stream = frontmatter.process(
         testapp,
@@ -470,8 +470,8 @@ def test_param_overwrite(testapp, overwrite):
         ),
     ],
 )
-def test_param_format(testapp, frontsnippet, format, exception):
-    """Frontmatter has to respect 'format' parameter."""
+def test_args_format(testapp, frontsnippet, format, exception):
+    """Frontmatter has to respect 'format' argument."""
 
     stream = frontmatter.process(
         testapp,
@@ -516,7 +516,7 @@ def test_param_format(testapp, frontsnippet, format, exception):
 
 
 @pytest.mark.parametrize(
-    ["params", "error"],
+    ["args", "error"],
     [
         pytest.param(
             {"delimiter": 42},
@@ -530,9 +530,9 @@ def test_param_format(testapp, frontsnippet, format, exception):
         ),
     ],
 )
-def test_param_bad_value(testapp, params, error):
-    """Frontmatter processor has to validate input parameters."""
+def test_args_bad_value(testapp, args, error):
+    """Frontmatter processor has to validate input arguments."""
 
     with pytest.raises(ValueError) as excinfo:
-        next(frontmatter.process(testapp, [], **params))
+        next(frontmatter.process(testapp, [], **args))
     assert str(excinfo.value) == error

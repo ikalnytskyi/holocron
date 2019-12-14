@@ -86,8 +86,8 @@ def test_item_many(testapp, amount):
         pytest.param(False, "skywalker", id="not-overwrite"),
     ],
 )
-def test_param_overwrite(testapp, overwrite, author):
-    """Metadata processor has to respect overwrite option."""
+def test_args_overwrite(testapp, overwrite, author):
+    """Metadata processor has to respect 'overwrite' argument."""
 
     stream = metadata.process(
         testapp,
@@ -105,7 +105,7 @@ def test_param_overwrite(testapp, overwrite, author):
 
 
 @pytest.mark.parametrize(
-    ["params", "error"],
+    ["args", "error"],
     [
         pytest.param(
             {"metadata": 42},
@@ -119,9 +119,9 @@ def test_param_overwrite(testapp, overwrite, author):
         ),
     ],
 )
-def test_param_bad_value(testapp, params, error):
-    """Metadata processor has to validate input parameters."""
+def test_args_bad_value(testapp, args, error):
+    """Metadata processor has to validate input arguments."""
 
     with pytest.raises(ValueError) as excinfo:
-        next(metadata.process(testapp, [], **params))
+        next(metadata.process(testapp, [], **args))
     assert str(excinfo.value) == error

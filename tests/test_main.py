@@ -164,7 +164,9 @@ def test_run_conf_yml_interpolate(monkeypatch, tmpdir, execute):
                         {"name": "source"},
                         {
                             "name": "metadata",
-                            "metadata": {"content": "%(here)s/secret"},
+                            "args": {
+                                "metadata": {"content": "%(here)s/secret"},
+                            },
                         },
                         {"name": "save"},
                     ]
@@ -195,8 +197,8 @@ def test_run_conf_yml_interpolate_in_path(
                 "metadata": {"url": "https://yoda.ua"},
                 "pipes": {
                     "test": [
-                        {"name": "source", "path": "%(here)s"},
-                        {"name": "save", "to": "%(here)s/_compiled"},
+                        {"name": "source", "args": {"path": "%(here)s"}},
+                        {"name": "save", "args": {"to": "%(here)s/_compiled"}},
                     ]
                 },
             },

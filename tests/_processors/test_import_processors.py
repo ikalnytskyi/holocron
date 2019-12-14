@@ -20,14 +20,15 @@ def runprocessor(testapp, request):
 
     if request.param == "process":
 
-        def runner(testapp, items, **options):
-            return import_processors.process(testapp, items, **options)
+        def runner(testapp, items, **args):
+            return import_processors.process(testapp, items, **args)
 
     else:
 
-        def runner(testapp, items, **options):
-            options["name"] = "import-processors"
-            return testapp.invoke([options], items)
+        def runner(testapp, items, **args):
+            return testapp.invoke(
+                [{"name": "import-processors", "args": args}], items
+            )
 
         testapp.add_processor("import-processors", import_processors.process)
     return runner
@@ -53,8 +54,10 @@ def test_imports(testapp, tmpdir):
         [
             {
                 "name": "import-processors",
-                "imports": ["luke = luke:run"],
-                "from_": tmpdir.strpath,
+                "args": {
+                    "imports": ["luke = luke:run"],
+                    "from_": tmpdir.strpath,
+                },
             },
             {"name": "luke"},
         ]
@@ -94,7 +97,7 @@ def test_imports(testapp, tmpdir):
         ),
     ],
 )
-def test_imports_param_from(
+def test_imports_args_from(
     testapp, runprocessor, tmpdir, processors, imports, registered
 ):
     """Imports must work from 3rd party directory."""
@@ -178,7 +181,7 @@ def test_imports_precedence(testapp, runprocessor, tmpdir, monkeypatch):
 
 
 @pytest.mark.parametrize(
-    ["params", "error"],
+    ["args", "error"],
     [
         pytest.param(
             {"imports": 42},
@@ -190,9 +193,9 @@ def test_imports_precedence(testapp, runprocessor, tmpdir, monkeypatch):
         ),
     ],
 )
-def test_param_bad_value(testapp, params, error):
+def test_args_bad_value(testapp, args, error):
     """Bad arguments must be rejected at once."""
 
     with pytest.raises(ValueError) as excinfo:
-        next(import_processors.process(testapp, [], **params))
+        next(import_processors.process(testapp, [], **args))
     assert str(excinfo.value) == error

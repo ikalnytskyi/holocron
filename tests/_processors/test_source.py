@@ -193,8 +193,8 @@ def test_item_many(testapp, monkeypatch, tmpdir, discovered, passed):
         pytest.param(["a", "b", "c"]),
     ],
 )
-def test_param_path(testapp, monkeypatch, tmpdir, path):
-    """Source processor has to respect path parameter."""
+def test_args_path(testapp, monkeypatch, tmpdir, path):
+    """Source processor has to respect path argument."""
 
     monkeypatch.chdir(tmpdir)
     tmpdir.join(*path).ensure("test").write_text("Obi-Wan", encoding="UTF-8")
@@ -220,8 +220,8 @@ def test_param_path(testapp, monkeypatch, tmpdir, path):
     ]
 
 
-def test_param_pattern(testapp, monkeypatch, tmpdir):
-    """Source processor has to respect pattern parameter."""
+def test_args_pattern(testapp, monkeypatch, tmpdir):
+    """Source processor has to respect pattern argument."""
 
     monkeypatch.chdir(tmpdir)
 
@@ -266,8 +266,8 @@ def test_param_pattern(testapp, monkeypatch, tmpdir):
 @pytest.mark.parametrize(
     ["encoding"], [pytest.param("CP1251"), pytest.param("UTF-16")]
 )
-def test_param_encoding(testapp, monkeypatch, tmpdir, encoding):
-    """Source processor has to respect encoding parameter."""
+def test_args_encoding(testapp, monkeypatch, tmpdir, encoding):
+    """Source processor has to respect encoding argument."""
 
     monkeypatch.chdir(tmpdir)
     tmpdir.ensure("cv.md").write_text("Оби-Ван", encoding=encoding)
@@ -292,8 +292,8 @@ def test_param_encoding(testapp, monkeypatch, tmpdir, encoding):
 @pytest.mark.parametrize(
     ["encoding"], [pytest.param("CP1251"), pytest.param("UTF-16")]
 )
-def test_param_encoding_fallback(testapp, monkeypatch, tmpdir, encoding):
-    """Source processor has to respect encoding parameter (fallback)."""
+def test_args_encoding_fallback(testapp, monkeypatch, tmpdir, encoding):
+    """Source processor has to respect encoding argument (fallback)."""
 
     monkeypatch.chdir(tmpdir)
     tmpdir.ensure("cv.md").write_text("Оби-Ван", encoding=encoding)
@@ -323,8 +323,8 @@ def test_param_encoding_fallback(testapp, monkeypatch, tmpdir, encoding):
         pytest.param("Europe/Kiev", ["EET", "EEST"]),
     ],
 )
-def test_param_timezone(testapp, monkeypatch, tmpdir, timezone, tznames):
-    """Source processor has to respect timezone parameter."""
+def test_args_timezone(testapp, monkeypatch, tmpdir, timezone, tznames):
+    """Source processor has to respect timezone argument."""
 
     monkeypatch.chdir(tmpdir)
     tmpdir.ensure("cv.md").write_text("Obi-Wan", encoding="UTF-8")
@@ -349,8 +349,8 @@ def test_param_timezone(testapp, monkeypatch, tmpdir, timezone, tznames):
         pytest.param("Europe/Kiev", ["EET", "EEST"]),
     ],
 )
-def test_param_timezone_fallback(testapp, monkeypatch, tmpdir, tz, tznames):
-    """Source processor has to respect timezone parameter (fallback)."""
+def test_args_timezone_fallback(testapp, monkeypatch, tmpdir, tz, tznames):
+    """Source processor has to respect timezone argument (fallback)."""
 
     monkeypatch.chdir(tmpdir)
     tmpdir.ensure("cv.md").write_text("Obi-Wan", encoding="UTF-8")
@@ -369,8 +369,8 @@ def test_param_timezone_fallback(testapp, monkeypatch, tmpdir, tz, tznames):
     assert updated.tzinfo.tzname(updated) in tznames
 
 
-def test_param_timezone_in_action(testapp, monkeypatch, tmpdir):
-    """Source processor has to respect timezone parameter."""
+def test_args_timezone_in_action(testapp, monkeypatch, tmpdir):
+    """Source processor has to respect timezone argument."""
 
     monkeypatch.chdir(tmpdir)
     tmpdir.ensure("cv.md").write_text("Obi-Wan", encoding="UTF-8")
@@ -398,7 +398,7 @@ def test_param_timezone_in_action(testapp, monkeypatch, tmpdir):
 
 
 @pytest.mark.parametrize(
-    ["params", "error"],
+    ["args", "error"],
     [
         pytest.param(
             {"path": 42}, "path: 42 is not of type 'string'", id="path-int"
@@ -420,9 +420,9 @@ def test_param_timezone_in_action(testapp, monkeypatch, tmpdir):
         ),
     ],
 )
-def test_param_bad_value(testapp, params, error):
-    """Source processor has to validate input parameters."""
+def test_args_bad_value(testapp, args, error):
+    """Source processor has to validate input arguments."""
 
     with pytest.raises(ValueError) as excinfo:
-        next(source.process(testapp, [], **params))
+        next(source.process(testapp, [], **args))
     assert str(excinfo.value) == error

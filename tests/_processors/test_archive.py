@@ -50,7 +50,7 @@ def test_item(testapp):
     ],
 )
 def test_item_many(testapp, amount):
-    """archive processor has to work with stream."""
+    """Archive processor has to work with stream."""
 
     stream = archive.process(
         testapp,
@@ -87,8 +87,8 @@ def test_item_many(testapp, amount):
     )
 
 
-def test_param_template(testapp):
-    """archive processor has respect template parameter."""
+def test_args_template(testapp):
+    """Archive processor has respect 'template' argument."""
 
     stream = archive.process(
         testapp,
@@ -120,8 +120,8 @@ def test_param_template(testapp):
         pytest.param(pathlib.Path("yoda.jedi"), id="flat"),
     ],
 )
-def test_param_save_as(testapp, save_as):
-    """archive processor has to respect save_as parameter."""
+def test_args_save_as(testapp, save_as):
+    """Archive processor has to respect 'save_as' argument."""
 
     stream = archive.process(
         testapp,
@@ -147,7 +147,7 @@ def test_param_save_as(testapp, save_as):
 
 
 @pytest.mark.parametrize(
-    ["params", "error"],
+    ["args", "error"],
     [
         pytest.param(
             {"save_as": 42},
@@ -181,9 +181,9 @@ def test_param_save_as(testapp, save_as):
         ),
     ],
 )
-def test_param_bad_value(testapp, params, error):
-    """archive processor has to validate input parameters."""
+def test_args_bad_value(testapp, args, error):
+    """Archive processor has to validate input arguments."""
 
     with pytest.raises(ValueError) as excinfo:
-        next(archive.process(testapp, [], **params))
+        next(archive.process(testapp, [], **args))
     assert str(excinfo.value) == error

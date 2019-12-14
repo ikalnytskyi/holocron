@@ -132,8 +132,8 @@ def test_item_many(testapp, monkeypatch, tmpdir, amount):
 @pytest.mark.parametrize(
     ["encoding"], [pytest.param("CP1251"), pytest.param("UTF-16")]
 )
-def test_param_encoding(testapp, monkeypatch, tmpdir, encoding):
-    """Save processor has to respect 'encoding' parameter."""
+def test_args_encoding(testapp, monkeypatch, tmpdir, encoding):
+    """Save processor has to respect 'encoding' argument."""
 
     monkeypatch.chdir(tmpdir)
 
@@ -159,8 +159,8 @@ def test_param_encoding(testapp, monkeypatch, tmpdir, encoding):
 @pytest.mark.parametrize(
     ["encoding"], [pytest.param("CP1251"), pytest.param("UTF-16")]
 )
-def test_param_encoding_fallback(testapp, monkeypatch, tmpdir, encoding):
-    """Save processor has to respect 'encoding' parameter (fallback)."""
+def test_args_encoding_fallback(testapp, monkeypatch, tmpdir, encoding):
+    """Save processor has to respect 'encoding' argument (fallback)."""
 
     monkeypatch.chdir(tmpdir)
     testapp.metadata.update({"encoding": encoding})
@@ -186,8 +186,8 @@ def test_param_encoding_fallback(testapp, monkeypatch, tmpdir, encoding):
 @pytest.mark.parametrize(
     ["to"], [pytest.param("_build"), pytest.param("_public")]
 )
-def test_param_to(testapp, monkeypatch, tmpdir, to):
-    """Save processor has to respect 'to' parameter."""
+def test_args_to(testapp, monkeypatch, tmpdir, to):
+    """Save processor has to respect 'to' argument."""
 
     monkeypatch.chdir(tmpdir)
 
@@ -211,7 +211,7 @@ def test_param_to(testapp, monkeypatch, tmpdir, to):
 
 
 @pytest.mark.parametrize(
-    ["params", "error"],
+    ["args", "error"],
     [
         pytest.param(
             {"to": 42}, "to: 42 is not of type 'string'", id="to-int"
@@ -241,9 +241,9 @@ def test_param_to(testapp, monkeypatch, tmpdir, to):
         ),
     ],
 )
-def test_param_bad_value(testapp, params, error):
-    """Save processor has to validate input parameters."""
+def test_args_bad_value(testapp, args, error):
+    """Save processor has to validate input arguments."""
 
     with pytest.raises(ValueError) as excinfo:
-        next(save.process(testapp, [], **params))
+        next(save.process(testapp, [], **args))
     assert str(excinfo.value) == error

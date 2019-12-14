@@ -67,13 +67,10 @@ class Application:
         stream = iter(stream or [])
 
         for processor in pipe:
-            processor = processor.copy()
-            processor_name = processor.pop("name")
+            if processor["name"] not in self._processors:
+                raise ValueError(f"no such processor: '{processor['name']}'")
 
-            if processor_name not in self._processors:
-                raise ValueError(f"no such processor: '{processor_name}'")
-
-            processfn = self._processors[processor_name]
+            processfn = self._processors[processor["name"]]
 
             # Resolve every JSON reference we encounter in a processor's
             # parameters. Please note, we're doing this so late because we
@@ -83,6 +80,6 @@ class Application:
                 processor, {"metadata:": self.metadata}
             )
 
-            stream = processfn(self, stream, **processor)
+            stream = processfn(self, stream, **processor.get("args", {}))
 
         yield from stream

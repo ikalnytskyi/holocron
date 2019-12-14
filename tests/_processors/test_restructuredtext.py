@@ -270,7 +270,7 @@ def test_item_with_inline_code(testapp):
     ]
 
 
-def test_param_settings(testapp):
+def test_args_settings(testapp):
     """reStructuredText processor has to respect custom settings."""
 
     stream = restructuredtext.process(
@@ -355,7 +355,7 @@ def test_item_many(testapp, amount):
 
 
 @pytest.mark.parametrize(
-    ["params", "error"],
+    ["args", "error"],
     [
         pytest.param(
             {"settings": 42},
@@ -364,9 +364,9 @@ def test_item_many(testapp, amount):
         )
     ],
 )
-def test_param_bad_value(testapp, params, error):
-    """reStructuredText processor has to validate input parameters."""
+def test_args_bad_value(testapp, args, error):
+    """reStructuredText processor has to validate input arguments."""
 
     with pytest.raises(ValueError) as excinfo:
-        next(restructuredtext.process(testapp, [], **params))
+        next(restructuredtext.process(testapp, [], **args))
     assert str(excinfo.value) == error
