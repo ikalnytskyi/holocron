@@ -317,7 +317,7 @@ def test_item_many(testapp, amount):
         ),
     ],
 )
-def test_param_pygmentize(testapp, rendered, pygmentize):
+def test_args_pygmentize(testapp, rendered, pygmentize):
     """Commonmark processor has to pygmentize code with language."""
 
     stream = commonmark.process(
@@ -355,7 +355,7 @@ def test_param_pygmentize(testapp, rendered, pygmentize):
 @pytest.mark.parametrize(
     ["language"], [pytest.param("yoda"), pytest.param("vader")]
 )
-def test_param_pygmentize_unknown_language(testapp, language):
+def test_args_pygmentize_unknown_language(testapp, language):
     """Commonmark has to assume text/plain for unknown languages."""
 
     stream = commonmark.process(
@@ -395,7 +395,7 @@ def test_param_pygmentize_unknown_language(testapp, language):
 
 
 @pytest.mark.parametrize(
-    ["params", "error"],
+    ["args", "error"],
     [
         pytest.param(
             {"pygmentize": 42},
@@ -404,9 +404,9 @@ def test_param_pygmentize_unknown_language(testapp, language):
         )
     ],
 )
-def test_param_bad_value(testapp, params, error):
-    """Commonmark processor has to validate input parameters."""
+def test_args_bad_value(testapp, args, error):
+    """Commonmark processor has to validate input arguments."""
 
     with pytest.raises(ValueError) as excinfo:
-        next(commonmark.process(testapp, [], **params))
+        next(commonmark.process(testapp, [], **args))
     assert str(excinfo.value) == error

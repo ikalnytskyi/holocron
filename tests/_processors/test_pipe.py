@@ -10,17 +10,17 @@ from holocron._processors import pipe
 
 @pytest.fixture(scope="function")
 def testapp():
-    def spam(app, items, **options):
+    def spam(app, items, **args):
         for item in items:
-            item["spam"] = options.get("text", 42)
+            item["spam"] = args.get("text", 42)
             yield item
 
-    def eggs(app, items, **options):
+    def eggs(app, items, **args):
         for item in items:
             item["content"] += " #friedeggs"
             yield item
 
-    def rice(app, items, **options):
+    def rice(app, items, **args):
         yield from items
         yield holocron.Item({"content": "rice"})
 
@@ -53,13 +53,13 @@ def test_item(testapp):
     ]
 
 
-def test_item_processor_with_option(testapp):
-    """Pipe processor has to pass down processors options."""
+def test_item_processor_with_args(testapp):
+    """Pipe processor has to pass down processors arguments."""
 
     stream = pipe.process(
         testapp,
         [holocron.Item({"content": "the Force", "author": "skywalker"})],
-        pipe=[{"name": "spam", "text": 1}],
+        pipe=[{"name": "spam", "args": {"text": 1}}],
     )
 
     assert isinstance(stream, collections.abc.Iterable)
@@ -70,7 +70,7 @@ def test_item_processor_with_option(testapp):
     ]
 
 
-def test_param_pipeline_empty(testapp):
+def test_args_pipeline_empty(testapp):
     """Pipe processor with empty pipeline has to pass by."""
 
     stream = pipe.process(
@@ -123,16 +123,16 @@ def test_item_many(testapp, amount):
 
 
 @pytest.mark.parametrize(
-    ["params", "error"],
+    ["args", "error"],
     [
         pytest.param(
             {"pipe": 42}, "pipe: 42 is not of type 'array'", id="pipe-int"
         )
     ],
 )
-def test_param_bad_value(testapp, params, error):
-    """Pipe processor has to validate input parameters."""
+def test_args_bad_value(testapp, args, error):
+    """Pipe processor has to validate input arguments."""
 
     with pytest.raises(ValueError) as excinfo:
-        next(pipe.process(testapp, [], **params))
+        next(pipe.process(testapp, [], **args))
     assert str(excinfo.value) == error

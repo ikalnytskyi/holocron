@@ -500,8 +500,8 @@ def test_item_many(testapp, amount):
         ),
     ],
 )
-def test_param_extensions(testapp, extensions, rendered):
-    """Markdown processor has to respect extensions parameter."""
+def test_args_extensions(testapp, extensions, rendered):
+    """Markdown processor has to respect extensions argument."""
 
     stream = markdown.process(
         testapp,
@@ -535,7 +535,7 @@ def test_param_extensions(testapp, extensions, rendered):
 
 
 @pytest.mark.parametrize(
-    ["params", "error"],
+    ["args", "error"],
     [
         pytest.param(
             {"extensions": 42},
@@ -549,9 +549,9 @@ def test_param_extensions(testapp, extensions, rendered):
         ),
     ],
 )
-def test_param_bad_value(testapp, params, error):
-    """Markdown processor has to validate input parameters."""
+def test_args_bad_value(testapp, args, error):
+    """Markdown processor has to validate input arguments."""
 
     with pytest.raises(ValueError) as excinfo:
-        next(markdown.process(testapp, [], **params))
+        next(markdown.process(testapp, [], **args))
     assert str(excinfo.value) == error

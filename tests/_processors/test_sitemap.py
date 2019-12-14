@@ -183,8 +183,8 @@ def test_item_many_zero(testapp):
     ]
 
 
-def test_param_gzip(testapp):
-    """Sitemap processor has to respect gzip parameter."""
+def test_args_gzip(testapp):
+    """Sitemap processor has to respect gzip argument."""
 
     timepoint = datetime.datetime.fromtimestamp(0, tz=datetime.timezone.utc)
     stream = sitemap.process(
@@ -239,8 +239,8 @@ def test_param_gzip(testapp):
         pytest.param(pathlib.Path("yoda.jedi"), id="flat"),
     ],
 )
-def test_param_save_as(testapp, save_as):
-    """Sitemap processor has to respect save_as parameter."""
+def test_args_save_as(testapp, save_as):
+    """Sitemap processor has to respect save_as argument."""
 
     timepoint = datetime.datetime.fromtimestamp(0, tz=datetime.timezone.utc)
     stream = sitemap.process(
@@ -292,7 +292,7 @@ def test_param_save_as(testapp, save_as):
         ),
     ],
 )
-def test_param_save_as_unsupported(testapp, document_path, sitemap_path):
+def test_args_save_as_unsupported(testapp, document_path, sitemap_path):
     """Sitemap process has to check enlisted URLs for compatibility."""
 
     timepoint = datetime.datetime.fromtimestamp(0, tz=datetime.timezone.utc)
@@ -326,8 +326,8 @@ def test_param_save_as_unsupported(testapp, document_path, sitemap_path):
 @pytest.mark.parametrize(
     ["pretty", "lines"], [pytest.param(False, 1), pytest.param(True, 7)]
 )
-def test_param_pretty(testapp, pretty, lines):
-    """Sitemap processor has to respect pretty parameter."""
+def test_args_pretty(testapp, pretty, lines):
+    """Sitemap processor has to respect pretty argument."""
 
     timepoint = datetime.datetime.fromtimestamp(0, tz=datetime.timezone.utc)
     stream = sitemap.process(
@@ -368,7 +368,7 @@ def test_param_pretty(testapp, pretty, lines):
 
 
 @pytest.mark.parametrize(
-    ["params", "error"],
+    ["args", "error"],
     [
         pytest.param(
             {"gzip": "true"},
@@ -387,9 +387,9 @@ def test_param_pretty(testapp, pretty, lines):
         ),
     ],
 )
-def test_param_bad_value(testapp, params, error):
-    """Sitemap processor has to validate input parameters."""
+def test_args_bad_value(testapp, args, error):
+    """Sitemap processor has to validate input arguments."""
 
     with pytest.raises(ValueError) as excinfo:
-        next(sitemap.process(testapp, [], **params))
+        next(sitemap.process(testapp, [], **args))
     assert str(excinfo.value) == error

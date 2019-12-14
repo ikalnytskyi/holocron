@@ -535,8 +535,8 @@ def test_item_many(testapp, syndication_format, amount):
 @pytest.mark.parametrize(
     ["encoding"], [pytest.param("CP1251"), pytest.param("UTF-16")]
 )
-def test_param_encoding(testapp, syndication_format, encoding):
-    """Feed processor has to respect encoding parameter."""
+def test_args_encoding(testapp, syndication_format, encoding):
+    """Feed processor has to respect encoding argument."""
 
     published = datetime.datetime(2017, 9, 25, tzinfo=datetime.timezone.utc)
     stream = feed.process(
@@ -585,8 +585,8 @@ def test_param_encoding(testapp, syndication_format, encoding):
 @pytest.mark.parametrize(
     ["encoding"], [pytest.param("CP1251"), pytest.param("UTF-16")]
 )
-def test_param_encoding_fallback(testapp, syndication_format, encoding):
-    """Feed processor has to respect encoding parameter (fallback)."""
+def test_args_encoding_fallback(testapp, syndication_format, encoding):
+    """Feed processor has to respect encoding argument (fallback)."""
 
     testapp.metadata.update({"encoding": encoding})
 
@@ -640,8 +640,8 @@ def test_param_encoding_fallback(testapp, syndication_format, encoding):
         pytest.param(pathlib.Path("foo", "bar.xml")),
     ],
 )
-def test_param_save_as(testapp, syndication_format, save_as):
-    """Feed processor has to respect save_as parameter."""
+def test_args_save_as(testapp, syndication_format, save_as):
+    """Feed processor has to respect save_as argument."""
 
     stream = feed.process(
         testapp,
@@ -691,8 +691,8 @@ def test_param_save_as(testapp, syndication_format, save_as):
     ["syndication_format"], [pytest.param("atom"), pytest.param("rss")]
 )
 @pytest.mark.parametrize(["limit"], [pytest.param(2), pytest.param(5)])
-def test_param_limit(testapp, syndication_format, limit):
-    """Feed processor has to respect limit parameter."""
+def test_args_limit(testapp, syndication_format, limit):
+    """Feed processor has to respect limit argument."""
 
     stream = feed.process(
         testapp,
@@ -775,8 +775,8 @@ def test_param_limit(testapp, syndication_format, limit):
         pytest.param(True, lambda x: x > 10, id="yes"),
     ],
 )
-def test_param_pretty(testapp, syndication_format, pretty, check_fn):
-    """Feed processor has to respect pretty parameter."""
+def test_args_pretty(testapp, syndication_format, pretty, check_fn):
+    """Feed processor has to respect pretty argument."""
 
     stream = feed.process(
         testapp,
@@ -825,7 +825,7 @@ def test_param_pretty(testapp, syndication_format, pretty, check_fn):
 
 
 @pytest.mark.parametrize(
-    ["params", "error"],
+    ["args", "error"],
     [
         pytest.param(
             {"encoding": "UTF-42"},
@@ -849,9 +849,9 @@ def test_param_pretty(testapp, syndication_format, pretty, check_fn):
         ),
     ],
 )
-def test_param_bad_value(testapp, params, error):
-    """Feed processor has to validate input parameters."""
+def test_args_bad_value(testapp, args, error):
+    """Feed processor has to validate input arguments."""
 
     with pytest.raises(ValueError) as excinfo:
-        next(feed.process(testapp, [], **params))
+        next(feed.process(testapp, [], **args))
     assert str(excinfo.value) == error

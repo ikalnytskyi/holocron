@@ -153,8 +153,8 @@ def test_item_many(testapp, tmpdir, amount):
     assert len(static) == 3
 
 
-def test_param_themes(testapp, tmpdir):
-    """Jinja2 processor has to respect themes parameter."""
+def test_args_themes(testapp, tmpdir):
+    """Jinja2 processor has to respect themes argument."""
 
     tmpdir.ensure("theme_a", "templates", "item.j2").write_text(
         textwrap.dedent(
@@ -205,8 +205,8 @@ def test_param_themes(testapp, tmpdir):
     ]
 
 
-def test_param_themes_two_themes(testapp, tmpdir):
-    """Jinja2 processor has to respect themes parameter."""
+def test_args_themes_two_themes(testapp, tmpdir):
+    """Jinja2 processor has to respect themes argument."""
 
     tmpdir.ensure("theme_a", "templates", "page.j2").write_text(
         textwrap.dedent(
@@ -290,7 +290,7 @@ def test_param_themes_two_themes(testapp, tmpdir):
 
 
 @pytest.mark.parametrize(
-    ["params", "error"],
+    ["args", "error"],
     [
         pytest.param(
             {"template": 42},
@@ -309,9 +309,9 @@ def test_param_themes_two_themes(testapp, tmpdir):
         ),
     ],
 )
-def test_param_bad_value(testapp, params, error):
-    """Commit processor has to validate input parameters."""
+def test_args_bad_value(testapp, args, error):
+    """Commit processor has to validate input arguments."""
 
     with pytest.raises(ValueError) as excinfo:
-        next(jinja2.process(testapp, [], **params))
+        next(jinja2.process(testapp, [], **args))
     assert str(excinfo.value) == error

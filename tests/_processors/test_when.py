@@ -169,7 +169,7 @@ def test_item_many_eggs(testapp):
         pytest.param([r"item.source | match('^about.*')"], id="match-about"),
     ],
 )
-def test_param_when(testapp, cond):
+def test_args_when(testapp, cond):
     """When processor has to respect conditions."""
 
     stream = when.process(

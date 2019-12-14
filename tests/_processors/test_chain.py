@@ -83,8 +83,8 @@ def test_three_items(testapp):
     ]
 
 
-def test_param_order_by(testapp):
-    """Chain processor has to respect 'order_by' parameter."""
+def test_args_order_by(testapp):
+    """Chain processor has to respect 'order_by' argument."""
 
     stream = chain.process(
         testapp,
@@ -132,8 +132,8 @@ def test_param_order_by(testapp):
     ]
 
 
-def test_param_direction(testapp):
-    """Chain processor has to respect 'direction' parameter."""
+def test_args_direction(testapp):
+    """Chain processor has to respect 'direction' argument."""
 
     stream = chain.process(
         testapp,
@@ -183,7 +183,7 @@ def test_param_direction(testapp):
 
 
 @pytest.mark.parametrize(
-    ["params", "error"],
+    ["args", "error"],
     [
         pytest.param(
             {"order_by": 42},
@@ -202,9 +202,9 @@ def test_param_direction(testapp):
         ),
     ],
 )
-def test_param_bad_value(testapp, params, error):
-    """Chain processor has to validate input parameters."""
+def test_args_bad_value(testapp, args, error):
+    """Chain processor has to validate input arguments."""
 
     with pytest.raises(ValueError) as excinfo:
-        next(chain.process(testapp, [], **params))
+        next(chain.process(testapp, [], **args))
     assert str(excinfo.value) == error

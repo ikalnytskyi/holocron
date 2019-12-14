@@ -212,8 +212,8 @@ def test_item_timestamp_bad_value(testapp):
         pytest.param(pathlib.Path("2019-01-11"), id="path"),
     ],
 )
-def test_param_todatetime(testapp, timestamp):
-    """Todatetime processor has to respect "writeto" parameter."""
+def test_args_todatetime(testapp, timestamp):
+    """Todatetime processor has to respect "writeto" argument."""
 
     stream = todatetime.process(
         testapp,
@@ -259,8 +259,8 @@ def test_param_todatetime(testapp, timestamp):
         ),
     ],
 )
-def test_param_parsearea(testapp, timestamp, parsearea):
-    """Todatetime processor has to respect "parsearea" parameter."""
+def test_args_parsearea(testapp, timestamp, parsearea):
+    """Todatetime processor has to respect "parsearea" argument."""
 
     stream = todatetime.process(
         testapp,
@@ -288,8 +288,8 @@ def test_param_parsearea(testapp, timestamp, parsearea):
     ]
 
 
-def test_param_parsearea_not_found(testapp):
-    """Todatetime processor has to respect "parsearea" parameter."""
+def test_args_parsearea_not_found(testapp):
+    """Todatetime processor has to respect "parsearea" argument."""
 
     stream = todatetime.process(
         testapp,
@@ -331,8 +331,8 @@ def test_param_parsearea_not_found(testapp):
         pytest.param("http://example.com/posts/2019-01-11-luke-skywalker.txt"),
     ],
 )
-def test_param_fuzzy(testapp, timestamp):
-    """Todatetime processor has to respect "fuzzy" parameter."""
+def test_args_fuzzy(testapp, timestamp):
+    """Todatetime processor has to respect "fuzzy" argument."""
 
     stream = todatetime.process(
         testapp,
@@ -360,8 +360,8 @@ def test_param_fuzzy(testapp, timestamp):
 
 
 @pytest.mark.parametrize(["tz"], [pytest.param("EET"), pytest.param("UTC")])
-def test_param_timezone(testapp, tz):
-    """Todatetime processor has to respect "timezone" parameter."""
+def test_args_timezone(testapp, tz):
+    """Todatetime processor has to respect "timezone" argument."""
 
     stream = todatetime.process(
         testapp,
@@ -381,7 +381,7 @@ def test_param_timezone(testapp, tz):
         ],
         todatetime="timestamp",
         # Custom timezone has to be attached only to timestamps without
-        # explicit timezone information. So this option is nothing more
+        # explicit timezone information. So this argument is nothing more
         # but a fallback.
         timezone=tz,
     )
@@ -408,8 +408,8 @@ def test_param_timezone(testapp, tz):
 
 
 @pytest.mark.parametrize(["tz"], [pytest.param("EET"), pytest.param("UTC")])
-def test_param_timezone_fallback(testapp, tz):
-    """Todatetime processor has to respect "timezone" parameter (fallback)."""
+def test_args_timezone_fallback(testapp, tz):
+    """Todatetime processor has to respect "timezone" argument (fallback)."""
 
     # Custom timezone has to be attached only to timestamps without
     # explicit timezone information. So this option is nothing more
@@ -457,7 +457,7 @@ def test_param_timezone_fallback(testapp, tz):
 
 
 @pytest.mark.parametrize(
-    ["params", "error"],
+    ["args", "error"],
     [
         pytest.param(
             {"todatetime": 42},
@@ -479,9 +479,9 @@ def test_param_timezone_fallback(testapp, tz):
         ),
     ],
 )
-def test_param_bad_value(testapp, params, error):
-    """Todatetime processor has to validate input parameters."""
+def test_args_bad_value(testapp, args, error):
+    """Todatetime processor has to validate input arguments."""
 
     with pytest.raises(ValueError) as excinfo:
-        next(todatetime.process(testapp, [], **params))
+        next(todatetime.process(testapp, [], **args))
     assert str(excinfo.value) == error

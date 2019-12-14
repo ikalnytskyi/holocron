@@ -287,7 +287,7 @@ def test_invoke_passthrough_items():
 
 
 @pytest.mark.parametrize(
-    ["processor_options"],
+    ["processor_args"],
     [
         pytest.param({"a": 1}, id="int"),
         pytest.param({"b": 1.13}, id="float"),
@@ -295,23 +295,23 @@ def test_invoke_passthrough_items():
         pytest.param({"a": {"x": [1, 2]}, "b": ["1", 2]}, id="deep-params"),
     ],
 )
-def test_invoke_propagates_processor_options(processor_options):
-    """.invoke() propagates processor's options."""
+def test_invoke_propagates_processor_args(processor_args):
+    """.invoke() propagates processor's arguments."""
 
-    def processor(app, items, **options):
-        assert options == processor_options
+    def processor(app, items, **args):
+        assert args == processor_args
         yield from items
 
     testapp = holocron.Application()
     testapp.add_processor("processor", processor)
-    testapp.add_pipe("test", [dict(processor_options, name="processor")])
+    testapp.add_pipe("test", [{"name": "processor", "args": processor_args}])
 
     with pytest.raises(StopIteration):
         next(testapp.invoke("test"))
 
 
 @pytest.mark.parametrize(
-    ["options", "resolved"],
+    ["processor_args", "resolved"],
     [
         pytest.param(
             {"a": {"$ref": "metadata://#/is_yoda_master"}},
@@ -338,19 +338,19 @@ def test_invoke_propagates_processor_options(processor_options):
         ),
     ],
 )
-def test_invoke_resolves_jsonref(options, resolved):
-    """.invoke() resolves JSON references in processor's options."""
+def test_invoke_resolves_jsonref(processor_args, resolved):
+    """.invoke() resolves JSON references in processor's arguments."""
 
     testapp = holocron.Application(
         {"extra": [{"luke": "skywalker"}], "is_yoda_master": True}
     )
 
-    def processor(app, items, **options):
-        assert options == resolved
+    def processor(app, items, **args):
+        assert args == resolved
         yield from items
 
     testapp.add_processor("processor", processor)
-    testapp.add_pipe("test", [dict(options, name="processor")])
+    testapp.add_pipe("test", [{"name": "processor", "args": processor_args}])
 
     with pytest.raises(StopIteration):
         next(testapp.invoke("test"))
