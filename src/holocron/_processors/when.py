@@ -18,7 +18,7 @@ def _re_match(value, pattern, flags=0):
     return re.match(pattern, value, flags)
 
 
-class _WhenEvaluator:
+class _ConditionEvaluator:
     """Evaluate a python-like expressions in boolean context."""
 
     def __init__(self):
@@ -30,8 +30,8 @@ class _WhenEvaluator:
         self._env = jinja2.Environment()
         self._env.filters.update({"match": _re_match})
 
-    def eval(self, when, **context):
-        template = self._env.from_string(f"{{% if {when} %}}true{{% endif %}}")
+    def eval(self, cond, **context):
+        template = self._env.from_string(f"{{% if {cond} %}}true{{% endif %}}")
         return template.render(**context) == "true"
 
 
@@ -39,23 +39,34 @@ class _WhenEvaluator:
     jsonschema={
         "type": "object",
         "properties": {
-            "when": {"type": "array", "items": {"type": "string"}},
+            "condition": {"type": "array", "items": {"type": "string"}},
             "processor": {
                 "type": "object",
-                "properties": {"name": {"type": "string"}},
+                "properties": {
+                    "name": {"type": "string"},
+                    "args": {"type": ["object", "array"]},
+                },
                 "required": ["name"],
-                "additionalProperties": True,
+                "additionalProperties": False,
             },
         },
     }
 )
-def process(app, stream, *, when, processor):
+def process(app, stream, processor, *_condition, condition=None):
     untouched = collections.deque()
-    evaluator = _WhenEvaluator()
+    evaluator = _ConditionEvaluator()
+
+    # Since Holocron's processor wrappers support both positional and keyword
+    # arguments interface, we want to receive conditions either via positional
+    # or keyword arguments, but not both simultaneously.
+    condition = _condition or condition
+
+    if not condition:
+        raise TypeError("missing argument or value: 'condition'")
 
     def smartstream():
         for item in stream:
-            if all(evaluator.eval(cond, item=item) for cond in when):
+            if all(evaluator.eval(cond, item=item) for cond in condition):
                 yield item
             else:
                 untouched.append(item)

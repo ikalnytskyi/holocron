@@ -1,7 +1,7 @@
 """Factory functions to create core instances."""
 
 from . import Application
-from .._processors import import_processors
+from .._processors import import_processors, when
 
 
 def create_app(metadata, processors=None, pipes=None):
@@ -34,9 +34,14 @@ def create_app(metadata, processors=None, pipes=None):
             "sitemap = holocron._processors.sitemap:process",
             "source = holocron._processors.source:process",
             "todatetime = holocron._processors.todatetime:process",
-            "when = holocron._processors.when:process",
         ],
     )
+
+    # When is the only known processor wrapper, and, frankly, we don't expect
+    # more. Processor wrappers are mere hacks to avoid hardcoding yet provide
+    # better syntax for wrapping processors. So let's hardcode that knowledge
+    # here, and think later about general approach when the need arise.
+    instance.add_processor_wrapper("when", when.process)
 
     for name, processor in (processors or {}).items():
         instance.add_processor(name, processor)

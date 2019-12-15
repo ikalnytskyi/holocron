@@ -29,6 +29,7 @@ def test_create_app_processors_discover():
         "todatetime",
         "when",
     }
+    assert set(testapp._processor_wrappers) == {"when"}
 
 
 def test_create_app_processors_pass(caplog):

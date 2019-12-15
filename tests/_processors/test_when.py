@@ -60,7 +60,7 @@ def test_item_spam(testapp, cond, item):
         testapp,
         [holocron.Item({"content": "eh", "author": "yoda"})],
         processor={"name": "spam"},
-        when=[cond],
+        condition=[cond],
     )
 
     assert isinstance(stream, collections.abc.Iterable)
@@ -87,7 +87,7 @@ def test_item_many_spam(testapp, amount):
             for i in range(amount)
         ],
         processor={"name": "spam"},
-        when=["item.key % 2 == 0"],
+        condition=["item.key % 2 == 0"],
     )
 
     assert isinstance(stream, collections.abc.Iterable)
@@ -119,7 +119,7 @@ def test_item_many_rice(testapp, amount):
             for i in range(amount)
         ],
         processor={"name": "rice"},
-        when=["item.key % 2 == 0"],
+        condition=["item.key % 2 == 0"],
     )
 
     assert isinstance(stream, collections.abc.Iterable)
@@ -144,7 +144,7 @@ def test_item_many_eggs(testapp):
             for i in range(5)
         ],
         processor={"name": "eggs"},
-        when=["item.key % 2 != 0"],
+        condition=["item.key % 2 != 0"],
     )
 
     assert isinstance(stream, collections.abc.Iterable)
@@ -169,7 +169,7 @@ def test_item_many_eggs(testapp):
         pytest.param([r"item.source | match('^about.*')"], id="match-about"),
     ],
 )
-def test_args_when(testapp, cond):
+def test_args_condition(testapp, cond):
     """When processor has to respect conditions."""
 
     stream = when.process(
@@ -181,10 +181,13 @@ def test_args_when(testapp, cond):
                     "author": "yoda",
                     "source": pathlib.Path("about", "index.md"),
                 }
-            )
+            ),
+            holocron.Item(
+                {"author": "luke", "source": pathlib.Path("me.rst")}
+            ),
         ],
         processor={"name": "spam"},
-        when=cond,
+        condition=cond,
     )
 
     assert isinstance(stream, collections.abc.Iterable)
@@ -196,5 +199,54 @@ def test_args_when(testapp, cond):
                 "source": pathlib.Path("about", "index.md"),
                 "spam": 42,
             }
-        )
+        ),
+        holocron.Item({"author": "luke", "source": pathlib.Path("me.rst")}),
+    ]
+
+
+@pytest.mark.parametrize(
+    ["cond"],
+    [
+        pytest.param([r"item.author == 'yoda'"], id="=="),
+        pytest.param([r"item.source.suffix == '.md'"], id="endswith"),
+        pytest.param(
+            [r"item.author == 'yoda'", "item.source.suffix == '.md'"],
+            id="two-conditions",
+        ),
+        pytest.param([r"item.source | match('.*\.md')"], id="match-md"),
+        pytest.param([r"item.source | match('^about.*')"], id="match-about"),
+    ],
+)
+def test_args_condition_positional(testapp, cond):
+    """When processor has to respect conditions."""
+
+    stream = when.process(
+        testapp,
+        [
+            holocron.Item(
+                {
+                    "content": "eh",
+                    "author": "yoda",
+                    "source": pathlib.Path("about", "index.md"),
+                }
+            ),
+            holocron.Item(
+                {"author": "luke", "source": pathlib.Path("me.rst")}
+            ),
+        ],
+        {"name": "spam"},
+        *cond,
+    )
+
+    assert isinstance(stream, collections.abc.Iterable)
+    assert list(stream) == [
+        holocron.Item(
+            {
+                "content": "eh",
+                "author": "yoda",
+                "source": pathlib.Path("about", "index.md"),
+                "spam": 42,
+            }
+        ),
+        holocron.Item({"author": "luke", "source": pathlib.Path("me.rst")}),
     ]
