@@ -79,6 +79,85 @@ def test_add_processor_override(caplog):
     assert caplog.records[0].message == "processor override: 'processor'"
 
 
+def test_add_processor_wrapper(caplog):
+    """.add_processor_wrapper() registers a processor wrapper."""
+
+    testapp = holocron.Application()
+    marker = None
+
+    def processor(app, items):
+        yield from items
+
+    def processor_wrapper(app, items, processor):
+        nonlocal marker
+        marker = 42
+        yield from app.invoke([processor])
+
+    testapp.add_processor("processor", processor)
+    testapp.add_processor_wrapper("wrapper", processor_wrapper)
+
+    for _ in testapp.invoke([{"name": "processor", "wrapper": {}}]):
+        pass
+
+    assert marker == 42
+    assert len(caplog.records) == 0
+
+
+def test_add_processor_wrapper_override(caplog):
+    """.add_processor_wrapper() overrides registered one."""
+
+    testapp = holocron.Application()
+    marker = None
+
+    def processor(app, items):
+        yield from items
+
+    def processor_wrapper_a(app, items, processor):
+        nonlocal marker
+        marker = 42
+        yield from app.invoke([processor])
+
+    def processor_wrapper_b(app, items, processor):
+        nonlocal marker
+        marker = 13
+        yield from app.invoke([processor])
+
+    testapp.add_processor("processor", processor)
+    testapp.add_processor_wrapper("wrapper", processor_wrapper_a)
+    testapp.add_processor_wrapper("wrapper", processor_wrapper_b)
+
+    for _ in testapp.invoke([{"name": "processor", "wrapper": {}}]):
+        pass
+
+    assert marker == 13
+
+    assert len(caplog.records) == 1
+    assert caplog.records[0].message == "processor override: 'wrapper'"
+
+
+@pytest.mark.parametrize(
+    ["wrapper_name"], [pytest.param("name"), pytest.param("args")]
+)
+def test_add_processor_wrapper_illegal_name(caplog, wrapper_name):
+    """.add_processor_wrapper() raises on illegal name."""
+
+    testapp = holocron.Application()
+
+    def processor(app, items):
+        yield from items
+
+    def processor_wrapper(app, items, processor):
+        yield from app.invoke([processor])
+
+    testapp.add_processor("processor", processor)
+
+    with pytest.raises(ValueError) as excinfo:
+        testapp.add_processor_wrapper(wrapper_name, processor_wrapper)
+
+    assert str(excinfo.value) == f"illegal wrapper name: {wrapper_name}"
+    assert len(caplog.records) == 0
+
+
 def test_add_pipe(caplog):
     """.add_pipe() registers a pipe."""
 
@@ -386,3 +465,70 @@ def test_invoke_processor_not_found():
         next(testapp.invoke("test"))
 
     assert str(excinfo.value) == "no such processor: 'processor'"
+
+
+def test_invoke_processor_wrapper(caplog):
+    """.invoke() recognizes syntax sugar."""
+
+    testapp = holocron.Application()
+    marker = None
+
+    def processor(app, items):
+        yield from items
+
+    def processor_wrapper(app, items, processor, *, secret):
+        nonlocal marker
+        marker = secret
+        yield from app.invoke([processor])
+
+    testapp.add_processor("processor", processor)
+    testapp.add_processor_wrapper("wrapper", processor_wrapper)
+
+    for _ in testapp.invoke(
+        [{"name": "processor", "wrapper": {"secret": 42}}]
+    ):
+        pass
+
+    assert marker == 42
+    assert len(caplog.records) == 0
+
+
+def test_invoke_processor_wrapper_positional(caplog):
+    """.invoke() recognizes syntax sugar."""
+
+    testapp = holocron.Application()
+    marker = None
+
+    def processor(app, items):
+        yield from items
+
+    def processor_wrapper(app, items, processor, secret):
+        nonlocal marker
+        marker = secret
+        yield from app.invoke([processor])
+
+    testapp.add_processor("processor", processor)
+    testapp.add_processor_wrapper("wrapper", processor_wrapper)
+
+    for _ in testapp.invoke([{"name": "processor", "wrapper": [42]}]):
+        pass
+
+    assert marker == 42
+    assert len(caplog.records) == 0
+
+
+def test_invoke_processor_wrapper_not_found(caplog):
+    """.invoke() raises proper exception."""
+
+    testapp = holocron.Application()
+
+    def processor(app, items):
+        yield from items
+
+    testapp.add_processor("processor", processor)
+
+    with pytest.raises(ValueError) as excinfo:
+        next(testapp.invoke([{"name": "processor", "wrapper": {}}]))
+
+    assert str(excinfo.value) == "no such processor: 'wrapper'"
+    assert len(caplog.records) == 0
