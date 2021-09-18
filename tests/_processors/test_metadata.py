@@ -24,9 +24,7 @@ def test_item(testapp):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        holocron.Item(
-            {"content": "the Force", "author": "yoda", "type": "memoire"}
-        )
+        holocron.Item({"content": "the Force", "author": "yoda", "type": "memoire"})
     ]
 
 
@@ -98,9 +96,7 @@ def test_args_overwrite(testapp, overwrite, author):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        holocron.Item(
-            {"content": "the Force", "author": author, "type": "memoire"}
-        )
+        holocron.Item({"content": "the Force", "author": author, "type": "memoire"})
     ]
 
 

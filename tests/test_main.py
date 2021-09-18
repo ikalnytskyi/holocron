@@ -55,9 +55,7 @@ def example_site(create_site):
 def execute(capsys):
     def execute(args, as_subprocess=True):
         if as_subprocess:
-            return subprocess.check_output(
-                ["holocron"] + args, stderr=subprocess.PIPE
-            )
+            return subprocess.check_output(["holocron"] + args, stderr=subprocess.PIPE)
 
         from holocron.__main__ import main
 
@@ -92,8 +90,7 @@ def test_run_progress_info_colored(monkeypatch, tmpdir, execute, example_site):
     assert set(execute(["run", "test"], as_subprocess=False).splitlines()) == {
         "\x1b[1m\x1b[32m==>\x1b[0m \x1b[1m.holocron.yml\x1b[0m",
         "\x1b[1m\x1b[32m==>\x1b[0m \x1b[1mcv.md\x1b[0m",
-        "\x1b[1m\x1b[32m==>\x1b[0m "
-        "\x1b[1m2019/02/12/skywalker/index.html\x1b[0m",
+        "\x1b[1m\x1b[32m==>\x1b[0m \x1b[1m2019/02/12/skywalker/index.html\x1b[0m",
         "\x1b[1m\x1b[32m==>\x1b[0m \x1b[1mabout/photo.png\x1b[0m",
     }
 
@@ -186,9 +183,7 @@ def test_run_conf_yml_interpolate(monkeypatch, tmpdir, execute):
     )
 
 
-def test_run_conf_yml_interpolate_in_path(
-    monkeypatch, tmpdir, execute, example_site
-):
+def test_run_conf_yml_interpolate_in_path(monkeypatch, tmpdir, execute, example_site):
     """Values such as '%(here)s' are interpolated."""
 
     tmpdir.join(".holocron.yml").write_binary(

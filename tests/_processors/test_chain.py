@@ -21,9 +21,7 @@ def test_one_item(testapp):
     )
 
     assert isinstance(stream, collections.abc.Iterable)
-    assert list(stream) == [
-        holocron.Item({"title": "The Force", "content": "Obi-Wan"})
-    ]
+    assert list(stream) == [holocron.Item({"title": "The Force", "content": "Obi-Wan"})]
 
 
 def test_two_items(testapp):
@@ -41,12 +39,8 @@ def test_two_items(testapp):
     items = list(stream)
 
     assert items == [
-        holocron.Item(
-            {"title": "The Force", "content": "Obi-Wan", "next": items[1]}
-        ),
-        holocron.Item(
-            {"title": "Force, The", "content": "Yoda", "prev": items[0]}
-        ),
+        holocron.Item({"title": "The Force", "content": "Obi-Wan", "next": items[1]}),
+        holocron.Item({"title": "Force, The", "content": "Yoda", "prev": items[0]}),
     ]
 
 
@@ -66,9 +60,7 @@ def test_three_items(testapp):
     items = list(stream)
 
     assert items == [
-        holocron.Item(
-            {"title": "The Force", "content": "Obi-Wan", "next": items[1]}
-        ),
+        holocron.Item({"title": "The Force", "content": "Obi-Wan", "next": items[1]}),
         holocron.Item(
             {
                 "title": "Force, The",
@@ -77,9 +69,7 @@ def test_three_items(testapp):
                 "next": items[2],
             }
         ),
-        holocron.Item(
-            {"title": "The Dark Side", "content": "Vader", "prev": items[1]}
-        ),
+        holocron.Item({"title": "The Dark Side", "content": "Vader", "prev": items[1]}),
     ]
 
 
@@ -89,12 +79,8 @@ def test_args_order_by(testapp):
     stream = chain.process(
         testapp,
         [
-            holocron.Item(
-                {"title": "The Dark Side", "content": "Vader", "id": 3}
-            ),
-            holocron.Item(
-                {"title": "The Force", "content": "Obi-Wan", "id": 1}
-            ),
+            holocron.Item({"title": "The Dark Side", "content": "Vader", "id": 3}),
+            holocron.Item({"title": "The Force", "content": "Obi-Wan", "id": 1}),
             holocron.Item({"title": "Force, The", "content": "Yoda", "id": 2}),
         ],
         order_by="id",
@@ -138,12 +124,8 @@ def test_args_direction(testapp):
     stream = chain.process(
         testapp,
         [
-            holocron.Item(
-                {"title": "The Dark Side", "content": "Vader", "id": 3}
-            ),
-            holocron.Item(
-                {"title": "The Force", "content": "Obi-Wan", "id": 1}
-            ),
+            holocron.Item({"title": "The Dark Side", "content": "Vader", "id": 3}),
+            holocron.Item({"title": "The Force", "content": "Obi-Wan", "id": 1}),
             holocron.Item({"title": "Force, The", "content": "Yoda", "id": 2}),
         ],
         order_by="id",

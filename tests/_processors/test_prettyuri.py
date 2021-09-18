@@ -1,7 +1,7 @@
 """Prettyuri processor test suite."""
 
-import pathlib
 import collections.abc
+import pathlib
 
 import pytest
 
@@ -24,9 +24,7 @@ def test_item(testapp):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        holocron.Item(
-            {"destination": pathlib.Path("about", "cv", "index.html")}
-        )
+        holocron.Item({"destination": pathlib.Path("about", "cv", "index.html")})
     ]
 
 
@@ -63,17 +61,13 @@ def test_item_many(testapp, amount):
     stream = prettyuri.process(
         testapp,
         [
-            holocron.Item(
-                {"destination": pathlib.Path("about", "%d.html" % i)}
-            )
+            holocron.Item({"destination": pathlib.Path("about", "%d.html" % i)})
             for i in range(amount)
         ],
     )
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        holocron.Item(
-            {"destination": pathlib.Path("about", str(i), "index.html")}
-        )
+        holocron.Item({"destination": pathlib.Path("about", str(i), "index.html")})
         for i in range(amount)
     ]

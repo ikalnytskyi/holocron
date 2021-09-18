@@ -12,7 +12,9 @@ from ._misc import parameters
         },
     }
 )
-def process(app, stream, *, metadata={}, overwrite=True):
+def process(app, stream, *, metadata=None, overwrite=True):
+    metadata = metadata or {}
+
     for item in stream:
         for key, value in metadata.items():
             if overwrite or key not in item:

@@ -22,18 +22,12 @@ def test_item(testapp, monkeypatch, tmpdir):
 
     stream = save.process(
         testapp,
-        [
-            holocron.Item(
-                {"content": "Obi-Wan", "destination": pathlib.Path("1.html")}
-            )
-        ],
+        [holocron.Item({"content": "Obi-Wan", "destination": pathlib.Path("1.html")})],
     )
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        holocron.Item(
-            {"content": "Obi-Wan", "destination": pathlib.Path("1.html")}
-        )
+        holocron.Item({"content": "Obi-Wan", "destination": pathlib.Path("1.html")})
     ]
     assert tmpdir.join("_site", "1.html").read_text("UTF-8") == "Obi-Wan"
 
@@ -52,11 +46,7 @@ def test_item_content_types(testapp, monkeypatch, tmpdir, data, loader):
 
     stream = save.process(
         testapp,
-        [
-            holocron.Item(
-                {"content": data, "destination": pathlib.Path("1.dat")}
-            )
-        ],
+        [holocron.Item({"content": data, "destination": pathlib.Path("1.dat")})],
     )
 
     assert isinstance(stream, collections.abc.Iterable)
@@ -110,18 +100,14 @@ def test_item_many(testapp, monkeypatch, tmpdir, amount):
     stream = save.process(
         testapp,
         [
-            holocron.Item(
-                {"content": "Obi-Wan", "destination": pathlib.Path(str(i))}
-            )
+            holocron.Item({"content": "Obi-Wan", "destination": pathlib.Path(str(i))})
             for i in range(amount)
         ],
     )
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        holocron.Item(
-            {"content": "Obi-Wan", "destination": pathlib.Path(str(i))}
-        )
+        holocron.Item({"content": "Obi-Wan", "destination": pathlib.Path(str(i))})
         for i in range(amount)
     ]
 
@@ -129,9 +115,7 @@ def test_item_many(testapp, monkeypatch, tmpdir, amount):
         assert tmpdir.join("_site", str(i)).read_text("UTF-8") == "Obi-Wan"
 
 
-@pytest.mark.parametrize(
-    ["encoding"], [pytest.param("CP1251"), pytest.param("UTF-16")]
-)
+@pytest.mark.parametrize(["encoding"], [pytest.param("CP1251"), pytest.param("UTF-16")])
 def test_args_encoding(testapp, monkeypatch, tmpdir, encoding):
     """Save processor has to respect 'encoding' argument."""
 
@@ -139,26 +123,18 @@ def test_args_encoding(testapp, monkeypatch, tmpdir, encoding):
 
     stream = save.process(
         testapp,
-        [
-            holocron.Item(
-                {"content": "Обі-Ван", "destination": pathlib.Path("1.html")}
-            )
-        ],
+        [holocron.Item({"content": "Обі-Ван", "destination": pathlib.Path("1.html")})],
         encoding=encoding,
     )
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        holocron.Item(
-            {"content": "Обі-Ван", "destination": pathlib.Path("1.html")}
-        )
+        holocron.Item({"content": "Обі-Ван", "destination": pathlib.Path("1.html")})
     ]
     assert tmpdir.join("_site", "1.html").read_text(encoding) == "Обі-Ван"
 
 
-@pytest.mark.parametrize(
-    ["encoding"], [pytest.param("CP1251"), pytest.param("UTF-16")]
-)
+@pytest.mark.parametrize(["encoding"], [pytest.param("CP1251"), pytest.param("UTF-16")])
 def test_args_encoding_fallback(testapp, monkeypatch, tmpdir, encoding):
     """Save processor has to respect 'encoding' argument (fallback)."""
 
@@ -167,25 +143,17 @@ def test_args_encoding_fallback(testapp, monkeypatch, tmpdir, encoding):
 
     stream = save.process(
         testapp,
-        [
-            holocron.Item(
-                {"content": "Обі-Ван", "destination": pathlib.Path("1.html")}
-            )
-        ],
+        [holocron.Item({"content": "Обі-Ван", "destination": pathlib.Path("1.html")})],
     )
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        holocron.Item(
-            {"content": "Обі-Ван", "destination": pathlib.Path("1.html")}
-        )
+        holocron.Item({"content": "Обі-Ван", "destination": pathlib.Path("1.html")})
     ]
     assert tmpdir.join("_site", "1.html").read_text(encoding) == "Обі-Ван"
 
 
-@pytest.mark.parametrize(
-    ["to"], [pytest.param("_build"), pytest.param("_public")]
-)
+@pytest.mark.parametrize(["to"], [pytest.param("_build"), pytest.param("_public")])
 def test_args_to(testapp, monkeypatch, tmpdir, to):
     """Save processor has to respect 'to' argument."""
 
@@ -193,19 +161,13 @@ def test_args_to(testapp, monkeypatch, tmpdir, to):
 
     stream = save.process(
         testapp,
-        [
-            holocron.Item(
-                {"content": "Obi-Wan", "destination": pathlib.Path("1.html")}
-            )
-        ],
+        [holocron.Item({"content": "Obi-Wan", "destination": pathlib.Path("1.html")})],
         to=to,
     )
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        holocron.Item(
-            {"content": "Obi-Wan", "destination": pathlib.Path("1.html")}
-        )
+        holocron.Item({"content": "Obi-Wan", "destination": pathlib.Path("1.html")})
     ]
     assert tmpdir.join(to, "1.html").read_text("UTF-8") == "Obi-Wan"
 
@@ -213,12 +175,8 @@ def test_args_to(testapp, monkeypatch, tmpdir, to):
 @pytest.mark.parametrize(
     ["args", "error"],
     [
-        pytest.param(
-            {"to": 42}, "to: 42 is not of type 'string'", id="to-int"
-        ),
-        pytest.param(
-            {"to": [42]}, "to: [42] is not of type 'string'", id="to-list"
-        ),
+        pytest.param({"to": 42}, "to: 42 is not of type 'string'", id="to-int"),
+        pytest.param({"to": [42]}, "to: [42] is not of type 'string'", id="to-list"),
         pytest.param(
             {"to": {"x": 1}},
             "to: {'x': 1} is not of type 'string'",

@@ -82,10 +82,7 @@ def test_item_many_spam(testapp, amount):
 
     stream = when.process(
         testapp,
-        [
-            holocron.Item({"content": "the great jedi", "key": i})
-            for i in range(amount)
-        ],
+        [holocron.Item({"content": "the great jedi", "key": i}) for i in range(amount)],
         processor={"name": "spam"},
         condition=["item.key % 2 == 0"],
     )
@@ -114,10 +111,7 @@ def test_item_many_rice(testapp, amount):
 
     stream = when.process(
         testapp,
-        [
-            holocron.Item({"content": "the great jedi", "key": i})
-            for i in range(amount)
-        ],
+        [holocron.Item({"content": "the great jedi", "key": i}) for i in range(amount)],
         processor={"name": "rice"},
         condition=["item.key % 2 == 0"],
     )
@@ -139,10 +133,7 @@ def test_item_many_eggs(testapp):
 
     stream = when.process(
         testapp,
-        [
-            holocron.Item({"content": "the great jedi", "key": i})
-            for i in range(5)
-        ],
+        [holocron.Item({"content": "the great jedi", "key": i}) for i in range(5)],
         processor={"name": "eggs"},
         condition=["item.key % 2 != 0"],
     )
@@ -182,9 +173,7 @@ def test_args_condition(testapp, cond):
                     "source": pathlib.Path("about", "index.md"),
                 }
             ),
-            holocron.Item(
-                {"author": "luke", "source": pathlib.Path("me.rst")}
-            ),
+            holocron.Item({"author": "luke", "source": pathlib.Path("me.rst")}),
         ],
         processor={"name": "spam"},
         condition=cond,
@@ -230,9 +219,7 @@ def test_args_condition_positional(testapp, cond):
                     "source": pathlib.Path("about", "index.md"),
                 }
             ),
-            holocron.Item(
-                {"author": "luke", "source": pathlib.Path("me.rst")}
-            ),
+            holocron.Item({"author": "luke", "source": pathlib.Path("me.rst")}),
         ],
         {"name": "spam"},
         *cond,

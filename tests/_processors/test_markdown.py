@@ -1,10 +1,10 @@
 """Markdown processor test suite."""
 
 import collections.abc
+import pathlib
 import re
 import textwrap
 import unittest.mock
-import pathlib
 
 import pytest
 
@@ -55,9 +55,7 @@ def test_item(testapp):
     assert list(stream) == [
         holocron.Item(
             {
-                "content": _pytest_regex(
-                    r"<p>text with <strong>bold</strong></p>"
-                ),
+                "content": _pytest_regex(r"<p>text with <strong>bold</strong></p>"),
                 "destination": pathlib.Path("1.html"),
                 "title": "some title",
             }
@@ -91,9 +89,7 @@ def test_item_with_alt_title_syntax(testapp):
     assert list(stream) == [
         holocron.Item(
             {
-                "content": _pytest_regex(
-                    r"<p>text with <strong>bold</strong></p>"
-                ),
+                "content": _pytest_regex(r"<p>text with <strong>bold</strong></p>"),
                 "destination": pathlib.Path("1.html"),
                 "title": "some title",
             }
@@ -128,9 +124,7 @@ def test_item_with_newlines_at_the_beginning(testapp):
     assert list(stream) == [
         holocron.Item(
             {
-                "content": _pytest_regex(
-                    r"<p>text with <strong>bold</strong></p>"
-                ),
+                "content": _pytest_regex(r"<p>text with <strong>bold</strong></p>"),
                 "destination": pathlib.Path("1.html"),
                 "title": "some title",
             }
@@ -161,9 +155,7 @@ def test_item_without_title(testapp):
     assert list(stream) == [
         holocron.Item(
             {
-                "content": _pytest_regex(
-                    r"<p>text with <strong>bold</strong></p>"
-                ),
+                "content": _pytest_regex(r"<p>text with <strong>bold</strong></p>"),
                 "destination": pathlib.Path("1.html"),
             }
         )
@@ -196,9 +188,7 @@ def test_item_title_is_not_overwritten(testapp):
     assert list(stream) == [
         holocron.Item(
             {
-                "content": _pytest_regex(
-                    r"<p>text with <strong>bold</strong></p>"
-                ),
+                "content": _pytest_regex(r"<p>text with <strong>bold</strong></p>"),
                 "destination": pathlib.Path("1.html"),
                 "title": "another title",
             }
@@ -329,8 +319,7 @@ def test_item_with_code(testapp):
         holocron.Item(
             {
                 "content": _pytest_regex(
-                    r"<p>test codeblock</p>\s*.*highlight.*"
-                    r"<pre>[\s\S]+</pre>.*"
+                    r"<p>test codeblock</p>\s*.*highlight.*<pre>[\s\S]+</pre>.*"
                 ),
                 "destination": pathlib.Path("1.html"),
             }
@@ -366,8 +355,7 @@ def test_item_with_fenced_code(testapp):
         holocron.Item(
             {
                 "content": _pytest_regex(
-                    r"<p>test codeblock</p>\s*.*highlight.*"
-                    r"<pre>[\s\S]+</pre>.*"
+                    r"<p>test codeblock</p>\s*.*highlight.*<pre>[\s\S]+</pre>.*"
                 ),
                 "destination": pathlib.Path("1.html"),
             }

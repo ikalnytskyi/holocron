@@ -1,13 +1,14 @@
 """Populate stream with new items found on filesystem."""
 
-import re
-import os
 import datetime
+import os
 import pathlib
+import re
 
 import dateutil.tz
 
 import holocron
+
 from ._misc import parameters
 
 
@@ -37,7 +38,7 @@ def _finditems(app, path, pattern, encoding, tzinfo):
     if pattern:
         re_name = re.compile(pattern)
 
-    for root, dirnames, filenames in os.walk(path, topdown=True):
+    for root, _, filenames in os.walk(path, topdown=True):
         root = pathlib.Path(root)
 
         for filename in filenames:
@@ -66,9 +67,7 @@ def _finditems(app, path, pattern, encoding, tzinfo):
         },
     },
 )
-def process(
-    app, stream, *, path=".", pattern=None, encoding="UTF-8", timezone="UTC"
-):
+def process(app, stream, *, path=".", pattern=None, encoding="UTF-8", timezone="UTC"):
     tzinfo = dateutil.tz.gettz(timezone)
 
     yield from stream

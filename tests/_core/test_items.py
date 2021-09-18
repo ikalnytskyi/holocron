@@ -532,16 +532,10 @@ def test_websiteitem_contains():
     ["destination", "url"],
     [
         pytest.param(pathlib.Path("path-to-item"), "/path-to-item", id="flat"),
-        pytest.param(
-            pathlib.Path("path", "to", "item"), "/path/to/item", id="nested"
-        ),
-        pytest.param(
-            pathlib.Path("path to item"), "/path%20to%20item", id="quoted"
-        ),
+        pytest.param(pathlib.Path("path", "to", "item"), "/path/to/item", id="nested"),
+        pytest.param(pathlib.Path("path to item"), "/path%20to%20item", id="quoted"),
         pytest.param(pathlib.Path("index.html"), "/", id="pretty-root-url"),
-        pytest.param(
-            pathlib.Path("jedi", "index.html"), "/jedi/", id="pretty-url"
-        ),
+        pytest.param(pathlib.Path("jedi", "index.html"), "/jedi/", id="pretty-url"),
     ],
 )
 def test_websiteitem_url(destination, url):

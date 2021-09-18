@@ -1,7 +1,7 @@
 """Factory functions to create core instances."""
 
-from . import Application
 from .._processors import import_processors, when
+from . import Application
 
 
 def create_app(metadata, processors=None, pipes=None):

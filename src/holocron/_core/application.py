@@ -5,7 +5,6 @@ import logging
 
 from .._processors import _misc
 
-
 _logger = logging.getLogger("holocron")
 
 

@@ -1,15 +1,14 @@
 """Various miscellaneous functions to make code easier to read & write."""
 
-import copy
 import collections.abc
+import copy
+import functools
 import inspect
 import logging
-import functools
 import urllib.parse
 
-import jsonschema
 import jsonpointer
-
+import jsonschema
 
 _logger = logging.getLogger("holocron")
 
@@ -29,9 +28,7 @@ def resolve_json_references(value, context, keep_unknown=True):
         elif isinstance(node, collections.abc.Mapping):
             for k, v in node.items():
                 node[k] = _do_resolve(v)
-        elif isinstance(node, collections.abc.Sequence) and not isinstance(
-            node, str
-        ):
+        elif isinstance(node, collections.abc.Sequence) and not isinstance(node, str):
             if not isinstance(node, collections.abc.MutableSequence):
                 node = list(node)
 
@@ -112,9 +109,7 @@ class parameters:
                     message = exc.message
 
                     if exc.absolute_path:
-                        message = (
-                            f"{'.'.join(exc.absolute_path)}: {exc.message}"
-                        )
+                        message = f"{'.'.join(exc.absolute_path)}: {exc.message}"
 
                     raise ValueError(message)
 

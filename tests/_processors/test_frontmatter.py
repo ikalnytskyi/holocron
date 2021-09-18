@@ -322,9 +322,7 @@ def test_item_many(testapp, amount):
     ]
 
 
-@pytest.mark.parametrize(
-    ["delimiter"], [pytest.param("+++"), pytest.param("***")]
-)
+@pytest.mark.parametrize(["delimiter"], [pytest.param("+++"), pytest.param("***")])
 def test_args_delimiter(testapp, delimiter):
     """Frontmatter processor has to respect 'delimiter' argument."""
 
@@ -363,9 +361,7 @@ def test_args_delimiter(testapp, delimiter):
     ]
 
 
-@pytest.mark.parametrize(
-    ["overwrite"], [pytest.param(False), pytest.param(True)]
-)
+@pytest.mark.parametrize(["overwrite"], [pytest.param(False), pytest.param(True)])
 def test_args_overwrite(testapp, overwrite):
     """Frontmatter processor has to respect 'overwrite' argument."""
 
@@ -448,8 +444,7 @@ def test_args_overwrite(testapp, overwrite):
             """,
             "yaml",
             ValueError(
-                "Frontmatter must be a mapping (i.e. key-value pairs), "
-                "not arrays."
+                "Frontmatter must be a mapping (i.e. key-value pairs), not arrays."
             ),
             id="toml-yaml",
         ),

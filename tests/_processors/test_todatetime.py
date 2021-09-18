@@ -4,12 +4,11 @@ import collections.abc
 import datetime
 import pathlib
 
-import pytest
 import dateutil.tz
+import pytest
 
 import holocron
 from holocron._processors import todatetime
-
 
 _TZ_UTC = dateutil.tz.gettz("UTC")
 _TZ_EET = dateutil.tz.gettz("EET")
@@ -234,9 +233,7 @@ def test_args_todatetime(testapp, timestamp):
             {
                 "content": "the Force is strong with this one",
                 "timestamp": timestamp,
-                "published": datetime.datetime(
-                    2019, 1, 11, 0, 0, 0, tzinfo=_TZ_UTC
-                ),
+                "published": datetime.datetime(2019, 1, 11, 0, 0, 0, tzinfo=_TZ_UTC),
             }
         )
     ]
@@ -245,18 +242,10 @@ def test_args_todatetime(testapp, timestamp):
 @pytest.mark.parametrize(
     ["timestamp", "parsearea"],
     [
-        pytest.param(
-            "2019/01/11/luke-skywalker-part-1.txt", r"\d{4}/\d{2}/\d{2}"
-        ),
-        pytest.param(
-            "2019-01-11-luke-skywalker-part-1.txt", r"\d{4}-\d{2}-\d{2}"
-        ),
-        pytest.param(
-            "2019/01/11/luke-skywalker-part-1.txt", r"\d{4}.\d{2}.\d{2}"
-        ),
-        pytest.param(
-            "2019-01-11-luke-skywalker-part-1.txt", r"\d{4}.\d{2}.\d{2}"
-        ),
+        pytest.param("2019/01/11/luke-skywalker-part-1.txt", r"\d{4}/\d{2}/\d{2}"),
+        pytest.param("2019-01-11-luke-skywalker-part-1.txt", r"\d{4}-\d{2}-\d{2}"),
+        pytest.param("2019/01/11/luke-skywalker-part-1.txt", r"\d{4}.\d{2}.\d{2}"),
+        pytest.param("2019-01-11-luke-skywalker-part-1.txt", r"\d{4}.\d{2}.\d{2}"),
     ],
 )
 def test_args_parsearea(testapp, timestamp, parsearea):
@@ -391,9 +380,7 @@ def test_args_timezone(testapp, tz):
         holocron.Item(
             {
                 "content": "the Force is strong with this one",
-                "timestamp": datetime.datetime(
-                    2019, 1, 15, 21, 7, tzinfo=_TZ_UTC
-                ),
+                "timestamp": datetime.datetime(2019, 1, 15, 21, 7, tzinfo=_TZ_UTC),
             }
         ),
         holocron.Item(
@@ -440,9 +427,7 @@ def test_args_timezone_fallback(testapp, tz):
         holocron.Item(
             {
                 "content": "the Force is strong with this one",
-                "timestamp": datetime.datetime(
-                    2019, 1, 15, 21, 7, tzinfo=_TZ_UTC
-                ),
+                "timestamp": datetime.datetime(2019, 1, 15, 21, 7, tzinfo=_TZ_UTC),
             }
         ),
         holocron.Item(

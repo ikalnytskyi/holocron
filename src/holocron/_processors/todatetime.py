@@ -26,9 +26,7 @@ from ._misc import parameters
         },
     },
 )
-def process(
-    app, stream, *, todatetime, parsearea=".*", fuzzy=False, timezone="UTC"
-):
+def process(app, stream, *, todatetime, parsearea=".*", fuzzy=False, timezone="UTC"):
     tzinfo = dateutil.tz.gettz(timezone)
     re_parsearea = re.compile(parsearea)
 

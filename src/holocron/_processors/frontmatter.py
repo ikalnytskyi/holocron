@@ -43,7 +43,7 @@ class _FrontmatterParser:
             self._parsers = {self._format: self._parsers[self._format]}
 
     def __call__(self, frontmatter):
-        for format, parse in self._parsers.items():
+        for _, parse in self._parsers.items():
             try:
                 rv = parse(frontmatter)
             except tuple(self._try_next_exceptions):

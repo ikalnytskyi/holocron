@@ -5,8 +5,8 @@ import pathlib
 import textwrap
 import unittest.mock
 
-import pytest
 import bs4
+import pytest
 
 import holocron
 from holocron._processors import jinja2
@@ -22,19 +22,13 @@ def test_item(testapp):
 
     stream = jinja2.process(
         testapp,
-        [
-            holocron.Item(
-                {"title": "History of the Force", "content": "the Force"}
-            )
-        ],
+        [holocron.Item({"title": "History of the Force", "content": "the Force"})],
     )
     assert isinstance(stream, collections.abc.Iterable)
 
     items = list(stream)
     assert items[:1] == [
-        holocron.Item(
-            {"title": "History of the Force", "content": unittest.mock.ANY}
-        )
+        holocron.Item({"title": "History of the Force", "content": unittest.mock.ANY})
     ]
 
     soup = bs4.BeautifulSoup(items[0]["content"], "html.parser")
@@ -172,11 +166,7 @@ def test_args_themes(testapp, tmpdir):
 
     stream = jinja2.process(
         testapp,
-        [
-            holocron.Item(
-                {"title": "History of the Force", "content": "the Force"}
-            )
-        ],
+        [holocron.Item({"title": "History of the Force", "content": "the Force"})],
         themes=[tmpdir.join("theme_a").strpath],
     )
 

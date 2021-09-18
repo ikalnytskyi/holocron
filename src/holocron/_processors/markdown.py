@@ -6,7 +6,6 @@ import markdown
 
 from ._misc import parameters
 
-
 _top_heading_re = re.compile(
     (
         # Ignore optional newlines at the beginning of content, as well as

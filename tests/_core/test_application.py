@@ -135,9 +135,7 @@ def test_add_processor_wrapper_override(caplog):
     assert caplog.records[0].message == "processor override: 'wrapper'"
 
 
-@pytest.mark.parametrize(
-    ["wrapper_name"], [pytest.param("name"), pytest.param("args")]
-)
+@pytest.mark.parametrize(["wrapper_name"], [pytest.param("name"), pytest.param("args")])
 def test_add_processor_wrapper_illegal_name(caplog, wrapper_name):
     """.add_processor_wrapper() raises on illegal name."""
 
@@ -484,9 +482,7 @@ def test_invoke_processor_wrapper(caplog):
     testapp.add_processor("processor", processor)
     testapp.add_processor_wrapper("wrapper", processor_wrapper)
 
-    for _ in testapp.invoke(
-        [{"name": "processor", "wrapper": {"secret": 42}}]
-    ):
+    for _ in testapp.invoke([{"name": "processor", "wrapper": {"secret": 42}}]):
         pass
 
     assert marker == 42

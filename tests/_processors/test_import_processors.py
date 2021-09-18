@@ -26,9 +26,7 @@ def runprocessor(testapp, request):
     else:
 
         def runner(testapp, items, **args):
-            return testapp.invoke(
-                [{"name": "import-processors", "args": args}], items
-            )
+            return testapp.invoke([{"name": "import-processors", "args": args}], items)
 
         testapp.add_processor("import-processors", import_processors.process)
     return runner
@@ -125,12 +123,8 @@ def test_imports_args_from(
     ["imports", "registered"],
     [
         pytest.param([], [], id="no-imports"),
-        pytest.param(
-            ["yoda = os.path:join"], ["yoda"], id="yoda-imports-yoda"
-        ),
-        pytest.param(
-            ["vader = subprocess:run"], ["vader"], id="vader-imports-vader"
-        ),
+        pytest.param(["yoda = os.path:join"], ["yoda"], id="yoda-imports-yoda"),
+        pytest.param(["vader = subprocess:run"], ["vader"], id="vader-imports-vader"),
         pytest.param(
             ["yoda = os.path:join", "vader = subprocess:run"],
             ["yoda", "vader"],

@@ -1,12 +1,13 @@
 """Generate Sitemap XML."""
 
-import os
-import itertools
 import gzip as _gzip
-import xml.dom.minidom as minidom
+import itertools
+import os
 import pathlib
+import xml.dom.minidom as minidom
 
 import holocron
+
 from ._misc import parameters
 
 
