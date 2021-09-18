@@ -9,5 +9,5 @@ from ._misc import parameters
         "properties": {"pipe": {"type": "array", "items": {"type": "object"}}},
     }
 )
-def process(app, stream, *, pipe=[]):
-    yield from app.invoke(pipe, stream)
+def process(app, stream, *, pipe=None):
+    yield from app.invoke(pipe or [], stream)

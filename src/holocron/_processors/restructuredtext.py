@@ -13,7 +13,7 @@ from ._misc import parameters
         "properties": {"settings": {"type": "object"}},
     }
 )
-def process(app, stream, *, settings={}):
+def process(app, stream, *, settings=None):
     settings = dict(
         {
             # We need to start heading level with <h2> in case there are
@@ -34,7 +34,7 @@ def process(app, stream, *, settings={}):
             # simplify customization flow.
             "syntax_highlight": "short",
         },
-        **settings,
+        **(settings or {}),
     )
 
     for item in stream:

@@ -37,7 +37,7 @@ def _finditems(app, path, pattern, encoding, tzinfo):
     if pattern:
         re_name = re.compile(pattern)
 
-    for root, dirnames, filenames in os.walk(path, topdown=True):
+    for root, _, filenames in os.walk(path, topdown=True):
         root = pathlib.Path(root)
 
         for filename in filenames:
