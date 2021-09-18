@@ -70,14 +70,10 @@ def process(
         feed_generator.podcast.itunes_image(_resolvefeed("itunes_image"))
         feed_generator.podcast.itunes_explicit(_resolvefeed("itunes_explicit"))
         feed_generator.podcast.itunes_complete(_resolvefeed("itunes_complete"))
-        feed_generator.podcast.itunes_owner(
-            **(_resolvefeed("itunes_owner") or {})
-        )
+        feed_generator.podcast.itunes_owner(**(_resolvefeed("itunes_owner") or {}))
         feed_generator.podcast.itunes_subtitle(_resolvefeed("itunes_subtitle"))
         feed_generator.podcast.itunes_summary(_resolvefeed("itunes_summary"))
-        feed_generator.podcast.itunes_new_feed_url(
-            _resolvefeed("itunes_new_feed_url")
-        )
+        feed_generator.podcast.itunes_new_feed_url(_resolvefeed("itunes_new_feed_url"))
 
     feed_generator.title(_resolvefeed("title"))
     feed_generator.id(_resolvefeed("id"))
@@ -118,24 +114,16 @@ def process(
         feed_entry.description(_resolveitem("description", streamitem))
         feed_entry.summary(_resolveitem("summary", streamitem))
         feed_entry.category(_resolveitem("category", streamitem), replace=True)
-        feed_entry.contributor(
-            _resolveitem("contributor", streamitem), replace=True
-        )
+        feed_entry.contributor(_resolveitem("contributor", streamitem), replace=True)
         feed_entry.published(_resolveitem("published", streamitem))
         feed_entry.rights(_resolveitem("rights", streamitem))
         feed_entry.comments(_resolveitem("comments", streamitem))
         feed_entry.enclosure(**(_resolveitem("enclosure", streamitem) or {}))
 
         if hasattr(feed_generator, "podcast"):
-            feed_entry.podcast.itunes_author(
-                _resolveitem("itunes_author", streamitem)
-            )
-            feed_entry.podcast.itunes_block(
-                _resolveitem("itunes_block", streamitem)
-            )
-            feed_entry.podcast.itunes_image(
-                _resolveitem("itunes_image", streamitem)
-            )
+            feed_entry.podcast.itunes_author(_resolveitem("itunes_author", streamitem))
+            feed_entry.podcast.itunes_block(_resolveitem("itunes_block", streamitem))
+            feed_entry.podcast.itunes_image(_resolveitem("itunes_image", streamitem))
             feed_entry.podcast.itunes_duration(
                 _resolveitem("itunes_duration", streamitem)
             )
@@ -148,9 +136,7 @@ def process(
             feed_entry.podcast.itunes_is_closed_captioned(
                 _resolveitem("itunes_is_closed_captioned", streamitem)
             )
-            feed_entry.podcast.itunes_order(
-                _resolveitem("itunes_order", streamitem)
-            )
+            feed_entry.podcast.itunes_order(_resolveitem("itunes_order", streamitem))
             feed_entry.podcast.itunes_subtitle(
                 _resolveitem("itunes_subtitle", streamitem)
             )

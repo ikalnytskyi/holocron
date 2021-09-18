@@ -28,8 +28,7 @@ def create_app_from_yml(path):
                 # wrap the result into 'io.StringIO' in order to preserve
                 # original filename in 'yaml.safe_load()' errors.
                 interpolated = io.StringIO(
-                    f.read()
-                    % {"here": str(pathlib.Path(path).parent.resolve())}
+                    f.read() % {"here": str(pathlib.Path(path).parent.resolve())}
                 )
                 interpolated.name = f.name
 
@@ -64,9 +63,7 @@ def configure_logger(level):
 
     class _PendingHandler(logging.handlers.MemoryHandler):
         def __init__(self, target):
-            return super(_PendingHandler, self).__init__(
-                capacity=-1, target=target
-            )
+            return super(_PendingHandler, self).__init__(capacity=-1, target=target)
 
         def shouldFlush(self, record):
             return False
@@ -153,9 +150,7 @@ def parse_command_line(args):
         help="show the holocron version and exit",
     )
 
-    command_parser = parser.add_subparsers(
-        dest="command", help="command to execute"
-    )
+    command_parser = parser.add_subparsers(dest="command", help="command to execute")
 
     run_parser = command_parser.add_parser("run")
     run_parser.add_argument("pipe", help="a pipe to run")

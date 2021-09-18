@@ -66,9 +66,7 @@ def _finditems(app, path, pattern, encoding, tzinfo):
         },
     },
 )
-def process(
-    app, stream, *, path=".", pattern=None, encoding="UTF-8", timezone="UTC"
-):
+def process(app, stream, *, path=".", pattern=None, encoding="UTF-8", timezone="UTC"):
     tzinfo = dateutil.tz.gettz(timezone)
 
     yield from stream

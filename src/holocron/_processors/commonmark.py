@@ -19,9 +19,7 @@ def _pygmentize(code, language):
     try:
         formatter = _pygmentize.formatter
     except AttributeError:
-        formatter = (
-            _pygmentize.formatter
-        ) = pygments.formatters.html.HtmlFormatter()
+        formatter = _pygmentize.formatter = pygments.formatters.html.HtmlFormatter()
 
     lexer = pygments.lexers.get_lexer_by_name(language)
     return pygments.highlight(code, lexer, formatter)
@@ -52,9 +50,7 @@ class _HTMLRenderer(mistletoe.HTMLRenderer):
                 code = token.children[0].content
                 return self._pygmentize(code, token.language)
             except pygments.util.ClassNotFound:
-                _logger.warning(
-                    "pygmentize: no such langauge: '%s'", token.language
-                )
+                _logger.warning("pygmentize: no such langauge: '%s'", token.language)
         return super(_HTMLRenderer, self).render_block_code(token)
 
 

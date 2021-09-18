@@ -32,8 +32,7 @@ class Item(collections.abc.MutableMapping):
             # not something the can be defined by a user, we don't really want
             # to expose them.
             if not key.startswith("_") and (
-                inspect.isdatadescriptor(prop)
-                or inspect.ismethoddescriptor(prop)
+                inspect.isdatadescriptor(prop) or inspect.ismethoddescriptor(prop)
             ):
                 return getattr(self, key)
 
@@ -66,8 +65,7 @@ class Item(collections.abc.MutableMapping):
                 for key, value in vars(self.__class__).items()
                 if not key.startswith("_")
                 and (
-                    inspect.isdatadescriptor(value)
-                    or inspect.ismethoddescriptor(value)
+                    inspect.isdatadescriptor(value) or inspect.ismethoddescriptor(value)
                 )
             },
             **self._mapping,

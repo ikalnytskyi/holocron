@@ -55,9 +55,7 @@ def test_item(testapp):
     assert list(stream) == [
         holocron.Item(
             {
-                "content": _pytest_regex(
-                    r"<p>text with <strong>bold</strong></p>\s*"
-                ),
+                "content": _pytest_regex(r"<p>text with <strong>bold</strong></p>\s*"),
                 "destination": pathlib.Path("1.html"),
                 "title": "some title",
             }
@@ -131,9 +129,7 @@ def test_item_without_title(testapp):
     assert list(stream) == [
         holocron.Item(
             {
-                "content": _pytest_regex(
-                    r"<p>text with <strong>bold</strong></p>\s*"
-                ),
+                "content": _pytest_regex(r"<p>text with <strong>bold</strong></p>\s*"),
                 "destination": pathlib.Path("1.html"),
             }
         )

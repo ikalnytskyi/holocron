@@ -111,11 +111,7 @@ def test_item_parsed_title(testapp, content):
 
     stream = commonmark.process(
         testapp,
-        [
-            holocron.Item(
-                {"content": content, "destination": pathlib.Path("1.md")}
-            )
-        ],
+        [holocron.Item({"content": content, "destination": pathlib.Path("1.md")})],
     )
 
     assert isinstance(stream, collections.abc.Iterable)
@@ -352,9 +348,7 @@ def test_args_pygmentize(testapp, rendered, pygmentize):
     ]
 
 
-@pytest.mark.parametrize(
-    ["language"], [pytest.param("yoda"), pytest.param("vader")]
-)
+@pytest.mark.parametrize(["language"], [pytest.param("yoda"), pytest.param("vader")])
 def test_args_pygmentize_unknown_language(testapp, language):
     """Commonmark has to assume text/plain for unknown languages."""
 

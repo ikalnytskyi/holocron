@@ -64,9 +64,7 @@ def test_item_processor_with_args(testapp):
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
-        holocron.Item(
-            {"content": "the Force", "author": "skywalker", "spam": 1}
-        )
+        holocron.Item({"content": "the Force", "author": "skywalker", "spam": 1})
     ]
 
 
@@ -101,9 +99,7 @@ def test_item_many(testapp, amount):
     stream = pipe.process(
         testapp,
         [
-            holocron.Item(
-                {"content": "the Force (%d)" % i, "author": "skywalker"}
-            )
+            holocron.Item({"content": "the Force (%d)" % i, "author": "skywalker"})
             for i in range(amount)
         ],
         pipe=[{"name": "spam"}, {"name": "eggs"}],
@@ -124,11 +120,7 @@ def test_item_many(testapp, amount):
 
 @pytest.mark.parametrize(
     ["args", "error"],
-    [
-        pytest.param(
-            {"pipe": 42}, "pipe: 42 is not of type 'array'", id="pipe-int"
-        )
-    ],
+    [pytest.param({"pipe": 42}, "pipe: 42 is not of type 'array'", id="pipe-int")],
 )
 def test_args_bad_value(testapp, args, error):
     """Pipe processor has to validate input arguments."""

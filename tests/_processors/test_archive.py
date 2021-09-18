@@ -30,9 +30,7 @@ def test_item(testapp):
                 "source": pathlib.Path("archive://index.html"),
                 "destination": pathlib.Path("index.html"),
                 "template": "archive.j2",
-                "items": [
-                    holocron.Item({"title": "The Force", "content": "Obi-Wan"})
-                ],
+                "items": [holocron.Item({"title": "The Force", "content": "Obi-Wan"})],
                 "baseurl": testapp.metadata["url"],
             }
         ),
@@ -54,10 +52,7 @@ def test_item_many(testapp, amount):
 
     stream = archive.process(
         testapp,
-        [
-            holocron.Item({"title": "The Force (part #%d)" % i})
-            for i in range(amount)
-        ],
+        [holocron.Item({"title": "The Force (part #%d)" % i}) for i in range(amount)],
     )
 
     assert isinstance(stream, collections.abc.Iterable)
@@ -74,9 +69,7 @@ def test_item_many(testapp, amount):
                         "destination": pathlib.Path("index.html"),
                         "template": "archive.j2",
                         "items": [
-                            holocron.Item(
-                                {"title": "The Force (part #%d)" % i}
-                            )
+                            holocron.Item({"title": "The Force (part #%d)" % i})
                             for i in range(amount)
                         ],
                         "baseurl": testapp.metadata["url"],
@@ -104,9 +97,7 @@ def test_args_template(testapp):
                 "source": pathlib.Path("archive://index.html"),
                 "destination": pathlib.Path("index.html"),
                 "template": "foobar.txt",
-                "items": [
-                    holocron.Item({"title": "The Force", "content": "Obi-Wan"})
-                ],
+                "items": [holocron.Item({"title": "The Force", "content": "Obi-Wan"})],
                 "baseurl": testapp.metadata["url"],
             }
         ),
@@ -137,9 +128,7 @@ def test_args_save_as(testapp, save_as):
                 "source": pathlib.Path("archive://", save_as),
                 "destination": save_as,
                 "template": "archive.j2",
-                "items": [
-                    holocron.Item({"title": "The Force", "content": "Obi-Wan"})
-                ],
+                "items": [holocron.Item({"title": "The Force", "content": "Obi-Wan"})],
                 "baseurl": testapp.metadata["url"],
             }
         ),

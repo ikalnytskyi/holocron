@@ -99,11 +99,7 @@ def test_item_atom_feed_metadata(testapp):
     published = datetime.datetime(2017, 9, 25, tzinfo=datetime.timezone.utc)
     stream = feed.process(
         testapp,
-        [
-            holocron.Item(
-                {"content": "the way of the Force", "published": published}
-            )
-        ],
+        [holocron.Item({"content": "the way of the Force", "published": published})],
         feed={
             "id": "kenobi-way",
             "title": "Kenobi's Way",
@@ -132,9 +128,7 @@ def test_item_atom_feed_metadata(testapp):
 
     items = list(stream)
     assert items == [
-        holocron.Item(
-            {"content": "the way of the Force", "published": published}
-        ),
+        holocron.Item({"content": "the way of the Force", "published": published}),
         holocron.WebSiteItem(
             {
                 "source": pathlib.Path("feed://feed.xml"),
@@ -256,9 +250,7 @@ def test_item_rss(testapp):
         "item",
     }
     assert parsed.rss["xmlns:atom"] == "http://www.w3.org/2005/Atom"
-    assert parsed.rss["xmlns:content"] == (
-        "http://purl.org/rss/1.0/modules/content/"
-    )
+    assert parsed.rss["xmlns:content"] == ("http://purl.org/rss/1.0/modules/content/")
     assert parsed.rss["version"] == "2.0"
     assert parsed.rss.channel.title == "Kenobi's Way"
     assert parsed.rss.channel.description == "Labours of Obi-Wan"
@@ -276,11 +268,7 @@ def test_item_rss_feed_metadata(testapp):
     published = datetime.datetime(2017, 9, 25, tzinfo=datetime.timezone.utc)
     stream = feed.process(
         testapp,
-        [
-            holocron.Item(
-                {"content": "the way of the Force", "published": published}
-            )
-        ],
+        [holocron.Item({"content": "the way of the Force", "published": published})],
         syndication_format="rss",
         feed={
             "title": "Kenobi's Way",
@@ -332,9 +320,7 @@ def test_item_rss_feed_metadata(testapp):
 
     items = list(stream)
     assert items == [
-        holocron.Item(
-            {"content": "the way of the Force", "published": published}
-        ),
+        holocron.Item({"content": "the way of the Force", "published": published}),
         holocron.WebSiteItem(
             {
                 "source": pathlib.Path("feed://feed.xml"),
@@ -376,12 +362,8 @@ def test_item_rss_feed_metadata(testapp):
         "itunes_new_feed_url",
     }
     assert parsed.rss["xmlns:atom"] == "http://www.w3.org/2005/Atom"
-    assert parsed.rss["xmlns:itunes"] == (
-        "http://www.itunes.com/dtds/podcast-1.0.dtd"
-    )
-    assert parsed.rss["xmlns:content"] == (
-        "http://purl.org/rss/1.0/modules/content/"
-    )
+    assert parsed.rss["xmlns:itunes"] == ("http://www.itunes.com/dtds/podcast-1.0.dtd")
+    assert parsed.rss["xmlns:content"] == ("http://purl.org/rss/1.0/modules/content/")
     assert parsed.rss["version"] == "2.0"
     assert parsed.rss.channel.title == "Kenobi's Way"
     assert parsed.rss.channel.description == "Labours of Obi-Wan"
@@ -407,9 +389,7 @@ def test_item_rss_feed_metadata(testapp):
     assert parsed.rss.channel.itunes_author == "dooku@sith.com"
     assert parsed.rss.channel.itunes_block == "no"
     assert parsed.rss.channel.itunes_category["text"] == "Arts"
-    assert (
-        parsed.rss.channel.itunes_category.itunes_category["text"] == "Design"
-    )
+    assert parsed.rss.channel.itunes_category.itunes_category["text"] == "Design"
     assert parsed.rss.channel.itunes_image["href"] == "path/to/image.png"
     assert parsed.rss.channel.itunes_explicit == "clean"
     assert parsed.rss.channel.itunes_complete == "no"
@@ -449,10 +429,7 @@ def test_item_rss_feed_metadata(testapp):
 
     assert parsed.rss.channel.item.itunes_author == "vader@sith.com"
     assert parsed.rss.channel.item.itunes_block == "no"
-    assert (
-        parsed.rss.channel.item.itunes_image["href"]
-        == "path/to/episode/image.png"
-    )
+    assert parsed.rss.channel.item.itunes_image["href"] == "path/to/episode/image.png"
     assert parsed.rss.channel.item.itunes_duration == "00:32:13"
     assert parsed.rss.channel.item.itunes_explicit == "yes"
     assert parsed.rss.channel.item.itunes_isClosedCaptioned == "yes"
@@ -532,20 +509,14 @@ def test_item_many(testapp, syndication_format, amount):
 @pytest.mark.parametrize(
     ["syndication_format"], [pytest.param("atom"), pytest.param("rss")]
 )
-@pytest.mark.parametrize(
-    ["encoding"], [pytest.param("CP1251"), pytest.param("UTF-16")]
-)
+@pytest.mark.parametrize(["encoding"], [pytest.param("CP1251"), pytest.param("UTF-16")])
 def test_args_encoding(testapp, syndication_format, encoding):
     """Feed processor has to respect encoding argument."""
 
     published = datetime.datetime(2017, 9, 25, tzinfo=datetime.timezone.utc)
     stream = feed.process(
         testapp,
-        [
-            holocron.Item(
-                {"content": "the way of the Force", "published": published}
-            )
-        ],
+        [holocron.Item({"content": "the way of the Force", "published": published})],
         syndication_format=syndication_format,
         encoding=encoding,
         feed={
@@ -564,9 +535,7 @@ def test_args_encoding(testapp, syndication_format, encoding):
 
     items = list(stream)
     assert items == [
-        holocron.Item(
-            {"content": "the way of the Force", "published": published}
-        ),
+        holocron.Item({"content": "the way of the Force", "published": published}),
         holocron.WebSiteItem(
             {
                 "source": pathlib.Path("feed://feed.xml"),
@@ -582,9 +551,7 @@ def test_args_encoding(testapp, syndication_format, encoding):
 @pytest.mark.parametrize(
     ["syndication_format"], [pytest.param("atom"), pytest.param("rss")]
 )
-@pytest.mark.parametrize(
-    ["encoding"], [pytest.param("CP1251"), pytest.param("UTF-16")]
-)
+@pytest.mark.parametrize(["encoding"], [pytest.param("CP1251"), pytest.param("UTF-16")])
 def test_args_encoding_fallback(testapp, syndication_format, encoding):
     """Feed processor has to respect encoding argument (fallback)."""
 
@@ -593,11 +560,7 @@ def test_args_encoding_fallback(testapp, syndication_format, encoding):
     published = datetime.datetime(2017, 9, 25, tzinfo=datetime.timezone.utc)
     stream = feed.process(
         testapp,
-        [
-            holocron.Item(
-                {"content": "the way of the Force", "published": published}
-            )
-        ],
+        [holocron.Item({"content": "the way of the Force", "published": published})],
         syndication_format=syndication_format,
         feed={
             "id": "kenobi-way",
@@ -615,9 +578,7 @@ def test_args_encoding_fallback(testapp, syndication_format, encoding):
 
     items = list(stream)
     assert items == [
-        holocron.Item(
-            {"content": "the way of the Force", "published": published}
-        ),
+        holocron.Item({"content": "the way of the Force", "published": published}),
         holocron.WebSiteItem(
             {
                 "source": pathlib.Path("feed://feed.xml"),

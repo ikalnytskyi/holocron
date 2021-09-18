@@ -139,7 +139,9 @@ def test_item_many(testapp, amount):
                         "content": _pytest_xmlasdict(
                             {
                                 "urlset": {
-                                    "@xmlns": "http://www.sitemaps.org/schemas/sitemap/0.9",
+                                    "@xmlns": (
+                                        "http://www.sitemaps.org/schemas/sitemap/0.9"
+                                    ),
                                     "url": [
                                         {
                                             "loc": "https://yoda.ua/%d" % i,
@@ -281,15 +283,11 @@ def test_args_save_as(testapp, save_as):
     ["document_path", "sitemap_path"],
     [
         pytest.param(pathlib.Path("1.html"), pathlib.Path("b", "sitemap.xml")),
-        pytest.param(
-            pathlib.Path("a", "1.html"), pathlib.Path("b", "sitemap.xml")
-        ),
+        pytest.param(pathlib.Path("a", "1.html"), pathlib.Path("b", "sitemap.xml")),
         pytest.param(
             pathlib.Path("a", "1.html"), pathlib.Path("a", "c", "sitemap.xml")
         ),
-        pytest.param(
-            pathlib.Path("ab", "1.html"), pathlib.Path("a", "sitemap.xml")
-        ),
+        pytest.param(pathlib.Path("ab", "1.html"), pathlib.Path("a", "sitemap.xml")),
     ],
 )
 def test_args_save_as_unsupported(testapp, document_path, sitemap_path):

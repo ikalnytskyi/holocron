@@ -18,9 +18,7 @@ class _pytest_timestamp:
         self._abs = abs_
 
     def __eq__(self, actual):
-        return actual.timestamp() == pytest.approx(
-            self._timestamp, abs=self._abs
-        )
+        return actual.timestamp() == pytest.approx(self._timestamp, abs=self._abs)
 
     def __repr__(self):
         return self._timestamp
@@ -63,9 +61,7 @@ def test_item(testapp, monkeypatch, tmpdir, path):
     ]
 
 
-@pytest.mark.parametrize(
-    ["data"], [pytest.param("text"), pytest.param(b"\xf1")]
-)
+@pytest.mark.parametrize(["data"], [pytest.param("text"), pytest.param(b"\xf1")])
 def test_item_content_types(testapp, monkeypatch, tmpdir, data):
     """Source processor has to properly read items" content."""
 
@@ -86,12 +82,8 @@ def test_item_content_types(testapp, monkeypatch, tmpdir, data):
                 "source": pathlib.Path("cv.md"),
                 "destination": pathlib.Path("cv.md"),
                 "content": data,
-                "created": _pytest_timestamp(
-                    tmpdir.join("cv.md").stat().ctime
-                ),
-                "updated": _pytest_timestamp(
-                    tmpdir.join("cv.md").stat().mtime
-                ),
+                "created": _pytest_timestamp(tmpdir.join("cv.md").stat().ctime),
+                "updated": _pytest_timestamp(tmpdir.join("cv.md").stat().mtime),
                 "baseurl": testapp.metadata["url"],
             }
         )
@@ -113,12 +105,8 @@ def test_item_empty(testapp, monkeypatch, tmpdir):
                 "source": pathlib.Path("cv.md"),
                 "destination": pathlib.Path("cv.md"),
                 "content": "",
-                "created": _pytest_timestamp(
-                    tmpdir.join("cv.md").stat().ctime
-                ),
-                "updated": _pytest_timestamp(
-                    tmpdir.join("cv.md").stat().mtime
-                ),
+                "created": _pytest_timestamp(tmpdir.join("cv.md").stat().ctime),
+                "updated": _pytest_timestamp(tmpdir.join("cv.md").stat().mtime),
                 "baseurl": testapp.metadata["url"],
             }
         )
@@ -155,10 +143,7 @@ def test_item_many(testapp, monkeypatch, tmpdir, discovered, passed):
 
     stream = source.process(
         testapp,
-        [
-            holocron.Item({"marker": "the key is %d" % i})
-            for i in range(passed)
-        ],
+        [holocron.Item({"marker": "the key is %d" % i}) for i in range(passed)],
     )
 
     assert isinstance(stream, collections.abc.Iterable)
@@ -251,21 +236,15 @@ def test_args_pattern(testapp, monkeypatch, tmpdir):
                 "source": pathlib.Path("4.markdown"),
                 "destination": pathlib.Path("4.markdown"),
                 "content": "Yoda",
-                "created": _pytest_timestamp(
-                    tmpdir.join("4.markdown").stat().ctime
-                ),
-                "updated": _pytest_timestamp(
-                    tmpdir.join("4.markdown").stat().mtime
-                ),
+                "created": _pytest_timestamp(tmpdir.join("4.markdown").stat().ctime),
+                "updated": _pytest_timestamp(tmpdir.join("4.markdown").stat().mtime),
                 "baseurl": testapp.metadata["url"],
             }
         ),
     ]
 
 
-@pytest.mark.parametrize(
-    ["encoding"], [pytest.param("CP1251"), pytest.param("UTF-16")]
-)
+@pytest.mark.parametrize(["encoding"], [pytest.param("CP1251"), pytest.param("UTF-16")])
 def test_args_encoding(testapp, monkeypatch, tmpdir, encoding):
     """Source processor has to respect encoding argument."""
 
@@ -289,9 +268,7 @@ def test_args_encoding(testapp, monkeypatch, tmpdir, encoding):
     ]
 
 
-@pytest.mark.parametrize(
-    ["encoding"], [pytest.param("CP1251"), pytest.param("UTF-16")]
-)
+@pytest.mark.parametrize(["encoding"], [pytest.param("CP1251"), pytest.param("UTF-16")])
 def test_args_encoding_fallback(testapp, monkeypatch, tmpdir, encoding):
     """Source processor has to respect encoding argument (fallback)."""
 
@@ -390,9 +367,9 @@ def test_args_timezone_in_action(testapp, monkeypatch, tmpdir):
     created_utc = items_utc[0]["created"]
     created_kie = items_kie[0]["created"]
 
-    assert created_kie.tzinfo.utcoffset(
-        created_kie
-    ) >= created_utc.tzinfo.utcoffset(created_utc)
+    assert created_kie.tzinfo.utcoffset(created_kie) >= created_utc.tzinfo.utcoffset(
+        created_utc
+    )
     assert created_kie.isoformat() > created_utc.isoformat()
     assert created_kie.isoformat().split("+")[-1] in ("02:00", "03:00")
 
@@ -400,9 +377,7 @@ def test_args_timezone_in_action(testapp, monkeypatch, tmpdir):
 @pytest.mark.parametrize(
     ["args", "error"],
     [
-        pytest.param(
-            {"path": 42}, "path: 42 is not of type 'string'", id="path-int"
-        ),
+        pytest.param({"path": 42}, "path: 42 is not of type 'string'", id="path-int"),
         pytest.param(
             {"pattern": 42},
             "pattern: 42 is not of type 'string'",
