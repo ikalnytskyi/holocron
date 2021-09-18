@@ -1,8 +1,8 @@
 """Pass a stream item to a processor based on condition."""
 
-import re
 import collections
 import pathlib
+import re
 
 import jinja2
 

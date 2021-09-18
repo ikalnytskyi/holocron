@@ -1,8 +1,8 @@
 """Wrappers for stream items."""
 
 import collections.abc
-import itertools
 import inspect
+import itertools
 import urllib.parse
 
 

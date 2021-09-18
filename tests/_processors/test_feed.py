@@ -13,7 +13,6 @@ import untangle
 import holocron
 from holocron._processors import feed
 
-
 _HOLOCRON_VERSION = pkg_resources.get_distribution("holocron").version
 
 

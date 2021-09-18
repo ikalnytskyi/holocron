@@ -1,10 +1,10 @@
 """Markdown processor test suite."""
 
 import collections.abc
+import pathlib
 import re
 import textwrap
 import unittest.mock
-import pathlib
 
 import pytest
 

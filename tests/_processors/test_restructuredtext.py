@@ -1,9 +1,9 @@
 """ReStructuredText processors test suite."""
 
 import collections.abc
+import pathlib
 import re
 import textwrap
-import pathlib
 
 import pytest
 

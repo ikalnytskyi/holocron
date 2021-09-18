@@ -1,15 +1,14 @@
 """Various miscellaneous functions to make code easier to read & write."""
 
-import copy
 import collections.abc
+import copy
+import functools
 import inspect
 import logging
-import functools
 import urllib.parse
 
-import jsonschema
 import jsonpointer
-
+import jsonschema
 
 _logger = logging.getLogger("holocron")
 

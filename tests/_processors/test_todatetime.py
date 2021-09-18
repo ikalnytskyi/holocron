@@ -4,12 +4,11 @@ import collections.abc
 import datetime
 import pathlib
 
-import pytest
 import dateutil.tz
+import pytest
 
 import holocron
 from holocron._processors import todatetime
-
 
 _TZ_UTC = dateutil.tz.gettz("UTC")
 _TZ_EET = dateutil.tz.gettz("EET")

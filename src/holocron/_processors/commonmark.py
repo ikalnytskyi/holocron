@@ -11,7 +11,6 @@ import pygments.util
 
 from ._misc import parameters
 
-
 _logger = logging.getLogger("holocron")
 
 

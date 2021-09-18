@@ -1,13 +1,14 @@
 """Populate stream with new items found on filesystem."""
 
-import re
-import os
 import datetime
+import os
 import pathlib
+import re
 
 import dateutil.tz
 
 import holocron
+
 from ._misc import parameters
 
 

@@ -1,7 +1,7 @@
 """Prettyuri processor test suite."""
 
-import pathlib
 import collections.abc
+import pathlib
 
 import pytest
 

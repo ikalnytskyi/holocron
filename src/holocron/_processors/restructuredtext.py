@@ -1,8 +1,8 @@
 """Convert reStructuredText into HTML."""
 
+from docutils import nodes
 from docutils.core import publish_parts
 from docutils.writers import html5_polyglot
-from docutils import nodes
 
 from ._misc import parameters
 

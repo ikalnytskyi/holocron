@@ -1,13 +1,13 @@
 """Yo! Holocron CLI is here!"""
 
+import argparse
+import contextlib
 import io
-import pathlib
-import sys
 import logging
 import logging.handlers
-import argparse
+import pathlib
+import sys
 import warnings
-import contextlib
 
 import colorama
 import pkg_resources

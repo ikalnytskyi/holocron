@@ -5,8 +5,8 @@ import pathlib
 import textwrap
 import unittest.mock
 
-import pytest
 import bs4
+import pytest
 
 import holocron
 from holocron._processors import jinja2

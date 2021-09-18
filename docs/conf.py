@@ -4,12 +4,11 @@
 
 from __future__ import unicode_literals
 
-import re
 import os
+import re
 import sys
 
 import pkg_resources
-
 
 # project settings
 project = "Holocron"
