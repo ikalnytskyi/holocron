@@ -18,7 +18,8 @@ def _pygmentize(code, language):
     try:
         formatter = _pygmentize.formatter
     except AttributeError:
-        formatter = _pygmentize.formatter = pygments.formatters.html.HtmlFormatter()
+        HtmlFormatter = pygments.formatters.html.HtmlFormatter
+        formatter = _pygmentize.formatter = HtmlFormatter(wrapcode=True)
 
     lexer = pygments.lexers.get_lexer_by_name(language)
     return pygments.highlight(code, lexer, formatter)
