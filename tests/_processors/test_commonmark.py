@@ -307,7 +307,13 @@ def test_item_many(testapp, amount):
             id="pygmentize=off",
         ),
         pytest.param(
-            r"<p>test codeblock</p>\s*.*highlight.*<pre>[\s\S]+</pre>.*",
+            (
+                r"<p>test codeblock</p>\s*"
+                r".*highlight.*"
+                r"<pre>\s*<span>\s*</span>\s*"
+                r"<code>[\s\S]+</code>\s*"
+                r"</pre>.*"
+            ),
             True,
             id="pygmentize=on",
         ),
