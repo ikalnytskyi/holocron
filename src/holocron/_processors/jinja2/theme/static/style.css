@@ -205,8 +205,7 @@ footer.footer p {
   margin-left: 35px;
 }
 
-#content pre.code,
-#content .highlight pre {
+#content pre code {
   margin: 0.5em auto;
   border-top: 1px solid #e0e0e0;
   border-bottom: 1px solid #e0e0e0;
@@ -216,6 +215,7 @@ footer.footer p {
   line-height: 1.2em;
   font-family: 'Ubuntu Mono', 'PT Mono', 'Droid Sans Mono', monospace;
   overflow: scroll;
+  display: block;
 }
 
 #content code {
