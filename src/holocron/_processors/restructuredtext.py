@@ -74,6 +74,9 @@ class _HTMLTranslator(html5_polyglot.HTMLTranslator):
     def visit_section(self, node):
         self.section_level += 1
 
+        for id_ in node.get("ids", []):
+            self.body.append(f"<span id={id_}></span>")
+
     def depart_section(self, node):
         self.section_level -= 1
 

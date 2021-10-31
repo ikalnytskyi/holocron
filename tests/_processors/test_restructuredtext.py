@@ -96,6 +96,7 @@ def test_item_with_subsection(testapp):
             {
                 "content": _pytest_regex(
                     r"<p>abstract</p>\s*"
+                    r"<span id=some-section></span>"
                     r"<h2>some section</h2>\s*"
                     r"<p>text with <strong>bold</strong></p>\s*"
                 ),
@@ -183,14 +184,19 @@ def test_item_with_sections(testapp):
         holocron.Item(
             {
                 "content": _pytest_regex(
+                    r"<span id=some-title-1></span>"
                     r"<h2>some title 1</h2>\s*"
                     r"<p>aaa</p>\s*"
+                    r"<span id=some-section-1></span>"
                     r"<h3>some section 1</h3>\s*"
                     r"<p>bbb</p>\s*"
+                    r"<span id=some-section-2></span>"
                     r"<h3>some section 2</h3>\s*"
                     r"<p>ccc</p>\s*"
+                    r"<span id=some-title-2></span>"
                     r"<h2>some title 2</h2>\s*"
                     r"<p>xxx</p>\s*"
+                    r"<span id=some-section-3></span>"
                     r"<h3>some section 3</h3>\s*"
                     r"<p>yyy</p>\s*"
                 ),
@@ -301,8 +307,10 @@ def test_args_settings(testapp):
                 "content": _pytest_regex(
                     # by default, initial header level is 2 and so the sections
                     # would start with <h2>
+                    r"<span id=section-1></span>"
                     r"<h3>section 1</h3>\s*"
                     r"<p>aaa</p>\s*"
+                    r"<span id=section-2></span>"
                     r"<h3>section 2</h3>\s*"
                     r"<p>bbb</p>\s*"
                 ),
