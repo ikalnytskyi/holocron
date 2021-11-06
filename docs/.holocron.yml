@@ -1,0 +1,47 @@
+metadata:
+  title: Holocron
+  url: https://ikalnytskyi.github.io/holocron
+
+pipes:
+  build:
+    - name: import-processors
+      args:
+        imports:
+          - processors-docs = processors:process
+        from_: "%(here)s/_plugins"
+
+    - name: source
+      args:
+        pattern: "[^_.].*$"
+        path: "%(here)s"
+
+    - name: pipe
+      args:
+        pipe:
+          - name: processors-docs
+          - name: frontmatter
+          - name: restructuredtext
+          - name: jinja2
+            args:
+              context:
+                theme:
+                  navigation: !!pairs
+                    - Home: /
+                    - Processors: /processors/
+                    - Pipes: /pipes/
+
+                  ribbon:
+                    link: https://github.com/ikalnytskyi/holocron
+                    text: GitHub
+
+                  copyright: |
+                    &copy;
+                    <a rel="me" href="https://github.com/ikalnytskyi/holocron/graphs/contributors">
+                      the Holocron Team
+                    </a>
+      when:
+        - item.source.match("*.rst")
+
+    - name: save
+      args:
+        to: "%(here)s/_site"

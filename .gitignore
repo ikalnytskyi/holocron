@@ -42,7 +42,7 @@ coverage.xml
 *.mo
 
 # Sphinx documentation
-docs/_build/
+docs/_site/
 
 # Ignore sublime's project (for fans)
 .ropeproject/
