@@ -23,34 +23,36 @@ classifiers = [
     "Topic :: Terminals",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.6",
     "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
 ]
 
 [tool.poetry.dependencies]
-python = "^3.6"
-Jinja2 = "^2.10"
-PyYAML = "^5.2"
-Pygments = "^2.5"
+python = "^3.7"
+Jinja2 = "^3.0"
+PyYAML = "^6.0"
+Pygments = "^2.11"
 python-dateutil = "^2.8"
-jsonpointer = "^2.0"
-Markdown = "^3.1"
-docutils = "^0.15"
+jsonpointer = "^2.2"
+Markdown = "^3.3"
+docutils = "^0.18"
 feedgen = "^0.9"
 termcolor = "^1.1"
 colorama = "^0.4"
-mistletoe = "^0.7"
-jsonschema = { version = "^3.2", extras = ["format"] }
+mistletoe = "^0.8"
+jsonschema = { version = "^4.4", extras = ["format"] }
 toml = {version = "^0.10.0"}
-more-itertools = "^8.0"
+more-itertools = "^8.12"
 
 [tool.poetry.dev-dependencies]
-mock = "^3.0"
-coverage = "^4.5"
-pytest = "^5.3"
-pytest-randomly = "^3.1"
+mock = "^4.0"
+coverage = "^6.2"
+pytest = "^6.2.5"
+pytest-randomly = "^3.11"
 xmltodict = "^0.12"
-beautifulsoup4 = "^4.8"
+beautifulsoup4 = "^4.10"
 untangle = "^1.1"
 
 [tool.poetry.scripts]
