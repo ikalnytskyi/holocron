@@ -81,7 +81,7 @@ def test_item_atom(testapp):
     assert parsed.feed.title == "Kenobi's Way"
     assert parsed.feed.subtitle == "Labours of Obi-Wan"
     assert parsed.feed.link["href"] == testapp.metadata["url"]
-    assert parsed.feed.generator["uri"] == "https://holocron.readthedocs.io"
+    assert parsed.feed.generator["uri"] == "https://github.com/ikalnytskyi/holocron"
     assert parsed.feed.generator["version"] == _HOLOCRON_VERSION
     assert parsed.feed.generator == f"Holocron/v{_HOLOCRON_VERSION}"
 
@@ -159,7 +159,7 @@ def test_item_atom_feed_metadata(testapp):
     assert parsed.feed.title == "Kenobi's Way"
     assert parsed.feed.subtitle == "Labours of Obi-Wan"
     assert parsed.feed.link["href"] == testapp.metadata["url"]
-    assert parsed.feed.generator["uri"] == "https://holocron.readthedocs.io"
+    assert parsed.feed.generator["uri"] == "https://github.com/ikalnytskyi/holocron"
     assert parsed.feed.generator["version"] == _HOLOCRON_VERSION
     assert parsed.feed.generator == f"Holocron/v{_HOLOCRON_VERSION}"
     assert parsed.feed.author.name == "Obi-Wan"

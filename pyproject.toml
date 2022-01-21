@@ -11,7 +11,7 @@ license = "BSD-3-Clause"
 readme = "README.rst"
 homepage = "https://github.com/ikalnytskyi/holocron"
 repository = "https://github.com/ikalnytskyi/holocron"
-documentation = "https://holocron.readthedocs.io/"
+documentation = "https://github.com/ikalnytskyi/holocron"
 keywords = ["static", "site", "blog", "generator", "markdown"]
 classifiers = [
     "Environment :: Console",

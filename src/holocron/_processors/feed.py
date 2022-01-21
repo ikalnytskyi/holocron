@@ -86,7 +86,7 @@ def process(
     feed_generator.generator(
         generator=f"Holocron/v{_generator_version}",
         version=_generator_version,
-        uri="https://holocron.readthedocs.io",
+        uri="https://github.com/ikalnytskyi/holocron",
     )
     feed_generator.icon(_resolvefeed("icon"))
     feed_generator.logo(_resolvefeed("logo"))

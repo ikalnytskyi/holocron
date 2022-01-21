@@ -2,7 +2,7 @@
  Holocron: may the blog be with you!
 =====================================
 
-|pypi-version| |license| |docs|
+|pypi-version| |license|
 
 Holocron is an extendable static blog generator powered by the Force. Like
 others, it reads text files in various formats, renders them using templates
@@ -32,14 +32,10 @@ Here is an incomplete list of features:
 * Has SEO friendly URLs.
 * Provides a debug server to preview content.
 
-Check out Holocron's documentation for further information -
-https://holocron.readthedocs.org/.
-
 
 Links
 =====
 
-* Documentation: https://holocron.readthedocs.org/
 * Source: https://github.com/ikalnytskyi/holocron
 * Bugs: https://github.com/ikalnytskyi/holocron/issues
 
@@ -61,6 +57,3 @@ Links
 
 .. |license| image:: https://img.shields.io/pypi/l/holocron.svg
    :target: https://pypi.python.org/pypi/holocron
-
-.. |docs| image:: https://readthedocs.org/projects/pip/badge/
-   :target: https://holocron.readthedocs.org
