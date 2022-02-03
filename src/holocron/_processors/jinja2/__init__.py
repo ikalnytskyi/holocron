@@ -36,7 +36,9 @@ def process(app, stream, *, template="item.j2", context=None, themes=None):
                 jinja2.FileSystemLoader(str(pathlib.Path(theme, "templates")))
                 for theme in themes
             ]
-        )
+        ),
+        trim_blocks=True,
+        lstrip_blocks=True,
     )
     env.filters["jsonpointer"] = jsonpointer.resolve_pointer
 
