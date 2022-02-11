@@ -156,7 +156,7 @@ def test_item_many_eggs(testapp):
             [r"item.author == 'yoda'", "item.source.suffix == '.md'"],
             id="two-conditions",
         ),
-        pytest.param([r"item.source | match('.*\.md')"], id="match-md"),
+        pytest.param([r"item.source | match('.*\\.md')"], id="match-md"),
         pytest.param([r"item.source | match('^about.*')"], id="match-about"),
     ],
 )
@@ -202,7 +202,7 @@ def test_args_condition(testapp, cond):
             [r"item.author == 'yoda'", "item.source.suffix == '.md'"],
             id="two-conditions",
         ),
-        pytest.param([r"item.source | match('.*\.md')"], id="match-md"),
+        pytest.param([r"item.source | match('.*\\.md')"], id="match-md"),
         pytest.param([r"item.source | match('^about.*')"], id="match-about"),
     ],
 )
