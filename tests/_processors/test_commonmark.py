@@ -37,7 +37,13 @@ def test_item(testapp):
         [
             holocron.Item(
                 {
-                    "content": "text with **bold**",
+                    "content": textwrap.dedent(
+                        """\
+                        # some title
+
+                        text with **bold**
+                        """
+                    ),
                     "destination": pathlib.Path("1.md"),
                 }
             )
@@ -48,7 +54,7 @@ def test_item(testapp):
     assert list(stream) == [
         holocron.Item(
             {
-                "content": "<p>text with <strong>bold</strong></p>",
+                "content": "<h1>some title</h1>\n<p>text with <strong>bold</strong></p>\n",
                 "destination": pathlib.Path("1.html"),
             }
         )
@@ -61,10 +67,10 @@ def test_item(testapp):
         pytest.param(
             textwrap.dedent(
                 """\
-            # some title
+                # some title
 
-            text with **bold**
-        """
+                text with **bold**
+                """
             ),
             id="heading",
         ),
@@ -73,21 +79,21 @@ def test_item(testapp):
                 """\
 
 
-            # some title
+                # some title
 
-            text with **bold**
-        """
+                text with **bold**
+                """
             ),
             id="heading-leading-nl",
         ),
         pytest.param(
             textwrap.dedent(
                 """\
-            some title
-            ==========
+                some title
+                ==========
 
-            text with **bold**
-        """
+                text with **bold**
+                """
             ),
             id="setext-heading",
         ),
@@ -96,29 +102,30 @@ def test_item(testapp):
                 """\
 
 
-            some title
-            ==========
+                some title
+                ==========
 
-            text with **bold**
-        """
+                text with **bold**
+                """
             ),
             id="setext-heading-leading-nl",
         ),
     ],
 )
-def test_item_parsed_title(testapp, content):
+def test_item_infer_title(testapp, content):
     """Commonmark processor has to cut a title of the content."""
 
     stream = commonmark.process(
         testapp,
         [holocron.Item({"content": content, "destination": pathlib.Path("1.md")})],
+        infer_title=True,
     )
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
         holocron.Item(
             {
-                "content": "<p>text with <strong>bold</strong></p>",
+                "content": "<p>text with <strong>bold</strong></p>\n",
                 "destination": pathlib.Path("1.html"),
                 "title": "some title",
             }
@@ -126,7 +133,7 @@ def test_item_parsed_title(testapp, content):
     ]
 
 
-def test_item_parsed_title_ignored(testapp):
+def test_item_infer_title_ignored(testapp):
     """Commonmark processor has to ignore a title if it's already set."""
 
     stream = commonmark.process(
@@ -139,20 +146,21 @@ def test_item_parsed_title_ignored(testapp):
                         # some title
 
                         text with **bold**
-                    """
+                        """
                     ),
                     "destination": pathlib.Path("1.md"),
                     "title": "another title",
                 }
             )
         ],
+        infer_title=True,
     )
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
         holocron.Item(
             {
-                "content": "<p>text with <strong>bold</strong></p>",
+                "content": "<h1>some title</h1>\n<p>text with <strong>bold</strong></p>\n",
                 "destination": pathlib.Path("1.html"),
                 "title": "another title",
             }
@@ -160,7 +168,7 @@ def test_item_parsed_title_ignored(testapp):
     ]
 
 
-def test_item_parsed_title_in_the_middle_of_content(testapp):
+def test_item_infer_title_in_the_middle_of_content(testapp):
     """Commonmark processor has to ignore a title in the middle of content."""
 
     stream = commonmark.process(
@@ -175,12 +183,13 @@ def test_item_parsed_title_in_the_middle_of_content(testapp):
                         # some title
 
                         text with **bold**
-                    """
+                        """
                     ),
                     "destination": pathlib.Path("1.md"),
                 }
             )
         ],
+        infer_title=True,
     )
 
     assert isinstance(stream, collections.abc.Iterable)
@@ -198,7 +207,7 @@ def test_item_parsed_title_in_the_middle_of_content(testapp):
     ]
 
 
-def test_item_with_sections(testapp):
+def test_item_infer_title_with_sections(testapp):
     """Commonmark processor has to work for multi section content."""
 
     stream = commonmark.process(
@@ -230,12 +239,13 @@ def test_item_with_sections(testapp):
                         ## some section 3
 
                         yyy
-                    """
+                        """
                     ),
                     "destination": pathlib.Path("1.md"),
                 }
             )
         ],
+        infer_title=True,
     )
 
     assert isinstance(stream, collections.abc.Iterable)
@@ -286,7 +296,7 @@ def test_item_many(testapp, amount):
     assert list(stream) == [
         holocron.Item(
             {
-                "content": "<p>the key is <strong>%d</strong></p>" % i,
+                "content": "<p>the key is <strong>%d</strong></p>\n" % i,
                 "destination": pathlib.Path("1.html"),
             }
         )
@@ -299,20 +309,23 @@ def test_item_many(testapp, amount):
     [
         pytest.param(
             (
-                r"<p>test codeblock</p>\s*"
-                r"<pre><code class=\"language-python\">"
-                r"lambda x: pass\s*</code></pre>"
+                "<p>test codeblock</p>\n"
+                '<pre><code class="language-python">'
+                "lambda x: pass\n"
+                "</code></pre>\n"
             ),
             False,
             id="pygmentize=off",
         ),
         pytest.param(
             (
-                r"<p>test codeblock</p>\s*"
-                r".*highlight.*"
-                r"<pre>\s*<span>\s*</span>\s*"
-                r"<code>[\s\S]+</code>\s*"
-                r"</pre>.*"
+                "<p>test codeblock</p>\n"
+                '<pre><code class="language-python">'
+                '<span class="k">lambda</span> '
+                '<span class="n">x</span>'
+                '<span class="p">:</span> '
+                '<span class="k">pass</span>\n'
+                "</code></pre>\n"
             ),
             True,
             id="pygmentize=on",
@@ -334,7 +347,7 @@ def test_args_pygmentize(testapp, rendered, pygmentize):
                         ```python
                         lambda x: pass
                         ```
-                    """
+                        """
                     ),
                     "destination": pathlib.Path("1.md"),
                 }
@@ -347,7 +360,7 @@ def test_args_pygmentize(testapp, rendered, pygmentize):
     assert list(stream) == [
         holocron.Item(
             {
-                "content": _pytest_regex(rendered),
+                "content": rendered,
                 "destination": pathlib.Path("1.html"),
             }
         )
@@ -386,8 +399,186 @@ def test_args_pygmentize_unknown_language(testapp, language):
                 "content": (
                     f"<p>test codeblock</p>\n"
                     f'<pre><code class="language-{language}">'
-                    f"lambda x: pass\n</code></pre>"
+                    f"lambda x: pass\n</code></pre>\n"
                 ),
+                "destination": pathlib.Path("1.html"),
+            }
+        )
+    ]
+
+
+def test_args_strikethrough(testapp):
+    """Commonmark has to support strikethrough extension."""
+
+    stream = commonmark.process(
+        testapp,
+        [
+            holocron.Item(
+                {
+                    "content": "text with ~~strikethrough~~",
+                    "destination": pathlib.Path("1.md"),
+                }
+            )
+        ],
+        strikethrough=True,
+    )
+
+    assert isinstance(stream, collections.abc.Iterable)
+    assert list(stream) == [
+        holocron.Item(
+            {
+                "content": "<p>text with <s>strikethrough</s></p>\n",
+                "destination": pathlib.Path("1.html"),
+            }
+        )
+    ]
+
+
+def test_args_table(testapp):
+    """Commonmark has to support table extension."""
+
+    stream = commonmark.process(
+        testapp,
+        [
+            holocron.Item(
+                {
+                    "content": textwrap.dedent(
+                        """\
+                        | name | value |
+                        | ---- | ----- |
+                        | foo  | bar   |
+                        """
+                    ),
+                    "destination": pathlib.Path("1.md"),
+                }
+            )
+        ],
+        table=True,
+    )
+
+    assert isinstance(stream, collections.abc.Iterable)
+    assert list(stream) == [
+        holocron.Item(
+            {
+                "content": (
+                    "<table>\n"
+                    "<thead>\n<tr>\n<th>name</th>\n<th>value</th>\n</tr>\n</thead>\n"
+                    "<tbody>\n<tr>\n<td>foo</td>\n<td>bar</td>\n</tr>\n</tbody>\n"
+                    "</table>\n"
+                ),
+                "destination": pathlib.Path("1.html"),
+            }
+        )
+    ]
+
+
+def test_args_footnote(testapp):
+    """Commonmark has to support footnote extension."""
+
+    stream = commonmark.process(
+        testapp,
+        [
+            holocron.Item(
+                {
+                    "content": textwrap.dedent(
+                        """\
+                        text with footnote [^1]
+
+                        [^1]: definition
+                        """
+                    ),
+                    "destination": pathlib.Path("1.md"),
+                }
+            )
+        ],
+        footnote=True,
+    )
+
+    assert isinstance(stream, collections.abc.Iterable)
+    assert list(stream) == [
+        holocron.Item(
+            {
+                "content": (
+                    "<p>text with footnote "
+                    '<sup class="footnote-ref">'
+                    '<a href="#fn1" id="fnref1">[1]</a></sup></p>\n'
+                    '<hr class="footnotes-sep" />\n'
+                    '<section class="footnotes">\n'
+                    '<ol class="footnotes-list">\n'
+                    '<li id="fn1" class="footnote-item">'
+                    "<p>definition "
+                    '<a href="#fnref1" class="footnote-backref">↩︎</a>'
+                    "</p>\n"
+                    "</li>\n"
+                    "</ol>\n"
+                    "</section>\n"
+                ),
+                "destination": pathlib.Path("1.html"),
+            }
+        )
+    ]
+
+
+@pytest.mark.parametrize("kind", ["warning", "note"])
+def test_args_admonition(testapp, kind):
+    """Commonmark has to support admonition extension."""
+
+    stream = commonmark.process(
+        testapp,
+        [
+            holocron.Item(
+                {
+                    "content": textwrap.dedent(
+                        f"""\
+                        :::{kind}
+                        some text
+                        :::
+                        """
+                    ),
+                    "destination": pathlib.Path("1.md"),
+                }
+            )
+        ],
+        admonition=True,
+    )
+
+    assert isinstance(stream, collections.abc.Iterable)
+    assert list(stream) == [
+        holocron.Item(
+            {
+                "content": f'<div class="{kind}">\n<p>some text</p>\n</div>\n',
+                "destination": pathlib.Path("1.html"),
+            }
+        )
+    ]
+
+
+def test_args_definition(testapp):
+    """Commonmark has to support definition list extension."""
+
+    stream = commonmark.process(
+        testapp,
+        [
+            holocron.Item(
+                {
+                    "content": textwrap.dedent(
+                        """\
+                        term
+                        : definition
+                        """
+                    ),
+                    "destination": pathlib.Path("1.md"),
+                }
+            )
+        ],
+        definition=True,
+    )
+
+    assert isinstance(stream, collections.abc.Iterable)
+    assert list(stream) == [
+        holocron.Item(
+            {
+                "content": "<dl>\n<dt>term</dt>\n<dd>definition</dd>\n</dl>\n",
                 "destination": pathlib.Path("1.html"),
             }
         )

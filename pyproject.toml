@@ -38,9 +38,10 @@ docutils = "^0.18"
 feedgen = "^0.9"
 termcolor = "^1.1"
 colorama = "^0.4"
-mistletoe = "^0.8"
+markdown-it-py = "^2.0"
+mdit-py-plugins = "^0.3"
 jsonschema = { version = "^4.4", extras = ["format"] }
-toml = {version = "^0.10.0"}
+toml = {version = "^0.10"}
 more-itertools = "^8.12"
 
 [tool.poetry.dev-dependencies]

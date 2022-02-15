@@ -1,57 +1,41 @@
 """Convert CommonMark into HTML."""
 
-import io
 import logging
 
-import mistletoe
+import markdown_it
 import pygments
 import pygments.formatters.html
 import pygments.lexers
 import pygments.util
+from mdit_py_plugins.container import container_plugin
+from mdit_py_plugins.deflist import deflist_plugin
+from mdit_py_plugins.footnote import footnote_plugin
 
 from ._misc import parameters
 
-_logger = logging.getLogger("holocron")
+_LOGGER = logging.getLogger("holocron")
 
 
-def _pygmentize(code, language):
+def _pygmentize(code, language, _):
     try:
         formatter = _pygmentize.formatter
     except AttributeError:
-        HtmlFormatter = pygments.formatters.html.HtmlFormatter
+
+        class HtmlFormatter(pygments.formatters.html.HtmlFormatter):
+            def wrap(self, source, _):
+                # Since 'markdown-it' creates required '<pre>' & '<code>'
+                # containers, there's no need to duplicate them with pygments.
+                yield from source
+
         formatter = _pygmentize.formatter = HtmlFormatter(wrapcode=True)
 
-    lexer = pygments.lexers.get_lexer_by_name(language)
+    try:
+        lexer = pygments.lexers.get_lexer_by_name(language)
+    except pygments.util.ClassNotFound:
+        _LOGGER.warning("pygmentize: no such langauge: '%s'", language)
+        return None
+
     return pygments.highlight(code, lexer, formatter)
-
-
-class _HTMLRenderer(mistletoe.HTMLRenderer):
-    def __init__(self, *extras, pygmentize):
-        super(_HTMLRenderer, self).__init__(*extras)
-        self._pygmentize = pygmentize
-        self._extract_title = True
-        self.extracted = {}
-
-    def render_document(self, token):
-        if self._extract_title and token.children:
-            node = token.children[0]
-            is_heading = node.__class__.__name__ in (
-                "Heading",
-                "SetextHeading",
-            )
-            if is_heading and node.level == 1:
-                self.extracted["title"] = self.render_inner(node)
-                token.children.pop(0)
-        return super(_HTMLRenderer, self).render_document(token)
-
-    def render_block_code(self, token):
-        if token.language and self._pygmentize:
-            try:
-                code = token.children[0].content
-                return self._pygmentize(code, token.language)
-            except pygments.util.ClassNotFound:
-                _logger.warning("pygmentize: no such langauge: '%s'", token.language)
-        return super(_HTMLRenderer, self).render_block_code(token)
 
 
 @parameters(
@@ -60,17 +44,52 @@ class _HTMLRenderer(mistletoe.HTMLRenderer):
         "properties": {"pygmentize": {"type": "boolean"}},
     }
 )
-def process(app, stream, *, pygmentize=False):
-    pygmentize = pygmentize and _pygmentize
+def process(
+    app,
+    stream,
+    *,
+    pygmentize=False,
+    infer_title=False,
+    strikethrough=False,
+    table=False,
+    footnote=False,
+    admonition=False,
+    definition=False,
+):
+    commonmark = markdown_it.MarkdownIt()
+
+    if pygmentize:
+        commonmark.options.highlight = _pygmentize
+    if strikethrough:
+        commonmark.enable("strikethrough")
+    if table:
+        commonmark.enable("table")
+    if footnote:
+        commonmark.use(footnote_plugin)
+    if admonition:
+        commonmark.use(container_plugin, "warning")
+        commonmark.use(container_plugin, "note")
+    if definition:
+        commonmark.use(deflist_plugin)
 
     for item in stream:
-        with _HTMLRenderer(pygmentize=pygmentize) as renderer:
-            item["content"] = renderer.render(
-                mistletoe.Document(io.StringIO(item["content"]))
-            ).strip()
+        env = {}
+        tokens = commonmark.parse(item["content"], env)
 
-        if "title" in renderer.extracted:
-            item["title"] = item.get("title", renderer.extracted["title"])
+        # Here's where the commonmark processor is being "smart". If the stream
+        # item doesn't have a title set and the commonmark content starts with
+        # a heading, the heading is considered the item's title and is removed
+        # from the content in order to avoid being rendered twice.
+        if (
+            infer_title
+            and tokens
+            and tokens[0].type == "heading_open"
+            and int(tokens[0].tag[1]) == 1
+            and "title" not in item
+        ):
+            item["title"] = tokens[1].content
+            tokens = tokens[3:]
 
+        item["content"] = commonmark.renderer.render(tokens, commonmark.options, env)
         item["destination"] = item["destination"].with_suffix(".html")
         yield item
