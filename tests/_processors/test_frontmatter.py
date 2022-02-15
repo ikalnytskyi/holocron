@@ -15,38 +15,7 @@ def testapp():
     return holocron.Application()
 
 
-@pytest.mark.parametrize(
-    ["frontsnippet"],
-    [
-        pytest.param(
-            """\
-            author: Yoda
-            master: true
-            labels: [force, motto]
-            """,
-            id="yaml",
-        ),
-        pytest.param(
-            """\
-            {
-                "author": "Yoda",
-                "master": true,
-                "labels": ["force", "motto"]
-            }
-            """,
-            id="json",
-        ),
-        pytest.param(
-            """\
-            author = "Yoda"
-            master = true
-            labels = ["force", "motto"]
-            """,
-            id="toml",
-        ),
-    ],
-)
-def test_item(testapp, frontsnippet):
+def test_item(testapp):
     """Frontmatter has to be processed and removed from the content."""
 
     stream = frontmatter.process(
@@ -57,16 +26,90 @@ def test_item(testapp, frontsnippet):
                     "content": textwrap.dedent(
                         """\
                         ---
-                        %s
+                        author: Yoda
+                        master: true
+                        labels: [force, motto]
                         ---
-
                         May the Force be with you!
                         """
-                    )
-                    % textwrap.dedent(frontsnippet)
+                    ),
                 }
             )
         ],
+    )
+
+    assert isinstance(stream, collections.abc.Iterable)
+    assert list(stream) == [
+        holocron.Item(
+            {
+                "content": "May the Force be with you!\n",
+                "author": "Yoda",
+                "master": True,
+                "labels": ["force", "motto"],
+            }
+        )
+    ]
+
+
+def test_item_yaml(testapp):
+    """Frontmatter has to be processed and removed from the content."""
+
+    stream = frontmatter.process(
+        testapp,
+        [
+            holocron.Item(
+                {
+                    "content": textwrap.dedent(
+                        """\
+                        ---
+                        author: Yoda
+                        master: true
+                        labels: [force, motto]
+                        ---
+                        May the Force be with you!
+                        """
+                    ),
+                }
+            )
+        ],
+        format="yaml",
+    )
+
+    assert isinstance(stream, collections.abc.Iterable)
+    assert list(stream) == [
+        holocron.Item(
+            {
+                "content": "May the Force be with you!\n",
+                "author": "Yoda",
+                "master": True,
+                "labels": ["force", "motto"],
+            }
+        )
+    ]
+
+
+def test_item_toml(testapp):
+    """Frontmatter has to be processed and removed from the content."""
+
+    stream = frontmatter.process(
+        testapp,
+        [
+            holocron.Item(
+                {
+                    "content": textwrap.dedent(
+                        """\
+                        +++
+                        author = "Yoda"
+                        master = true
+                        labels = ["force", "motto"]
+                        +++
+                        May the Force be with you!
+                        """
+                    ),
+                }
+            ),
+        ],
+        format="toml",
     )
 
     assert isinstance(stream, collections.abc.Iterable)
@@ -204,10 +247,19 @@ def test_item_with_frontmatter_leading_whitespaces(testapp):
     assert list(stream) == [
         holocron.Item(
             {
-                "content": "May the Force be with you!\n",
-                "author": "Yoda",
-                "master": True,
-                "labels": ["force", "motto"],
+                "content": textwrap.dedent(
+                    """\
+
+
+                    ---
+                    author: Yoda
+                    master: true
+                    labels: [force, motto]
+                    ---
+
+                    May the Force be with you!
+                """
+                )
             }
         )
     ]
@@ -298,7 +350,6 @@ def test_item_many(testapp, amount):
                         master: %d
                         labels: [force, motto]
                         ---
-
                         May the Force be with you!
                     """
                         % i
@@ -338,7 +389,6 @@ def test_args_delimiter(testapp, delimiter):
                         master: true
                         labels: [force, motto]
                         {delimiter}
-
                         May the Force be with you!
                         """
                     )
@@ -378,7 +428,6 @@ def test_args_overwrite(testapp, overwrite):
                         master: true
                         labels: [force, motto]
                         ---
-
                         May the Force be with you!
                     """
                     ),
@@ -406,62 +455,41 @@ def test_args_overwrite(testapp, overwrite):
     [
         pytest.param(
             """\
+            ---
             author: Yoda
             master: true
             labels: [force, motto]
-            """,
+            ---
+            """.rstrip(),
             "yaml",
             None,
             id="yaml",
         ),
         pytest.param(
             """\
-            {
-                "author": "Yoda",
-                "master": true,
-                "labels": ["force", "motto"]
-            }
-            """,
-            "json",
-            None,
-            id="json",
-        ),
-        pytest.param(
-            """\
+            +++
             author = "Yoda"
             master = true
             labels = ["force", "motto"]
-            """,
+            +++\
+            """.rstrip(),
             "toml",
             None,
             id="toml",
         ),
         pytest.param(
             """\
+            ---
             author = "Yoda"
             master = true
             labels = ["force", "motto"]
-            """,
+            ---
+            """.rstrip(),
             "yaml",
             ValueError(
                 "Frontmatter must be a mapping (i.e. key-value pairs), not arrays."
             ),
             id="toml-yaml",
-        ),
-        pytest.param(
-            """\
-            {
-                "author": "Yoda",
-                "master": true,
-                "labels": ["force", "motto"]
-            }
-            """,
-            "toml",
-            ValueError(
-                "Key name found without value. Reached end of line. "
-                "(line 1 column 2 char 1)"
-            ),
-            id="json-toml",
         ),
     ],
 )
@@ -475,10 +503,7 @@ def test_args_format(testapp, frontsnippet, format, exception):
                 {
                     "content": textwrap.dedent(
                         """\
-                        ---
                         %s
-                        ---
-
                         May the Force be with you!
                         """
                     )
