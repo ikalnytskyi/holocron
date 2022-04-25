@@ -17,17 +17,14 @@ _LOGGER = logging.getLogger("holocron")
 
 
 def _pygmentize(code, language, _):
+    if not language:
+        return None
+
     try:
         formatter = _pygmentize.formatter
     except AttributeError:
-
-        class HtmlFormatter(pygments.formatters.html.HtmlFormatter):
-            def wrap(self, source, _):
-                # Since 'markdown-it' creates required '<pre>' & '<code>'
-                # containers, there's no need to duplicate them with pygments.
-                yield from source
-
-        formatter = _pygmentize.formatter = HtmlFormatter(wrapcode=True)
+        formatter = pygments.formatters.html.HtmlFormatter(nowrap=True)
+        _pygmentize.formatter = formatter
 
     try:
         lexer = pygments.lexers.get_lexer_by_name(language)
