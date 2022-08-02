@@ -794,7 +794,7 @@ def test_args_pretty(testapp, syndication_format, pretty, check_fn):
         ),
         pytest.param(
             {"limit": "42"},
-            "limit: '42' is not of type 'integer'",
+            "limit: '42' is not valid under any of the given schemas",
             id="limit-str",
         ),
         pytest.param(

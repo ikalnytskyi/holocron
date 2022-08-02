@@ -446,7 +446,7 @@ def test_args_timezone_fallback(testapp, tz):
     [
         pytest.param(
             {"todatetime": 42},
-            "todatetime: 42 is not of type 'string'",
+            "todatetime: 42 is not valid under any of the given schemas",
             id="todatetime-int",
         ),
         pytest.param(

@@ -1,17 +1,16 @@
 [build-system]
-requires = ["poetry_core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
 
-[tool.poetry]
+[project]
 name = "holocron"
-version = "0.4.0"
 description = "An extendable static site generator powered by the Force. =/"
-authors = ["Ihor Kalnytskyi <ihor@kalnytskyi.com>"]
-license = "BSD-3-Clause"
 readme = "README.rst"
-homepage = "https://github.com/ikalnytskyi/holocron"
-repository = "https://github.com/ikalnytskyi/holocron"
-documentation = "https://github.com/ikalnytskyi/holocron"
+requires-python = ">= 3.10"
+license = "BSD-3-Clause"
+authors = [
+    { name = "Ihor Kalnytskyi", email = "ihor@kalnytskyi.com" }
+]
 keywords = ["static", "site", "blog", "generator", "markdown"]
 classifiers = [
     "Environment :: Console",
@@ -25,33 +24,52 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
 ]
+dependencies = [
+    "Jinja2 >= 3.0",
+    "PyYAML >= 6.0",
+    "Pygments >= 2.12",
+    "python-dateutil >= 2.8",
+    "jsonpointer >= 2.2",
+    "Markdown >= 3.3",
+    "docutils >= 0.18",
+    "feedgen >= 0.9",
+    "termcolor >= 1.1",
+    "colorama >= 0.4",
+    "markdown-it-py >= 2.0",
+    "mdit-py-plugins >= 0.3",
+    "jsonschema[format] >= 4.4",
+    "toml >= 0.10",
+    "more-itertools >= 8.12",
+]
+dynamic = ["version"]
 
-[tool.poetry.dependencies]
-python = "^3.10"
-Jinja2 = "^3.0"
-PyYAML = "^6.0"
-Pygments = "^2.12"
-python-dateutil = "^2.8"
-jsonpointer = "^2.2"
-Markdown = "^3.3"
-docutils = "^0.18"
-feedgen = "^0.9"
-termcolor = "^1.1"
-colorama = "^0.4"
-markdown-it-py = "^2.0"
-mdit-py-plugins = "^0.3"
-jsonschema = { version = "^4.4", extras = ["format"] }
-toml = {version = "^0.10"}
-more-itertools = "^8.12"
+[project.urls]
+Issues = "https://github.com/ikalnytskyi/holocron/issues"
+Source = "https://github.com/ikalnytskyi/holocron"
 
-[tool.poetry.dev-dependencies]
-mock = "^4.0"
-coverage = "^6.2"
-pytest = "^6.2.5"
-pytest-randomly = "^3.11"
-xmltodict = "^0.12"
-beautifulsoup4 = "^4.10"
-untangle = "^1.1"
-
-[tool.poetry.scripts]
+[project.scripts]
 holocron = "holocron.__main__:main"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build]
+sources = ["src"]
+
+[tool.hatch.envs.test]
+python = "3.10"
+dependencies = [
+    "mock >= 4.0",
+    "coverage >= 6.2",
+    "pytest >= 6.2.5",
+    "pytest-randomly >= 3.11",
+    "xmltodict >= 0.12",
+    "beautifulsoup4 >= 4.10",
+    "untangle >= 1.1",
+]
+scripts.run = "python -m pytest {args:-vv}"
+
+[tool.hatch.envs.lint]
+detached = true
+dependencies = ["pre-commit"]
+scripts.run = "python -m pre_commit run --all-files --show-diff-on-failure"
