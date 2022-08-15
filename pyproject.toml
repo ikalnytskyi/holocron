@@ -25,21 +25,21 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
 ]
 dependencies = [
-    "Jinja2 >= 3.0",
+    "Jinja2 >= 3.1",
     "PyYAML >= 6.0",
     "Pygments >= 2.12",
     "python-dateutil >= 2.8",
-    "jsonpointer >= 2.2",
-    "Markdown >= 3.3",
-    "docutils >= 0.18",
+    "jsonpointer >= 2.3",
+    "Markdown >= 3.4",
+    "docutils >= 0.19",
     "feedgen >= 0.9",
     "termcolor >= 1.1",
     "colorama >= 0.4",
-    "markdown-it-py >= 2.0",
+    "markdown-it-py >= 2.1",
     "mdit-py-plugins >= 0.3",
-    "jsonschema[format] >= 4.4",
+    "jsonschema[format] >= 4.9",
     "toml >= 0.10",
-    "more-itertools >= 8.12",
+    "more-itertools >= 8.14",
 ]
 dynamic = ["version"]
 
@@ -60,12 +60,12 @@ sources = ["src"]
 python = "3.10"
 dependencies = [
     "mock >= 4.0",
-    "coverage >= 6.2",
-    "pytest >= 6.2.5",
-    "pytest-randomly >= 3.11",
-    "xmltodict >= 0.12",
-    "beautifulsoup4 >= 4.10",
-    "untangle >= 1.1",
+    "coverage >= 6.4",
+    "pytest >= 7.1",
+    "pytest-randomly >= 3.12",
+    "xmltodict >= 0.13",
+    "beautifulsoup4 >= 4.11",
+    "untangle >= 1.2",
 ]
 scripts.run = "python -m pytest {args:-vv}"
 
