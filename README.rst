@@ -28,7 +28,7 @@ Here is an incomplete list of features:
 * Supports third-party themes via `Jinja2`_ templates.
 * Generates both `Atom feed`_ and `sitemap.xml`_.
 * Has clear and 100% mobile responsive default theme.
-* Supports `Google Analytics`_ & `Yandex.Metrika`_ counters.
+* Supports `Google Analytics`_.
 * Has SEO friendly URLs.
 * Provides a debug server to preview content.
 
@@ -48,7 +48,6 @@ Links
 .. _Atom feed: http://en.wikipedia.org/wiki/Atom_(standard)
 .. _sitemap.xml: http://www.sitemaps.org/
 .. _Google Analytics: http://www.google.com/analytics/
-.. _Yandex.Metrika: https://metrica.yandex.com/
 
 .. Badges
 
