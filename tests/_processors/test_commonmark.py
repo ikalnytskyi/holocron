@@ -26,7 +26,7 @@ class _pytest_regex:
 
 @pytest.fixture(scope="function")
 def testapp():
-    return holocron.Application()
+    return holocron.Application({"url": "https://yoda.ua"})
 
 
 def test_item(testapp):
@@ -400,6 +400,88 @@ def test_args_pygmentize_unknown_language(testapp, language):
                     f"<p>test codeblock</p>\n"
                     f'<pre><code class="language-{language}">'
                     f"lambda x: pass\n</code></pre>\n"
+                ),
+                "destination": pathlib.Path("1.html"),
+            }
+        )
+    ]
+
+
+def test_item_dot_render(testapp):
+    """Commonmark has to render DOT snippets into SVG if asked to render."""
+
+    stream = commonmark.process(
+        testapp,
+        [
+            holocron.Item(
+                {
+                    "content": textwrap.dedent(
+                        """
+                        ```dot {"format": "svg"}
+                        graph yoda {
+                            a -- b -- c
+                        }
+                        ```
+                        """
+                    ),
+                    "source": pathlib.Path("1.md"),
+                    "destination": pathlib.Path("1.md"),
+                }
+            )
+        ],
+    )
+
+    assert isinstance(stream, collections.abc.Iterable)
+    assert list(stream) == [
+        holocron.Item(
+            {
+                "content": '<p><img src="diagram-0.svg" alt="" /></p>\n',
+                "source": pathlib.Path("1.md"),
+                "destination": pathlib.Path("1.html"),
+            },
+        ),
+        holocron.WebSiteItem(
+            {
+                "content": _pytest_regex(rb".*</svg>\s*", re.DOTALL | re.MULTILINE),
+                "source": pathlib.Path("dot://1.md/diagram-0.svg"),
+                "destination": pathlib.Path("diagram-0.svg"),
+                "baseurl": "https://yoda.ua",
+            }
+        ),
+    ]
+
+
+def test_item_dot_not_rendered(testapp):
+    """Commonmark has to preserve DOT snippet if not asked to render."""
+
+    stream = commonmark.process(
+        testapp,
+        [
+            holocron.Item(
+                {
+                    "content": textwrap.dedent(
+                        """
+                        ```dot
+                        graph yoda {
+                            a -- b -- c
+                        }
+                        ```
+                        """
+                    ),
+                    "destination": pathlib.Path("1.md"),
+                }
+            )
+        ],
+    )
+
+    assert isinstance(stream, collections.abc.Iterable)
+    assert list(stream) == [
+        holocron.Item(
+            {
+                "content": (
+                    '<pre><code class="language-dot">graph yoda {\n'
+                    "    a -- b -- c\n"
+                    "}\n</code></pre>\n"
                 ),
                 "destination": pathlib.Path("1.html"),
             }
