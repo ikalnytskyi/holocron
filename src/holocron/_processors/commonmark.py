@@ -1,24 +1,52 @@
 """Convert CommonMark into HTML."""
 
+import json
 import logging
+import pathlib
 
 import markdown_it
+import markdown_it.renderer
+import markdown_it.token
 import pygments
 import pygments.formatters.html
 import pygments.lexers
 import pygments.util
+import pygraphviz
 from mdit_py_plugins.container import container_plugin
 from mdit_py_plugins.deflist import deflist_plugin
 from mdit_py_plugins.footnote import footnote_plugin
+
+import holocron
 
 from ._misc import parameters
 
 _LOGGER = logging.getLogger("holocron")
 
 
-def _pygmentize(code, language, _):
+class HolocronRendererHTML(markdown_it.renderer.RendererHTML):
+    def __init__(self, parser):
+        super().__init__(parser)
+        self._parser = parser
+
+    def fence(self, tokens, idx, options, env):
+        token = tokens[idx]
+        match token.info.split(maxsplit=1):
+            case ["dot", params]:
+                env.setdefault("diagrams", [])
+                params = json.loads(params)
+                diagram_name = f"diagram-{len(env['diagrams'])}.svg"
+                diagram_data = pygraphviz.AGraph(token.content).draw(
+                    format=params["format"],
+                    prog=params.get("engine", "dot"),
+                )
+                env["diagrams"].append((diagram_name, diagram_data))
+                return self._parser.render(f"![]({diagram_name})")
+        return super().fence(tokens, idx, options, env)
+
+
+def _pygmentize(code: str, language: str, _: str) -> str:
     if not language:
-        return None
+        return code
 
     try:
         formatter = _pygmentize.formatter
@@ -30,7 +58,7 @@ def _pygmentize(code, language, _):
         lexer = pygments.lexers.get_lexer_by_name(language)
     except pygments.util.ClassNotFound:
         _LOGGER.warning("pygmentize: no such langauge: '%s'", language)
-        return None
+        return code
 
     return pygments.highlight(code, lexer, formatter)
 
@@ -53,7 +81,7 @@ def process(
     admonition=False,
     definition=False,
 ):
-    commonmark = markdown_it.MarkdownIt()
+    commonmark = markdown_it.MarkdownIt(renderer_cls=HolocronRendererHTML)
 
     if pygmentize:
         commonmark.options.highlight = _pygmentize
@@ -90,3 +118,13 @@ def process(
         item["content"] = commonmark.renderer.render(tokens, commonmark.options, env)
         item["destination"] = item["destination"].with_suffix(".html")
         yield item
+
+        for diagram_name, diagram_bytes in env.get("diagrams", []):
+            yield holocron.WebSiteItem(
+                {
+                    "source": pathlib.Path("dot://", str(item["source"]), diagram_name),
+                    "destination": item["destination"].with_name(diagram_name),
+                    "baseurl": app.metadata["url"],
+                    "content": diagram_bytes,
+                }
+            )

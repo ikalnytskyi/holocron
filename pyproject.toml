@@ -33,6 +33,7 @@ dependencies = [
     "Markdown >= 3.4",
     "docutils >= 0.19",
     "feedgen >= 0.9",
+    "pygraphviz >= 1.10",
     "termcolor >= 1.1",
     "colorama >= 0.4",
     "markdown-it-py >= 2.1",
