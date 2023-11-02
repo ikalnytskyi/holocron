@@ -17,7 +17,7 @@ from holocron._processors import sitemap
 class _pytest_xmlasdict:
     """Assert that a given XML has the same semantic meaning."""
 
-    def __init__(self, expected, ungzip=False, **kwargs):
+    def __init__(self, expected, *, ungzip=False, **kwargs):
         self._expected = expected
         self._ungzip = ungzip
         self._kwargs = kwargs

@@ -53,9 +53,9 @@ def example_site(create_site):
 
 @pytest.fixture(scope="function")
 def execute(capsys):
-    def execute(args, as_subprocess=True):
+    def execute(args, *, as_subprocess=True):
         if as_subprocess:
-            return subprocess.check_output(["holocron"] + args, stderr=subprocess.PIPE)
+            return subprocess.check_output(["holocron", *args], stderr=subprocess.PIPE)
 
         from holocron.__main__ import main
 

@@ -13,7 +13,7 @@ import jsonschema
 _logger = logging.getLogger("holocron")
 
 
-def resolve_json_references(value, context, keep_unknown=True):
+def resolve_json_references(value, context, *, keep_unknown=True):
     def _do_resolve(node):
         node = copy.copy(node)
 
@@ -85,6 +85,7 @@ class parameters:
                             import codecs
 
                             return codecs.lookup(value)
+                        return None
 
                     @format_checker.checks("timezone", ())
                     def is_timezone(value):
@@ -92,6 +93,7 @@ class parameters:
                             import dateutil.tz
 
                             return dateutil.tz.gettz(value)
+                        return None
 
                     @format_checker.checks("path", (TypeError,))
                     def is_path(value):
@@ -99,6 +101,7 @@ class parameters:
                             import pathlib
 
                             return pathlib.Path(value)
+                        return None
 
                     jsonschema.validate(
                         arguments,

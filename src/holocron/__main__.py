@@ -84,7 +84,7 @@ def configure_logger(level):
     logger.setLevel(level)
 
     # capture warnings issued by 'warnings' module
-    logging.captureWarnings(True)
+    logging.captureWarnings(capture=True)
     yield
     pending_handler.flush()
 

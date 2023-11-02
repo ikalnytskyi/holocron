@@ -18,8 +18,10 @@ jobs:
         with:
           python-version: "3.10"
 
-      - name: Run pre-commit
-        run: pipx run -- hatch run lint:run
+      - name: Lint
+        run: pipx run -- hatch run lint:check
+        env:
+          RUFF_OUTPUT_FORMAT: github
 
   test:
     runs-on: ubuntu-latest
@@ -35,5 +37,5 @@ jobs:
       - name: Set up prerequisites
         run: sudo apt-get install graphviz libgraphviz-dev
 
-      - name: Run tests
+      - name: Test
         run: pipx run -- hatch run test:run
