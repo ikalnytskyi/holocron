@@ -116,7 +116,7 @@ def test_imports_args_from(
 
     # Test that out of two processors (i.e. 'yoda' and 'vader'), only expected
     # ones are registered in testapp instance.
-    assert set(["yoda", "vader"]) & set(testapp._processors) == set(registered)
+    assert {"yoda", "vader"} & set(testapp._processors) == set(registered)
 
 
 @pytest.mark.parametrize(
@@ -140,7 +140,7 @@ def test_imports_system_wide(testapp, runprocessor, imports, registered):
 
     # Test that out of two processors (i.e. 'yoda' and 'vader'), only expected
     # ones are registered in testapp instance.
-    assert set(["yoda", "vader"]) & set(testapp._processors) == set(registered)
+    assert {"yoda", "vader"} & set(testapp._processors) == set(registered)
 
 
 def test_imports_precedence(testapp, runprocessor, tmpdir, monkeypatch):

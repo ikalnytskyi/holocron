@@ -11,7 +11,7 @@ _logger = logging.getLogger("holocron")
 class Application:
     """Application instance orchestrates processors execution."""
 
-    _processor_reserved_props = {"name", "args"}
+    _processor_reserved_props = frozenset({"name", "args"})
 
     def __init__(self, metadata=None):
         # Metadata is a KV store shared between processors. It serves two

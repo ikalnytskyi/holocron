@@ -2,8 +2,9 @@
 
 import pathlib
 
-import jinja2
 import jsonpointer
+
+import jinja2
 
 from .. import source
 from .._misc import parameters
