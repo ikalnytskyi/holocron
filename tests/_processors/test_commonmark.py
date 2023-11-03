@@ -408,7 +408,7 @@ def test_args_pygmentize_unknown_language(testapp, language):
 
 
 def test_item_exec(testapp):
-    """Commonmark has to render DOT snippets into SVG if asked to render."""
+    """Commonmark has to pipe code content through an executable if asked to."""
 
     stream = commonmark.process(
         testapp,
@@ -417,7 +417,7 @@ def test_item_exec(testapp):
                 {
                     "content": textwrap.dedent(
                         """
-                        ```text {"exec": ["sed", "--expression", "s/ a / the /g"]}
+                        ```text {"exec": ["sed", "s/ a / the /g"]}
                         yoda, a jedi grandmaster
                         ```
                         """
