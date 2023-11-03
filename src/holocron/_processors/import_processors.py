@@ -1,9 +1,8 @@
 """Import processors from 3rd party sources."""
 
 import contextlib
+import importlib.metadata
 import sys
-
-import pkg_resources
 
 from ._misc import parameters
 
@@ -18,16 +17,15 @@ from ._misc import parameters
     }
 )
 def process(app, items, *, imports, from_=None):
-    distribution = pkg_resources.get_distribution("holocron")
-
     with contextlib.ExitStack() as exit:
         if from_:
             sys.path.insert(0, from_)
             exit.callback(sys.path.pop, 0)
 
         for import_ in imports:
-            entry_point = pkg_resources.EntryPoint.parse(import_, distribution)
-            app.add_processor(entry_point.name, entry_point.resolve())
+            name, path = importlib.metadata.Pair.parse(import_)
+            entry_point = importlib.metadata.EntryPoint(name, path, name)
+            app.add_processor(name, entry_point.load())
 
     # Processors are generators, so we must return iterable to be compliant
     # with the protocol. The only reason why a top-level 'process' function is

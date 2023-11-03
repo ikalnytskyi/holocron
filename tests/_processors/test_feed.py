@@ -2,18 +2,18 @@
 
 import collections.abc
 import datetime
+import importlib.metadata
 import itertools
 import pathlib
 import unittest.mock
 
-import pkg_resources
 import pytest
 import untangle
 
 import holocron
 from holocron._processors import feed
 
-_HOLOCRON_VERSION = pkg_resources.get_distribution("holocron").version
+_HOLOCRON_VERSION = importlib.metadata.version("holocron")
 
 
 @pytest.fixture(scope="function")

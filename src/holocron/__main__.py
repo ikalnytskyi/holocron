@@ -2,6 +2,7 @@
 
 import argparse
 import contextlib
+import importlib.metadata
 import io
 import logging
 import logging.handlers
@@ -10,7 +11,6 @@ import sys
 import warnings
 
 import colorama
-import pkg_resources
 import termcolor
 import yaml
 
@@ -146,7 +146,7 @@ def parse_command_line(args):
     parser.add_argument(
         "--version",
         action="version",
-        version=pkg_resources.get_distribution("holocron").version,
+        version=importlib.metadata.version("holocron"),
         help="show the holocron version and exit",
     )
 

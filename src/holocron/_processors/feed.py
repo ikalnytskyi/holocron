@@ -1,10 +1,10 @@
 """Generate RSS/Atom feed (with extensions if needed)."""
 
+import importlib.metadata
 import itertools
 import pathlib
 
 import feedgen.feed
-import pkg_resources
 
 import holocron
 
@@ -82,7 +82,7 @@ def process(
     feed_generator.link(_resolvefeed("link"), replace=True)
     feed_generator.category(_resolvefeed("category"), replace=True)
     feed_generator.contributor(_resolvefeed("contributor"), replace=True)
-    _generator_version = pkg_resources.get_distribution("holocron").version
+    _generator_version = importlib.metadata.version("holocron")
     feed_generator.generator(
         generator=f"Holocron/v{_generator_version}",
         version=_generator_version,
