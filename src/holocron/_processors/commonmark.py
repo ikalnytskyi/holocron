@@ -2,7 +2,8 @@
 
 import json
 import logging
-import pathlib
+import subprocess
+import typing as t
 
 import markdown_it
 import markdown_it.renderer
@@ -11,12 +12,9 @@ import pygments
 import pygments.formatters.html
 import pygments.lexers
 import pygments.util
-import pygraphviz
 from mdit_py_plugins.container import container_plugin
 from mdit_py_plugins.deflist import deflist_plugin
 from mdit_py_plugins.footnote import footnote_plugin
-
-import holocron
 
 from ._misc import parameters
 
@@ -28,20 +26,34 @@ class HolocronRendererHTML(markdown_it.renderer.RendererHTML):
         super().__init__(parser)
         self._parser = parser
 
-    def fence(self, tokens, idx, options, env):
+    def fence(self, tokens, idx, options, env) -> str:
         token = tokens[idx]
+
         match token.info.split(maxsplit=1):
-            case ["dot", params]:
-                env.setdefault("diagrams", [])
+            case [_, params]:
                 params = json.loads(params)
-                diagram_name = f"diagram-{len(env['diagrams'])}.svg"
-                diagram_data = pygraphviz.AGraph(token.content).draw(
-                    format=params["format"],
-                    prog=params.get("engine", "dot"),
-                )
-                env["diagrams"].append((diagram_name, diagram_data))
-                return self._parser.render(f"![]({diagram_name})")
+                if "exec" in params:
+                    standard_input = token.content.encode("UTF-8")
+                    standard_output = _exec_pipe(params["exec"], standard_input)
+                    return standard_output.decode("UTF-8")
+
         return super().fence(tokens, idx, options, env)
+
+
+def _exec_pipe(args: t.List[str], input_: t.ByteString, timeout: int = 1000) -> bytes:
+    try:
+        completed_process = subprocess.run(
+            args,
+            input=input_,
+            capture_output=True,
+            timeout=timeout,
+            check=True,
+        )
+    except subprocess.TimeoutExpired:
+        return b"timed out executing the command"
+    except subprocess.CalledProcessError as exc:
+        return exc.stderr
+    return completed_process.stdout
 
 
 def _pygmentize(code: str, language: str, _: str) -> str:
@@ -118,13 +130,3 @@ def process(
         item["content"] = commonmark.renderer.render(tokens, commonmark.options, env)
         item["destination"] = item["destination"].with_suffix(".html")
         yield item
-
-        for diagram_name, diagram_bytes in env.get("diagrams", []):
-            yield holocron.WebSiteItem(
-                {
-                    "source": pathlib.Path("dot://", str(item["source"]), diagram_name),
-                    "destination": item["destination"].with_name(diagram_name),
-                    "baseurl": app.metadata["url"],
-                    "content": diagram_bytes,
-                }
-            )
