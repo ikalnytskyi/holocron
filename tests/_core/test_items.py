@@ -8,7 +8,6 @@ import holocron
 
 
 @pytest.fixture(
-    scope="function",
     params=[
         pytest.param(42, id="int-value"),
         pytest.param("key", id="str-value"),
@@ -27,7 +26,7 @@ def supported_value(request):
     return request.param
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def item_descriptors_cls():
     class methoddescriptor:
         def __init__(self, wrapped):
@@ -327,12 +326,11 @@ def test_websiteitem_init_multiple_mappings(supported_value):
 
 
 @pytest.mark.parametrize(
-    ["properties", "error"],
+    ("properties", "error"),
     [
         pytest.param(
             {},
-            "WebSiteItem is missing some required properties: "
-            "'baseurl', 'destination'",
+            "WebSiteItem is missing some required properties: " "'baseurl', 'destination'",
             id="baseurl",
         ),
         pytest.param(
@@ -529,7 +527,7 @@ def test_websiteitem_contains():
 
 
 @pytest.mark.parametrize(
-    ["destination", "url"],
+    ("destination", "url"),
     [
         pytest.param(pathlib.Path("path-to-item"), "/path-to-item", id="flat"),
         pytest.param(pathlib.Path("path", "to", "item"), "/path/to/item", id="nested"),
@@ -541,15 +539,13 @@ def test_websiteitem_contains():
 def test_websiteitem_url(destination, url):
     """'url' property is based on 'destination'."""
 
-    instance = holocron.WebSiteItem(
-        {"destination": destination, "baseurl": "https://yoda.ua"}
-    )
+    instance = holocron.WebSiteItem({"destination": destination, "baseurl": "https://yoda.ua"})
 
     assert instance["url"] == url
 
 
 @pytest.mark.parametrize(
-    ["properties", "absurl"],
+    ("properties", "absurl"),
     [
         pytest.param(
             {

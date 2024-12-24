@@ -25,7 +25,7 @@ class _pytest_regex:
         return self._regex.pattern
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def testapp():
     return holocron.Application()
 
@@ -435,7 +435,7 @@ def test_item_with_inline_code(testapp):
 
 
 @pytest.mark.parametrize(
-    ["amount"],
+    "amount",
     [
         pytest.param(0),
         pytest.param(1),
@@ -473,12 +473,11 @@ def test_item_many(testapp, amount):
 
 
 @pytest.mark.parametrize(
-    ["extensions", "rendered"],
+    ("extensions", "rendered"),
     [
         pytest.param(
             {},
-            r"<p>test codeblock</p>\s*"
-            r"<pre><code>:::\s*lambda x: pass\s*</code></pre>",
+            r"<p>test codeblock</p>\s*" r"<pre><code>:::\s*lambda x: pass\s*</code></pre>",
             id="no",
         ),
         pytest.param(
@@ -523,7 +522,7 @@ def test_args_extensions(testapp, extensions, rendered):
 
 
 @pytest.mark.parametrize(
-    ["args", "error"],
+    ("args", "error"),
     [
         pytest.param(
             {"extensions": 42},

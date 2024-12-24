@@ -8,7 +8,7 @@ import holocron
 from holocron._processors import pipe
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def testapp():
     def spam(app, items, **args):
         for item in items:
@@ -78,13 +78,11 @@ def test_args_pipeline_empty(testapp):
     )
 
     assert isinstance(stream, collections.abc.Iterable)
-    assert list(stream) == [
-        holocron.Item({"content": "the Force", "author": "skywalker"})
-    ]
+    assert list(stream) == [holocron.Item({"content": "the Force", "author": "skywalker"})]
 
 
 @pytest.mark.parametrize(
-    ["amount"],
+    "amount",
     [
         pytest.param(0),
         pytest.param(1),
@@ -119,7 +117,7 @@ def test_item_many(testapp, amount):
 
 
 @pytest.mark.parametrize(
-    ["args", "error"],
+    ("args", "error"),
     [pytest.param({"pipe": 42}, "pipe: 42 is not of type 'array'", id="pipe-int")],
 )
 def test_args_bad_value(testapp, args, error):

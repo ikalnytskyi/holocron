@@ -10,7 +10,7 @@ import holocron
 from holocron._processors import archive
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def testapp():
     return holocron.Application({"url": "https://yoda.ua"})
 
@@ -18,9 +18,7 @@ def testapp():
 def test_item(testapp):
     """Archive processor has to work!"""
 
-    stream = archive.process(
-        testapp, [holocron.Item({"title": "The Force", "content": "Obi-Wan"})]
-    )
+    stream = archive.process(testapp, [holocron.Item({"title": "The Force", "content": "Obi-Wan"})])
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [
@@ -38,7 +36,7 @@ def test_item(testapp):
 
 
 @pytest.mark.parametrize(
-    ["amount"],
+    "amount",
     [
         pytest.param(0),
         pytest.param(1),
@@ -58,10 +56,7 @@ def test_item_many(testapp, amount):
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == list(
         itertools.chain(
-            [
-                holocron.Item({"title": "The Force (part #%d)" % i})
-                for i in range(amount)
-            ],
+            [holocron.Item({"title": "The Force (part #%d)" % i}) for i in range(amount)],
             [
                 holocron.WebSiteItem(
                     {
@@ -105,7 +100,7 @@ def test_args_template(testapp):
 
 
 @pytest.mark.parametrize(
-    ["save_as"],
+    "save_as",
     [
         pytest.param(pathlib.Path("posts", "skywalker.luke"), id="deep"),
         pytest.param(pathlib.Path("yoda.jedi"), id="flat"),
@@ -136,7 +131,7 @@ def test_args_save_as(testapp, save_as):
 
 
 @pytest.mark.parametrize(
-    ["args", "error"],
+    ("args", "error"),
     [
         pytest.param(
             {"save_as": 42},

@@ -18,7 +18,8 @@ from ._misc import parameters
 )
 def process(app, stream, *, order_by=None, direction=None):
     if direction and not order_by:
-        raise ValueError("'direction' cannot be set without 'order_by'")
+        msg = "'direction' cannot be set without 'order_by'"
+        raise ValueError(msg)
 
     if order_by:
         # WARNING: Sorting the stream requires evaluating all items from the

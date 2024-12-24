@@ -12,7 +12,7 @@ import holocron
 from holocron._processors import jinja2
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def testapp():
     return holocron.Application({"url": "https://yoda.ua"})
 
@@ -92,7 +92,7 @@ def test_item_template(testapp, tmpdir):
 
 
 @pytest.mark.parametrize(
-    ["amount"],
+    "amount",
     [
         pytest.param(0),
         pytest.param(1),
@@ -121,12 +121,7 @@ def test_item_many(testapp, tmpdir, amount):
 
     assert (
         items[:amount]
-        == [
-            holocron.Item(
-                {"title": "History of the Force", "content": unittest.mock.ANY}
-            )
-        ]
-        * amount
+        == [holocron.Item({"title": "History of the Force", "content": unittest.mock.ANY})] * amount
     )
 
     for i, item in enumerate(items[:amount]):
@@ -280,7 +275,7 @@ def test_args_themes_two_themes(testapp, tmpdir):
 
 
 @pytest.mark.parametrize(
-    ["args", "error"],
+    ("args", "error"),
     [
         pytest.param(
             {"template": 42},

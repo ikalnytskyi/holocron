@@ -5,8 +5,8 @@ import pathlib
 import subprocess
 import sys
 import textwrap
+from unittest import mock
 
-import mock
 import pytest
 import yaml
 
@@ -18,7 +18,7 @@ def _fake_root_logger(monkeypatch):
     monkeypatch.setattr(logging, "root", logging.getLogger("fakeroot"))
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def create_site(tmpdir):
     def create(structure):
         for path, content in structure:
@@ -27,7 +27,7 @@ def create_site(tmpdir):
     return create
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def example_site(create_site):
     holocron_yml = yaml.safe_dump(
         {
@@ -51,7 +51,7 @@ def example_site(create_site):
     )
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def execute(capsys):
     def execute(args, *, as_subprocess=True):
         if as_subprocess:

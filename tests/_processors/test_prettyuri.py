@@ -9,7 +9,7 @@ import holocron
 from holocron._processors import prettyuri
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def testapp():
     return holocron.Application()
 
@@ -28,9 +28,7 @@ def test_item(testapp):
     ]
 
 
-@pytest.mark.parametrize(
-    ["index"], [pytest.param("index.html"), pytest.param("index.htm")]
-)
+@pytest.mark.parametrize("index", [pytest.param("index.html"), pytest.param("index.htm")])
 def test_item_index(testapp, index):
     """Prettyuri processor has to ignore index items."""
 
@@ -40,13 +38,11 @@ def test_item_index(testapp, index):
     )
 
     assert isinstance(stream, collections.abc.Iterable)
-    assert list(stream) == [
-        holocron.Item({"destination": pathlib.Path("about", "cv", index)})
-    ]
+    assert list(stream) == [holocron.Item({"destination": pathlib.Path("about", "cv", index)})]
 
 
 @pytest.mark.parametrize(
-    ["amount"],
+    "amount",
     [
         pytest.param(0),
         pytest.param(1),

@@ -48,10 +48,8 @@ def process(app, stream, *, format="yaml", delimiter=None, overwrite=True):
             frontmatter = loader(match.group("frontmatter"))
 
             if not isinstance(frontmatter, collections.abc.Mapping):
-                raise ValueError(
-                    "Frontmatter must be a mapping (i.e. key-value pairs), "
-                    "not arrays."
-                )
+                msg = "Frontmatter must be a mapping (i.e. key-value pairs), " "not arrays."
+                raise ValueError(msg)
 
             for key, value in frontmatter.items():
                 if overwrite or key not in item:

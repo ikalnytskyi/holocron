@@ -3,7 +3,6 @@
 import json
 import logging
 import subprocess
-import typing as t
 
 import markdown_it
 import markdown_it.renderer
@@ -40,7 +39,7 @@ class HolocronRendererHTML(markdown_it.renderer.RendererHTML):
         return super().fence(tokens, idx, options, env)
 
 
-def _exec_pipe(args: t.List[str], input_: t.ByteString, timeout: int = 1000) -> bytes:
+def _exec_pipe(args: list[str], input_: bytes, timeout: int = 1000) -> bytes:
     try:
         completed_process = subprocess.run(
             args,

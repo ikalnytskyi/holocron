@@ -14,13 +14,13 @@ _TZ_UTC = dateutil.tz.gettz("UTC")
 _TZ_EET = dateutil.tz.gettz("EET")
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def testapp():
     return holocron.Application()
 
 
 @pytest.mark.parametrize(
-    ["timestamp", "parsed"],
+    ("timestamp", "parsed"),
     [
         pytest.param(
             "2019-01-15T21:07:07+00:00",
@@ -128,7 +128,7 @@ def test_item(testapp, timestamp, parsed):
 
 
 @pytest.mark.parametrize(
-    ["amount"],
+    "amount",
     [
         pytest.param(0),
         pytest.param(1),
@@ -176,9 +176,7 @@ def test_item_timestamp_missing(testapp):
     )
 
     assert isinstance(stream, collections.abc.Iterable)
-    assert list(stream) == [
-        holocron.Item({"content": "the Force is strong with this one"})
-    ]
+    assert list(stream) == [holocron.Item({"content": "the Force is strong with this one"})]
 
 
 def test_item_timestamp_bad_value(testapp):
@@ -205,7 +203,7 @@ def test_item_timestamp_bad_value(testapp):
 
 
 @pytest.mark.parametrize(
-    ["timestamp"],
+    "timestamp",
     [
         pytest.param("2019-01-11", id="str"),
         pytest.param(pathlib.Path("2019-01-11"), id="path"),
@@ -240,7 +238,7 @@ def test_args_todatetime(testapp, timestamp):
 
 
 @pytest.mark.parametrize(
-    ["timestamp", "parsearea"],
+    ("timestamp", "parsearea"),
     [
         pytest.param("2019/01/11/luke-skywalker-part-1.txt", r"\d{4}/\d{2}/\d{2}"),
         pytest.param("2019-01-11-luke-skywalker-part-1.txt", r"\d{4}-\d{2}-\d{2}"),
@@ -306,7 +304,7 @@ def test_args_parsearea_not_found(testapp):
 
 
 @pytest.mark.parametrize(
-    ["timestamp"],
+    "timestamp",
     [
         pytest.param("2019/01/11/luke-skywalker.txt"),
         pytest.param("2019/01/11/luke-skywalker/index.txt"),
@@ -348,7 +346,7 @@ def test_args_fuzzy(testapp, timestamp):
     ]
 
 
-@pytest.mark.parametrize(["tz"], [pytest.param("EET"), pytest.param("UTC")])
+@pytest.mark.parametrize("tz", [pytest.param("EET"), pytest.param("UTC")])
 def test_args_timezone(testapp, tz):
     """Todatetime processor has to respect "timezone" argument."""
 
@@ -386,15 +384,13 @@ def test_args_timezone(testapp, tz):
         holocron.Item(
             {
                 "content": "may the Force be with you",
-                "timestamp": datetime.datetime(
-                    2019, 1, 15, 21, 7, tzinfo=dateutil.tz.gettz(tz)
-                ),
+                "timestamp": datetime.datetime(2019, 1, 15, 21, 7, tzinfo=dateutil.tz.gettz(tz)),
             }
         ),
     ]
 
 
-@pytest.mark.parametrize(["tz"], [pytest.param("EET"), pytest.param("UTC")])
+@pytest.mark.parametrize("tz", [pytest.param("EET"), pytest.param("UTC")])
 def test_args_timezone_fallback(testapp, tz):
     """Todatetime processor has to respect "timezone" argument (fallback)."""
 
@@ -433,16 +429,14 @@ def test_args_timezone_fallback(testapp, tz):
         holocron.Item(
             {
                 "content": "may the Force be with you",
-                "timestamp": datetime.datetime(
-                    2019, 1, 15, 21, 7, tzinfo=dateutil.tz.gettz(tz)
-                ),
+                "timestamp": datetime.datetime(2019, 1, 15, 21, 7, tzinfo=dateutil.tz.gettz(tz)),
             }
         ),
     ]
 
 
 @pytest.mark.parametrize(
-    ["args", "error"],
+    ("args", "error"),
     [
         pytest.param(
             {"todatetime": 42},
@@ -459,9 +453,7 @@ def test_args_timezone_fallback(testapp, tz):
             "timezone: 'Europe/Kharkiv' is not a 'timezone'",
             id="timezone-wrong",
         ),
-        pytest.param(
-            {"fuzzy": 42}, "fuzzy: 42 is not of type 'boolean'", id="fuzzy-int"
-        ),
+        pytest.param({"fuzzy": 42}, "fuzzy: 42 is not of type 'boolean'", id="fuzzy-int"),
     ],
 )
 def test_args_bad_value(testapp, args, error):

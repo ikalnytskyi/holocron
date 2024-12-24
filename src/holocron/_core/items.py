@@ -16,7 +16,8 @@ class Item(collections.abc.MutableMapping):
         # behaviour. Anyway, passing more than one mapping to '__init__' is
         # senseless and confusing.
         if len(mappings) > 1:
-            raise TypeError("expected at most 1 argument, got 2")
+            msg = "expected at most 1 argument, got 2"
+            raise TypeError(msg)
 
         for mapping in itertools.chain(mappings, (properties,)):
             self._mapping.update(mapping)
@@ -64,9 +65,7 @@ class Item(collections.abc.MutableMapping):
                 key: value.__get__(self)
                 for key, value in vars(self.__class__).items()
                 if not key.startswith("_")
-                and (
-                    inspect.isdatadescriptor(value) or inspect.ismethoddescriptor(value)
-                )
+                and (inspect.isdatadescriptor(value) or inspect.ismethoddescriptor(value))
             },
             **self._mapping,
         )
@@ -76,14 +75,14 @@ class WebSiteItem(Item):
     """Pipeline item wrapper for a static web site."""
 
     def __init__(self, *mappings, **properties):
-        super(WebSiteItem, self).__init__(*mappings, **properties)
+        super().__init__(*mappings, **properties)
 
         missing = {"destination", "baseurl"} - self.keys()
         if missing:
-            raise TypeError(
-                "WebSiteItem is missing some required properties: %s"
-                % ", ".join(("'%s'" % prop for prop in sorted(missing)))
+            msg = "WebSiteItem is missing some required properties: {}".format(
+                ", ".join(f"'{prop}'" for prop in sorted(missing))
             )
+            raise TypeError(msg)
 
     @property
     def url(self):

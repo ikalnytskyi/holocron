@@ -135,7 +135,7 @@ def test_add_processor_wrapper_override(caplog):
     assert caplog.records[0].message == "processor override: 'wrapper'"
 
 
-@pytest.mark.parametrize(["wrapper_name"], [pytest.param("name"), pytest.param("args")])
+@pytest.mark.parametrize("wrapper_name", [pytest.param("name"), pytest.param("args")])
 def test_add_processor_wrapper_illegal_name(caplog, wrapper_name):
     """.add_processor_wrapper() raises on illegal name."""
 
@@ -364,7 +364,7 @@ def test_invoke_passthrough_items():
 
 
 @pytest.mark.parametrize(
-    ["processor_args"],
+    "processor_args",
     [
         pytest.param({"a": 1}, id="int"),
         pytest.param({"b": 1.13}, id="float"),
@@ -388,7 +388,7 @@ def test_invoke_propagates_processor_args(processor_args):
 
 
 @pytest.mark.parametrize(
-    ["processor_args", "resolved"],
+    ("processor_args", "resolved"),
     [
         pytest.param(
             {"a": {"$ref": "metadata://#/is_yoda_master"}},
@@ -418,9 +418,7 @@ def test_invoke_propagates_processor_args(processor_args):
 def test_invoke_resolves_jsonref(processor_args, resolved):
     """.invoke() resolves JSON references in processor's arguments."""
 
-    testapp = holocron.Application(
-        {"extra": [{"luke": "skywalker"}], "is_yoda_master": True}
-    )
+    testapp = holocron.Application({"extra": [{"luke": "skywalker"}], "is_yoda_master": True})
 
     def processor(app, items, **args):
         assert args == resolved
@@ -437,7 +435,8 @@ def test_invoke_processor_errors():
     """.invoke() raises proper exception."""
 
     def processor(app, documents):
-        raise ValueError("something bad happened")
+        msg = "something bad happened"
+        raise ValueError(msg)
         yield
 
     testapp = holocron.Application()

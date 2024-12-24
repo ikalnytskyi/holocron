@@ -8,7 +8,7 @@ import holocron
 from holocron._processors import metadata
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def testapp():
     return holocron.Application()
 
@@ -37,13 +37,11 @@ def test_item_untouched(testapp):
     )
 
     assert isinstance(stream, collections.abc.Iterable)
-    assert list(stream) == [
-        holocron.Item({"content": "the Force", "author": "skywalker"})
-    ]
+    assert list(stream) == [holocron.Item({"content": "the Force", "author": "skywalker"})]
 
 
 @pytest.mark.parametrize(
-    ["amount"],
+    "amount",
     [
         pytest.param(0),
         pytest.param(1),
@@ -57,10 +55,7 @@ def test_item_many(testapp, amount):
 
     stream = metadata.process(
         testapp,
-        [
-            holocron.Item({"content": "the key is #%d" % i, "author": "luke"})
-            for i in range(amount)
-        ],
+        [holocron.Item({"content": "the key is #%d" % i, "author": "luke"}) for i in range(amount)],
         metadata={"author": "yoda", "type": "memoire"},
     )
 
@@ -78,7 +73,7 @@ def test_item_many(testapp, amount):
 
 
 @pytest.mark.parametrize(
-    ["overwrite", "author"],
+    ("overwrite", "author"),
     [
         pytest.param(True, "yoda", id="overwrite"),
         pytest.param(False, "skywalker", id="not-overwrite"),
@@ -101,7 +96,7 @@ def test_args_overwrite(testapp, overwrite, author):
 
 
 @pytest.mark.parametrize(
-    ["args", "error"],
+    ("args", "error"),
     [
         pytest.param(
             {"metadata": 42},

@@ -33,10 +33,7 @@ def process(app, stream, *, template="item.j2", context=None, themes=None):
 
     env = jinja2.Environment(
         loader=jinja2.ChoiceLoader(
-            [
-                jinja2.FileSystemLoader(str(pathlib.Path(theme, "templates")))
-                for theme in themes
-            ]
+            [jinja2.FileSystemLoader(str(pathlib.Path(theme, "templates"))) for theme in themes]
         ),
         trim_blocks=True,
         lstrip_blocks=True,

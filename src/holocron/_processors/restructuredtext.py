@@ -48,9 +48,7 @@ def process(app, stream, *, settings=None):
         # translator to fit our needs.
         writer.translator_class = _HTMLTranslator
 
-        parts = publish_parts(
-            item["content"], writer=writer, settings_overrides=settings
-        )
+        parts = publish_parts(item["content"], writer=writer, settings_overrides=settings)
 
         item["content"] = parts["fragment"].strip()
         item["destination"] = item["destination"].with_suffix(".html")
