@@ -9,12 +9,12 @@ import holocron
 from holocron._processors import import_processors
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def testapp(request):
     return holocron.Application()
 
 
-@pytest.fixture(scope="function", params=["process", "invoke"])
+@pytest.fixture(params=["process", "invoke"])
 def runprocessor(testapp, request):
     """Run the processor directly and as a part of anonymous pipe."""
 
@@ -66,7 +66,7 @@ def test_imports(testapp, tmpdir):
 
 
 @pytest.mark.parametrize(
-    ["processors", "imports", "registered"],
+    ("processors", "imports", "registered"),
     [
         pytest.param([], [], [], id="no-imports"),
         pytest.param(
@@ -95,9 +95,7 @@ def test_imports(testapp, tmpdir):
         ),
     ],
 )
-def test_imports_args_from(
-    testapp, runprocessor, tmpdir, processors, imports, registered
-):
+def test_imports_args_from(testapp, runprocessor, tmpdir, processors, imports, registered):
     """Imports must work from 3rd party directory."""
 
     for processor in processors:
@@ -120,7 +118,7 @@ def test_imports_args_from(
 
 
 @pytest.mark.parametrize(
-    ["imports", "registered"],
+    ("imports", "registered"),
     [
         pytest.param([], [], id="no-imports"),
         pytest.param(["yoda = os.path:join"], ["yoda"], id="yoda-imports-yoda"),
@@ -175,16 +173,14 @@ def test_imports_precedence(testapp, runprocessor, tmpdir, monkeypatch):
 
 
 @pytest.mark.parametrize(
-    ["args", "error"],
+    ("args", "error"),
     [
         pytest.param(
             {"imports": 42},
             "imports: 42 is not of type 'array'",
             id="imports-int",
         ),
-        pytest.param(
-            {"from_": 42}, "from_: 42 is not of type 'string'", id="from_-int"
-        ),
+        pytest.param({"from_": 42}, "from_: 42 is not of type 'string'", id="from_-int"),
     ],
 )
 def test_args_bad_value(testapp, args, error):

@@ -24,7 +24,7 @@ class _pytest_regex:
         return self._regex.pattern
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def testapp():
     return holocron.Application({"url": "https://yoda.ua"})
 
@@ -62,7 +62,7 @@ def test_item(testapp):
 
 
 @pytest.mark.parametrize(
-    ["content"],
+    "content",
     [
         pytest.param(
             textwrap.dedent(
@@ -267,7 +267,7 @@ def test_item_infer_title_with_sections(testapp):
 
 
 @pytest.mark.parametrize(
-    ["amount"],
+    "amount",
     [
         pytest.param(0),
         pytest.param(1),
@@ -305,7 +305,7 @@ def test_item_many(testapp, amount):
 
 
 @pytest.mark.parametrize(
-    ["rendered", "pygmentize"],
+    ("rendered", "pygmentize"),
     [
         pytest.param(
             (
@@ -367,7 +367,7 @@ def test_args_pygmentize(testapp, rendered, pygmentize):
     ]
 
 
-@pytest.mark.parametrize(["language"], [pytest.param("yoda"), pytest.param("vader")])
+@pytest.mark.parametrize("language", [pytest.param("yoda"), pytest.param("vader")])
 def test_args_pygmentize_unknown_language(testapp, language):
     """Commonmark has to assume text/plain for unknown languages."""
 
@@ -620,7 +620,7 @@ def test_args_definition(testapp):
 
 
 @pytest.mark.parametrize(
-    ["args", "error"],
+    ("args", "error"),
     [
         pytest.param(
             {"pygmentize": 42},

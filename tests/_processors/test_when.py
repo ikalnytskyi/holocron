@@ -10,7 +10,7 @@ import holocron
 from holocron._processors import when
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def testapp(request):
     def spam(app, items, *, text=42):
         for item in items:
@@ -39,7 +39,7 @@ def testapp(request):
 
 
 @pytest.mark.parametrize(
-    ["cond", "item"],
+    ("cond", "item"),
     [
         pytest.param(
             "item.author == 'yoda'",
@@ -68,7 +68,7 @@ def test_item_spam(testapp, cond, item):
 
 
 @pytest.mark.parametrize(
-    ["amount"],
+    "amount",
     [
         pytest.param(0),
         pytest.param(1),
@@ -97,7 +97,7 @@ def test_item_many_spam(testapp, amount):
 
 
 @pytest.mark.parametrize(
-    ["amount"],
+    "amount",
     [
         pytest.param(0),
         pytest.param(1),
@@ -119,10 +119,7 @@ def test_item_many_rice(testapp, amount):
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == list(
         itertools.chain(
-            [
-                holocron.Item({"content": "the great jedi", "key": i})
-                for i in range(amount)
-            ],
+            [holocron.Item({"content": "the great jedi", "key": i}) for i in range(amount)],
             [holocron.Item({"content": "rice"})],
         )
     )
@@ -148,7 +145,7 @@ def test_item_many_eggs(testapp):
 
 
 @pytest.mark.parametrize(
-    ["cond"],
+    "cond",
     [
         pytest.param([r"item.author == 'yoda'"], id="=="),
         pytest.param([r"item.source.suffix == '.md'"], id="endswith"),
@@ -194,7 +191,7 @@ def test_args_condition(testapp, cond):
 
 
 @pytest.mark.parametrize(
-    ["cond"],
+    "cond",
     [
         pytest.param([r"item.author == 'yoda'"], id="=="),
         pytest.param([r"item.source.suffix == '.md'"], id="endswith"),

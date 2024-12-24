@@ -47,9 +47,7 @@ def _finditems(app, path, pattern, encoding, tzinfo):
             if pattern and not re_name.match(str(source)):
                 continue
 
-            yield _createitem(
-                app, root / filename, source, encoding=encoding, tzinfo=tzinfo
-            )
+            yield _createitem(app, root / filename, source, encoding=encoding, tzinfo=tzinfo)
 
 
 @parameters(

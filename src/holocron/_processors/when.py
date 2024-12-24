@@ -62,7 +62,8 @@ def process(app, stream, processor, *_condition, condition=None):
     condition = _condition or condition
 
     if not condition:
-        raise TypeError("missing argument or value: 'condition'")
+        msg = "missing argument or value: 'condition'"
+        raise TypeError(msg)
 
     def smartstream():
         for item in stream:

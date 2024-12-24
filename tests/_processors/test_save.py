@@ -10,7 +10,7 @@ import holocron
 from holocron._processors import save
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def testapp(request):
     return holocron.Application()
 
@@ -33,7 +33,7 @@ def test_item(testapp, monkeypatch, tmpdir):
 
 
 @pytest.mark.parametrize(
-    ["data", "loader"],
+    ("data", "loader"),
     [
         pytest.param("text", py.path.local.read, id="text"),
         pytest.param(b"\xf1", py.path.local.read_binary, id="binary"),
@@ -50,14 +50,12 @@ def test_item_content_types(testapp, monkeypatch, tmpdir, data, loader):
     )
 
     assert isinstance(stream, collections.abc.Iterable)
-    assert list(stream) == [
-        holocron.Item({"content": data, "destination": pathlib.Path("1.dat")})
-    ]
+    assert list(stream) == [holocron.Item({"content": data, "destination": pathlib.Path("1.dat")})]
     assert loader(tmpdir.join("_site", "1.dat")) == data
 
 
 @pytest.mark.parametrize(
-    ["destination"],
+    "destination",
     [
         pytest.param(pathlib.Path("1.txt"), id="deep-0"),
         pytest.param(pathlib.Path("a", "2.txt"), id="deep-1"),
@@ -76,14 +74,12 @@ def test_item_destination(testapp, monkeypatch, tmpdir, destination):
     )
 
     assert isinstance(stream, collections.abc.Iterable)
-    assert list(stream) == [
-        holocron.Item({"content": "Obi-Wan", "destination": destination})
-    ]
+    assert list(stream) == [holocron.Item({"content": "Obi-Wan", "destination": destination})]
     assert tmpdir.join("_site", destination).read_text("UTF-8") == "Obi-Wan"
 
 
 @pytest.mark.parametrize(
-    ["amount"],
+    "amount",
     [
         pytest.param(0),
         pytest.param(1),
@@ -115,7 +111,7 @@ def test_item_many(testapp, monkeypatch, tmpdir, amount):
         assert tmpdir.join("_site", str(i)).read_text("UTF-8") == "Obi-Wan"
 
 
-@pytest.mark.parametrize(["encoding"], [pytest.param("CP1251"), pytest.param("UTF-16")])
+@pytest.mark.parametrize("encoding", [pytest.param("CP1251"), pytest.param("UTF-16")])
 def test_args_encoding(testapp, monkeypatch, tmpdir, encoding):
     """Save processor has to respect 'encoding' argument."""
 
@@ -134,7 +130,7 @@ def test_args_encoding(testapp, monkeypatch, tmpdir, encoding):
     assert tmpdir.join("_site", "1.html").read_text(encoding) == "Обі-Ван"
 
 
-@pytest.mark.parametrize(["encoding"], [pytest.param("CP1251"), pytest.param("UTF-16")])
+@pytest.mark.parametrize("encoding", [pytest.param("CP1251"), pytest.param("UTF-16")])
 def test_args_encoding_fallback(testapp, monkeypatch, tmpdir, encoding):
     """Save processor has to respect 'encoding' argument (fallback)."""
 
@@ -153,7 +149,7 @@ def test_args_encoding_fallback(testapp, monkeypatch, tmpdir, encoding):
     assert tmpdir.join("_site", "1.html").read_text(encoding) == "Обі-Ван"
 
 
-@pytest.mark.parametrize(["to"], [pytest.param("_build"), pytest.param("_public")])
+@pytest.mark.parametrize("to", [pytest.param("_build"), pytest.param("_public")])
 def test_args_to(testapp, monkeypatch, tmpdir, to):
     """Save processor has to respect 'to' argument."""
 
@@ -173,7 +169,7 @@ def test_args_to(testapp, monkeypatch, tmpdir, to):
 
 
 @pytest.mark.parametrize(
-    ["args", "error"],
+    ("args", "error"),
     [
         pytest.param({"to": 42}, "to: 42 is not of type 'string'", id="to-int"),
         pytest.param({"to": [42]}, "to: [42] is not of type 'string'", id="to-list"),

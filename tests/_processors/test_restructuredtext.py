@@ -24,7 +24,7 @@ class _pytest_regex:
         return self._regex.pattern
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def testapp():
     return holocron.Application()
 
@@ -321,7 +321,7 @@ def test_args_settings(testapp):
 
 
 @pytest.mark.parametrize(
-    ["amount"],
+    "amount",
     [
         pytest.param(0),
         pytest.param(1),
@@ -359,7 +359,7 @@ def test_item_many(testapp, amount):
 
 
 @pytest.mark.parametrize(
-    ["args", "error"],
+    ("args", "error"),
     [
         pytest.param(
             {"settings": 42},

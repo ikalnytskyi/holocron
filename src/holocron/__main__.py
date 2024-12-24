@@ -19,9 +19,8 @@ from . import create_app
 
 def create_app_from_yml(path):
     """Return an application instance created from YAML."""
-
     try:
-        with open(path, "rt", encoding="UTF-8") as f:
+        with open(path, encoding="UTF-8") as f:
             try:
                 # Substitute ALL occurrences of '%(here)s' with a path to a
                 # directory with '.holocron.yml'. Please note, we also want
@@ -34,9 +33,7 @@ def create_app_from_yml(path):
 
                 conf = yaml.safe_load(interpolated)
             except yaml.YAMLError as exc:
-                raise RuntimeError(
-                    "Cannot parse a configuration file. Context: " + str(exc)
-                )
+                raise RuntimeError("Cannot parse a configuration file. Context: " + str(exc))
 
     except FileNotFoundError:
         conf = {"metadata": None, "pipes": {}}
@@ -46,8 +43,7 @@ def create_app_from_yml(path):
 
 @contextlib.contextmanager
 def configure_logger(level):
-    """
-    Configure a root logger to print records in pretty format.
+    """Configure a root logger to print records in pretty format.
 
     The format is more readable for end users, since it's not necessary at
     all to know a record's dateime and a source of the record.
@@ -63,7 +59,7 @@ def configure_logger(level):
 
     class _PendingHandler(logging.handlers.MemoryHandler):
         def __init__(self, target):
-            return super(_PendingHandler, self).__init__(capacity=-1, target=target)
+            super().__init__(capacity=-1, target=target)
 
         def shouldFlush(self, record):
             return False
@@ -71,7 +67,7 @@ def configure_logger(level):
     class _Formatter(logging.Formatter):
         def format(self, record):
             record.levelname = record.levelname[:4]
-            return super(_Formatter, self).format(record)
+            return super().format(record)
 
     # create stream handler with custom formatter
     stream_handler = logging.StreamHandler()
@@ -90,8 +86,7 @@ def configure_logger(level):
 
 
 def parse_command_line(args):
-    """
-    Builds a command line interface, and parses its arguments. Returns
+    """Builds a command line interface, and parses its arguments. Returns
     an object with attributes, that are represent CLI arguments.
 
     :param args: a list of command line arguments

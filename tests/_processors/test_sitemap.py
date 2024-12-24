@@ -32,13 +32,13 @@ class _pytest_xmlasdict:
         return self._expected
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def testapp():
     return holocron.Application({"url": "https://yoda.ua"})
 
 
 @pytest.mark.parametrize(
-    ["filename", "escaped"],
+    ("filename", "escaped"),
     [
         pytest.param("s.html", "s.html"),
         pytest.param("ы.html", "%D1%8B.html"),
@@ -97,7 +97,7 @@ def test_item(testapp, filename, escaped):
 
 
 @pytest.mark.parametrize(
-    ["amount"],
+    "amount",
     [pytest.param(1), pytest.param(2), pytest.param(5), pytest.param(10)],
 )
 def test_item_many(testapp, amount):
@@ -139,9 +139,7 @@ def test_item_many(testapp, amount):
                         "content": _pytest_xmlasdict(
                             {
                                 "urlset": {
-                                    "@xmlns": (
-                                        "http://www.sitemaps.org/schemas/sitemap/0.9"
-                                    ),
+                                    "@xmlns": ("http://www.sitemaps.org/schemas/sitemap/0.9"),
                                     "url": [
                                         {
                                             "loc": "https://yoda.ua/%d" % i,
@@ -173,11 +171,7 @@ def test_item_many_zero(testapp):
                 "source": pathlib.Path("sitemap://sitemap.xml"),
                 "destination": pathlib.Path("sitemap.xml"),
                 "content": _pytest_xmlasdict(
-                    {
-                        "urlset": {
-                            "@xmlns": "http://www.sitemaps.org/schemas/sitemap/0.9"
-                        }
-                    }
+                    {"urlset": {"@xmlns": "http://www.sitemaps.org/schemas/sitemap/0.9"}}
                 ),
                 "baseurl": testapp.metadata["url"],
             }
@@ -235,7 +229,7 @@ def test_args_gzip(testapp):
 
 
 @pytest.mark.parametrize(
-    ["save_as"],
+    "save_as",
     [
         pytest.param(pathlib.Path("posts", "skywalker.luke"), id="deep"),
         pytest.param(pathlib.Path("yoda.jedi"), id="flat"),
@@ -280,13 +274,11 @@ def test_args_save_as(testapp, save_as):
 
 
 @pytest.mark.parametrize(
-    ["document_path", "sitemap_path"],
+    ("document_path", "sitemap_path"),
     [
         pytest.param(pathlib.Path("1.html"), pathlib.Path("b", "sitemap.xml")),
         pytest.param(pathlib.Path("a", "1.html"), pathlib.Path("b", "sitemap.xml")),
-        pytest.param(
-            pathlib.Path("a", "1.html"), pathlib.Path("a", "c", "sitemap.xml")
-        ),
+        pytest.param(pathlib.Path("a", "1.html"), pathlib.Path("a", "c", "sitemap.xml")),
         pytest.param(pathlib.Path("ab", "1.html"), pathlib.Path("a", "sitemap.xml")),
     ],
 )
@@ -321,9 +313,7 @@ def test_args_save_as_unsupported(testapp, document_path, sitemap_path):
     )
 
 
-@pytest.mark.parametrize(
-    ["pretty", "lines"], [pytest.param(False, 1), pytest.param(True, 7)]
-)
+@pytest.mark.parametrize(("pretty", "lines"), [pytest.param(False, 1), pytest.param(True, 7)])
 def test_args_pretty(testapp, pretty, lines):
     """Sitemap processor has to respect pretty argument."""
 
@@ -366,7 +356,7 @@ def test_args_pretty(testapp, pretty, lines):
 
 
 @pytest.mark.parametrize(
-    ["args", "error"],
+    ("args", "error"),
     [
         pytest.param(
             {"gzip": "true"},

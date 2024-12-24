@@ -3,7 +3,7 @@
 import collections
 import logging
 
-from .._processors import _misc
+from holocron._processors import _misc
 
 _logger = logging.getLogger("holocron")
 
@@ -55,7 +55,8 @@ class Application:
 
     def add_processor_wrapper(self, name, processor):
         if name in self._processor_reserved_props:
-            raise ValueError(f"illegal wrapper name: {name}")
+            msg = f"illegal wrapper name: {name}"
+            raise ValueError(msg)
 
         self.add_processor(name, processor)
         self._processor_wrappers.add(name)
@@ -73,7 +74,8 @@ class Application:
         # from some processor.
         if isinstance(pipe, str):
             if pipe not in self._pipes:
-                raise ValueError(f"no such pipe: '{pipe}'")
+                msg = f"no such pipe: '{pipe}'"
+                raise ValueError(msg)
             pipe = self._pipes[pipe]
 
         # Since processors expect an input stream to be an iterator, we cast a
@@ -87,16 +89,15 @@ class Application:
             # parameters. Please note, we're doing this so late because we
             # want to take into account metadata and other changes produced
             # by previous processors in the pipe.
-            processor = _misc.resolve_json_references(
-                processor, {"metadata:": self.metadata}
-            )
+            processor = _misc.resolve_json_references(processor, {"metadata:": self.metadata})
 
             name, args, kwargs = _unpack_and_wrap_processor(
                 processor, self._processor_reserved_props
             )
 
             if name not in self._processors:
-                raise ValueError(f"no such processor: '{name}'")
+                msg = f"no such processor: '{name}'"
+                raise ValueError(msg)
 
             processfn = self._processors[name]
             stream = processfn(self, stream, *args, **kwargs)
@@ -123,15 +124,12 @@ def _unpack_and_wrap_processor(processor, processor_reserved_props):
     processor. So this function naturally wraps `commonmark` and so we
     effectively resolve syntax sugar.
     """
-
     processor_name = processor["name"]
     processor_args = []
     processor_kwrs = {}
     processor_opts = processor.get("args", {})
 
-    wrapper_name = next(
-        (k for k in processor if k not in processor_reserved_props), None
-    )
+    wrapper_name = next((k for k in processor if k not in processor_reserved_props), None)
 
     if wrapper_name:
         processor_name = wrapper_name

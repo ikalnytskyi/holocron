@@ -16,7 +16,7 @@ from holocron._processors import feed
 _HOLOCRON_VERSION = importlib.metadata.version("holocron")
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def testapp():
     return holocron.Application({"url": "https://yoda.ua"})
 
@@ -437,11 +437,9 @@ def test_item_rss_feed_metadata(testapp):
     assert parsed.rss.channel.item.itunes_summary == "berry"
 
 
+@pytest.mark.parametrize("syndication_format", [pytest.param("atom"), pytest.param("rss")])
 @pytest.mark.parametrize(
-    ["syndication_format"], [pytest.param("atom"), pytest.param("rss")]
-)
-@pytest.mark.parametrize(
-    ["amount"],
+    "amount",
     [
         pytest.param(0),
         pytest.param(1),
@@ -505,10 +503,8 @@ def test_item_many(testapp, syndication_format, amount):
     )
 
 
-@pytest.mark.parametrize(
-    ["syndication_format"], [pytest.param("atom"), pytest.param("rss")]
-)
-@pytest.mark.parametrize(["encoding"], [pytest.param("CP1251"), pytest.param("UTF-16")])
+@pytest.mark.parametrize("syndication_format", [pytest.param("atom"), pytest.param("rss")])
+@pytest.mark.parametrize("encoding", [pytest.param("CP1251"), pytest.param("UTF-16")])
 def test_args_encoding(testapp, syndication_format, encoding):
     """Feed processor has to respect encoding argument."""
 
@@ -547,10 +543,8 @@ def test_args_encoding(testapp, syndication_format, encoding):
     assert untangle.parse(items[-1]["content"].decode(encoding))
 
 
-@pytest.mark.parametrize(
-    ["syndication_format"], [pytest.param("atom"), pytest.param("rss")]
-)
-@pytest.mark.parametrize(["encoding"], [pytest.param("CP1251"), pytest.param("UTF-16")])
+@pytest.mark.parametrize("syndication_format", [pytest.param("atom"), pytest.param("rss")])
+@pytest.mark.parametrize("encoding", [pytest.param("CP1251"), pytest.param("UTF-16")])
 def test_args_encoding_fallback(testapp, syndication_format, encoding):
     """Feed processor has to respect encoding argument (fallback)."""
 
@@ -590,11 +584,9 @@ def test_args_encoding_fallback(testapp, syndication_format, encoding):
     assert untangle.parse(items[-1]["content"].decode(encoding))
 
 
+@pytest.mark.parametrize("syndication_format", [pytest.param("atom"), pytest.param("rss")])
 @pytest.mark.parametrize(
-    ["syndication_format"], [pytest.param("atom"), pytest.param("rss")]
-)
-@pytest.mark.parametrize(
-    ["save_as"],
+    "save_as",
     [
         pytest.param(pathlib.Path("foo.xml")),
         pytest.param(pathlib.Path("foo", "bar.xml")),
@@ -647,10 +639,8 @@ def test_args_save_as(testapp, syndication_format, save_as):
     ]
 
 
-@pytest.mark.parametrize(
-    ["syndication_format"], [pytest.param("atom"), pytest.param("rss")]
-)
-@pytest.mark.parametrize(["limit"], [pytest.param(2), pytest.param(5)])
+@pytest.mark.parametrize("syndication_format", [pytest.param("atom"), pytest.param("rss")])
+@pytest.mark.parametrize("limit", [pytest.param(2), pytest.param(5)])
 def test_args_limit(testapp, syndication_format, limit):
     """Feed processor has to respect limit argument."""
 
@@ -716,20 +706,15 @@ def test_args_limit(testapp, syndication_format, limit):
     assert len(items) == limit
 
     for i, item in enumerate(items):
-        if syndication_format == "atom":
-            content = item.content
-        else:
-            content = item.description
+        content = item.content if syndication_format == "atom" else item.description
 
         assert item.title == "Day 1"
         assert content == "the way of the Force, part %d" % (9 - i)
 
 
+@pytest.mark.parametrize("syndication_format", [pytest.param("atom"), pytest.param("rss")])
 @pytest.mark.parametrize(
-    ["syndication_format"], [pytest.param("atom"), pytest.param("rss")]
-)
-@pytest.mark.parametrize(
-    ["pretty", "check_fn"],
+    ("pretty", "check_fn"),
     [
         pytest.param(False, lambda x: x == 2, id="no"),
         pytest.param(True, lambda x: x > 10, id="yes"),
@@ -785,7 +770,7 @@ def test_args_pretty(testapp, syndication_format, pretty, check_fn):
 
 
 @pytest.mark.parametrize(
-    ["args", "error"],
+    ("args", "error"),
     [
         pytest.param(
             {"encoding": "UTF-42"},

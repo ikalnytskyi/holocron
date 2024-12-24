@@ -55,19 +55,15 @@ def process(
         return resolve_json_references(feed.get(name), {"feed:": feed})
 
     def _resolveitem(name, streamitem):
-        return resolve_json_references(
-            item.get(name), {"item:": streamitem, "feed:": feed}
-        )
+        return resolve_json_references(item.get(name), {"item:": streamitem, "feed:": feed})
 
     feed_generator = feedgen.feed.FeedGenerator()
 
-    if any((key.startswith("itunes_") for key in feed)):
+    if any(key.startswith("itunes_") for key in feed):
         feed_generator.load_extension("podcast")
         feed_generator.podcast.itunes_author(_resolvefeed("itunes_author"))
         feed_generator.podcast.itunes_block(_resolvefeed("itunes_block"))
-        feed_generator.podcast.itunes_category(
-            _resolvefeed("itunes_category"), replace=True
-        )
+        feed_generator.podcast.itunes_category(_resolvefeed("itunes_category"), replace=True)
         feed_generator.podcast.itunes_image(_resolvefeed("itunes_image"))
         feed_generator.podcast.itunes_explicit(_resolvefeed("itunes_explicit"))
         feed_generator.podcast.itunes_complete(_resolvefeed("itunes_complete"))
@@ -125,25 +121,15 @@ def process(
             feed_entry.podcast.itunes_author(_resolveitem("itunes_author", streamitem))
             feed_entry.podcast.itunes_block(_resolveitem("itunes_block", streamitem))
             feed_entry.podcast.itunes_image(_resolveitem("itunes_image", streamitem))
-            feed_entry.podcast.itunes_duration(
-                _resolveitem("itunes_duration", streamitem)
-            )
-            feed_entry.podcast.itunes_duration(
-                _resolveitem("itunes_duration", streamitem)
-            )
-            feed_entry.podcast.itunes_explicit(
-                _resolveitem("itunes_explicit", streamitem)
-            )
+            feed_entry.podcast.itunes_duration(_resolveitem("itunes_duration", streamitem))
+            feed_entry.podcast.itunes_duration(_resolveitem("itunes_duration", streamitem))
+            feed_entry.podcast.itunes_explicit(_resolveitem("itunes_explicit", streamitem))
             feed_entry.podcast.itunes_is_closed_captioned(
                 _resolveitem("itunes_is_closed_captioned", streamitem)
             )
             feed_entry.podcast.itunes_order(_resolveitem("itunes_order", streamitem))
-            feed_entry.podcast.itunes_subtitle(
-                _resolveitem("itunes_subtitle", streamitem)
-            )
-            feed_entry.podcast.itunes_summary(
-                _resolveitem("itunes_summary", streamitem)
-            )
+            feed_entry.podcast.itunes_subtitle(_resolveitem("itunes_subtitle", streamitem))
+            feed_entry.podcast.itunes_summary(_resolveitem("itunes_summary", streamitem))
 
     to_bytes = {"atom": feed_generator.atom_str, "rss": feed_generator.rss_str}
     to_bytes = to_bytes[syndication_format]

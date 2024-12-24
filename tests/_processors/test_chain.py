@@ -8,7 +8,7 @@ import holocron
 from holocron._processors import chain
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def testapp():
     return holocron.Application()
 
@@ -16,9 +16,7 @@ def testapp():
 def test_one_item(testapp):
     """Chain processor has to work with one item!"""
 
-    stream = chain.process(
-        testapp, [holocron.Item({"title": "The Force", "content": "Obi-Wan"})]
-    )
+    stream = chain.process(testapp, [holocron.Item({"title": "The Force", "content": "Obi-Wan"})])
 
     assert isinstance(stream, collections.abc.Iterable)
     assert list(stream) == [holocron.Item({"title": "The Force", "content": "Obi-Wan"})]
@@ -165,7 +163,7 @@ def test_args_direction(testapp):
 
 
 @pytest.mark.parametrize(
-    ["args", "error"],
+    ("args", "error"),
     [
         pytest.param(
             {"order_by": 42},

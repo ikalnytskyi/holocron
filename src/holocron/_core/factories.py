@@ -1,12 +1,12 @@
 """Factory functions to create core instances."""
 
-from .._processors import import_processors, when
+from holocron._processors import import_processors, when
+
 from . import Application
 
 
 def create_app(metadata, processors=None, pipes=None):
     """Return an application instance with processors & pipes setup."""
-
     instance = Application(metadata)
 
     # In order to avoid code duplication, we use existing built-in import
