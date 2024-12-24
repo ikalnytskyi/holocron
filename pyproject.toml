@@ -72,7 +72,7 @@ scripts.run = "python -m pytest {args:-vv}"
 
 [tool.hatch.envs.lint]
 detached = true
-dependencies = ["ruff == 0.2.*"]
+dependencies = ["ruff == 0.8.*"]
 scripts.check = ["ruff check {args:.}", "ruff format --check --diff {args:.}"]
 scripts.fmt = ["ruff check --fix {args:.}", "ruff format {args:.}"]
 
