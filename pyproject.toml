@@ -34,7 +34,7 @@ dependencies = [
     "jsonpointer >= 2.3",
     "Markdown >= 3.4",
     "docutils >= 0.19",
-    "feedgen >= 0.9",
+    "feedgen >= 0.9, != 1.0.0",
     "termcolor >= 1.1",
     "colorama >= 0.4",
     "markdown-it-py >= 2.1",
