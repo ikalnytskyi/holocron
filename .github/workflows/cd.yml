@@ -6,22 +6,49 @@ on:
       - '[1-9]+.[0-9]+.[0-9]+*'
 
 jobs:
-  pypi:
+  build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.13"
 
-      - name: Install dependencies
-        run: pipx install hatch
+      - name: Setup build dependencies
+        run: pip install build
 
-      - name: Build
-        run: hatch build
+      - name: Build package
+        run: python -m build
+
+      - name: Store built python package distributions
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+
+  publish-pypi:
+    needs: build
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+
+    environment:
+      name: pypi
+      url: https://pypi.org/project/picobox/${{ github.ref_name }}/
+
+    steps:
+      - name: Download previously built python package distributions
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
 
       - name: Publish to PyPI
-        run: hatch publish --user __token__ --auth ${{ secrets.PYPI_TOKEN }}
+        uses: pypa/gh-action-pypi-publish@93e87954aa8d40d7467c30656ba421aee00d37c8
+        with:
+          print-hash: true

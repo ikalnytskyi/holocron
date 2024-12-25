@@ -11,15 +11,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
+
+      - name: Set up Hatch
+        run: python3 -m pip install hatch
 
       - name: Lint
-        run: pipx run -- hatch run lint:check
+        run: hatch run lint:check
         env:
           RUFF_OUTPUT_FORMAT: github
 
@@ -27,17 +30,20 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Set up Hatch
+        run: python3 -m pip install hatch
+
       - name: Test
-        run: pipx run -- hatch run test:run
+        run: hatch run test:run
 
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        python-version: ["3.10", "3.11", "3.12"]
+        python-version: ["3.11", "3.12", "3.13"]
